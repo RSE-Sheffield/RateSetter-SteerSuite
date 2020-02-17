@@ -12,48 +12,48 @@
     </worldBounds>
   </header>
   <obstacle>
-    <xmin>0.0</xmin>
-    <xmax>0.1</xmax>
+    <xmin>-20.0</xmin>
+    <xmax>-19.9</xmax>
     <ymin>0.0</ymin>
     <ymax>1.0</ymax>
     <zmin>0.0</zmin>
-    <zmax>12.0</zmax>
+    <zmax>5.0</zmax>
+  </obstacle>
+  <obstacle>
+    <xmin>-20.0</xmin>
+    <xmax>0.0</xmax>
+    <ymin>0.0</ymin>
+    <ymax>1.0</ymax>
+    <zmin>5.0</zmin>
+    <zmax>5.1</zmax>
   </obstacle>
   <obstacle>
     <xmin>0.0</xmin>
-    <xmax>30.0</xmax>
-    <ymin>0.0</ymin>
-    <ymax>1.0</ymax>
-    <zmin>12.0</zmin>
-    <zmax>12.1</zmax>
-  </obstacle>
-  <obstacle>
-    <xmin>30.0</xmin>
-    <xmax>30.1</xmax>
+    <xmax>0.10000000000000142</xmax>
     <ymin>0.0</ymin>
     <ymax>1.0</ymax>
     <zmin>0.0</zmin>
-    <zmax>12.0</zmax>
+    <zmax>5.0</zmax>
   </obstacle>
   <obstacle>
-    <xmin>0</xmin>
-    <xmax>2.0</xmax>
+    <xmin>-20</xmin>
+    <xmax>-14.0</xmax>
     <ymin>0</ymin>
     <ymax>1.0</ymax>
     <zmin>0</zmin>
     <zmax>0.1</zmax>
   </obstacle>
   <obstacle>
-    <xmin>4.0</xmin>
-    <xmax>7.0</xmax>
+    <xmin>-12.0</xmin>
+    <xmax>-8.0</xmax>
     <ymin>0.0</ymin>
     <ymax>1.0</ymax>
     <zmin>0.0</zmin>
     <zmax>0.1</zmax>
   </obstacle>
   <obstacle>
-    <xmin>9.0</xmin>
-    <xmax>30.0</xmax>
+    <xmin>-6.0</xmin>
+    <xmax>0.0</xmax>
     <ymin>0.0</ymin>
     <ymax>1.0</ymax>
     <zmin>0.0</zmin>
@@ -62,12 +62,12 @@
   <agentRegion>
     <numAgents>10</numAgents>
     <regionBounds>
-      <xmin>0</xmin>
-      <xmax>-10</xmax>
+      <xmin>-20.0</xmin>
+      <xmax>-10.0</xmax>
       <ymin>0</ymin>
       <ymax>0</ymax>
-      <zmin>0</zmin>
-      <zmax>-10</zmax>
+      <zmin>0.0</zmin>
+      <zmax>-10.0</zmax>
     </regionBounds>
     <initialConditions>
       <direction>
@@ -79,9 +79,250 @@
     <goalSequence>
       <seekStaticTarget>
         <targetLocation>
-          <x>15</x>
+          <x>-13</x>
           <y>0</y>
-          <z>5</z>
+          <z>2</z>
+        </targetLocation>
+        <desiredSpeed>1.3</desiredSpeed>
+        <timeDuration>1000.0</timeDuration>
+      </seekStaticTarget>
+    </goalSequence>
+  </agentRegion>
+  <agentRegion>
+    <numAgents>10</numAgents>
+    <regionBounds>
+      <xmin>-10.0</xmin>
+      <xmax>0.0</xmax>
+      <ymin>0</ymin>
+      <ymax>0</ymax>
+      <zmin>0.0</zmin>
+      <zmax>-10.0</zmax>
+    </regionBounds>
+    <initialConditions>
+      <direction>
+        <random>true</random>
+      </direction>
+      <radius>0.5</radius>
+      <speed>0</speed>
+    </initialConditions>
+    <goalSequence>
+      <seekStaticTarget>
+        <targetLocation>
+          <x>-7</x>
+          <y>0</y>
+          <z>2</z>
+        </targetLocation>
+        <desiredSpeed>1.3</desiredSpeed>
+        <timeDuration>1000.0</timeDuration>
+      </seekStaticTarget>
+    </goalSequence>
+  </agentRegion>
+  <obstacle>
+    <xmin>0.0</xmin>
+    <xmax>0.1</xmax>
+    <ymin>0.0</ymin>
+    <ymax>1.0</ymax>
+    <zmin>0.0</zmin>
+    <zmax>5.0</zmax>
+  </obstacle>
+  <obstacle>
+    <xmin>0.0</xmin>
+    <xmax>20.0</xmax>
+    <ymin>0.0</ymin>
+    <ymax>1.0</ymax>
+    <zmin>5.0</zmin>
+    <zmax>5.1</zmax>
+  </obstacle>
+  <obstacle>
+    <xmin>20.0</xmin>
+    <xmax>20.1</xmax>
+    <ymin>0.0</ymin>
+    <ymax>1.0</ymax>
+    <zmin>0.0</zmin>
+    <zmax>5.0</zmax>
+  </obstacle>
+  <obstacle>
+    <xmin>0</xmin>
+    <xmax>6.0</xmax>
+    <ymin>0</ymin>
+    <ymax>1.0</ymax>
+    <zmin>0</zmin>
+    <zmax>0.1</zmax>
+  </obstacle>
+  <obstacle>
+    <xmin>8.0</xmin>
+    <xmax>12.0</xmax>
+    <ymin>0.0</ymin>
+    <ymax>1.0</ymax>
+    <zmin>0.0</zmin>
+    <zmax>0.1</zmax>
+  </obstacle>
+  <obstacle>
+    <xmin>14.0</xmin>
+    <xmax>20.0</xmax>
+    <ymin>0.0</ymin>
+    <ymax>1.0</ymax>
+    <zmin>0.0</zmin>
+    <zmax>0.1</zmax>
+  </obstacle>
+  <agentRegion>
+    <numAgents>10</numAgents>
+    <regionBounds>
+      <xmin>0.0</xmin>
+      <xmax>10.0</xmax>
+      <ymin>0</ymin>
+      <ymax>0</ymax>
+      <zmin>0.0</zmin>
+      <zmax>-10.0</zmax>
+    </regionBounds>
+    <initialConditions>
+      <direction>
+        <random>true</random>
+      </direction>
+      <radius>0.5</radius>
+      <speed>0</speed>
+    </initialConditions>
+    <goalSequence>
+      <seekStaticTarget>
+        <targetLocation>
+          <x>7</x>
+          <y>0</y>
+          <z>2</z>
+        </targetLocation>
+        <desiredSpeed>1.3</desiredSpeed>
+        <timeDuration>1000.0</timeDuration>
+      </seekStaticTarget>
+    </goalSequence>
+  </agentRegion>
+  <agentRegion>
+    <numAgents>10</numAgents>
+    <regionBounds>
+      <xmin>10.0</xmin>
+      <xmax>20.0</xmax>
+      <ymin>0</ymin>
+      <ymax>0</ymax>
+      <zmin>0.0</zmin>
+      <zmax>-10.0</zmax>
+    </regionBounds>
+    <initialConditions>
+      <direction>
+        <random>true</random>
+      </direction>
+      <radius>0.5</radius>
+      <speed>0</speed>
+    </initialConditions>
+    <goalSequence>
+      <seekStaticTarget>
+        <targetLocation>
+          <x>13</x>
+          <y>0</y>
+          <z>2</z>
+        </targetLocation>
+        <desiredSpeed>1.3</desiredSpeed>
+        <timeDuration>1000.0</timeDuration>
+      </seekStaticTarget>
+    </goalSequence>
+  </agentRegion>
+  <obstacle>
+    <xmin>20.0</xmin>
+    <xmax>20.1</xmax>
+    <ymin>0.0</ymin>
+    <ymax>1.0</ymax>
+    <zmin>0.0</zmin>
+    <zmax>5.0</zmax>
+  </obstacle>
+  <obstacle>
+    <xmin>20.0</xmin>
+    <xmax>40.0</xmax>
+    <ymin>0.0</ymin>
+    <ymax>1.0</ymax>
+    <zmin>5.0</zmin>
+    <zmax>5.1</zmax>
+  </obstacle>
+  <obstacle>
+    <xmin>40.0</xmin>
+    <xmax>40.1</xmax>
+    <ymin>0.0</ymin>
+    <ymax>1.0</ymax>
+    <zmin>0.0</zmin>
+    <zmax>5.0</zmax>
+  </obstacle>
+  <obstacle>
+    <xmin>20</xmin>
+    <xmax>26.0</xmax>
+    <ymin>0</ymin>
+    <ymax>1.0</ymax>
+    <zmin>0</zmin>
+    <zmax>0.1</zmax>
+  </obstacle>
+  <obstacle>
+    <xmin>28.0</xmin>
+    <xmax>32.0</xmax>
+    <ymin>0.0</ymin>
+    <ymax>1.0</ymax>
+    <zmin>0.0</zmin>
+    <zmax>0.1</zmax>
+  </obstacle>
+  <obstacle>
+    <xmin>34.0</xmin>
+    <xmax>40.0</xmax>
+    <ymin>0.0</ymin>
+    <ymax>1.0</ymax>
+    <zmin>0.0</zmin>
+    <zmax>0.1</zmax>
+  </obstacle>
+  <agentRegion>
+    <numAgents>10</numAgents>
+    <regionBounds>
+      <xmin>20.0</xmin>
+      <xmax>30.0</xmax>
+      <ymin>0</ymin>
+      <ymax>0</ymax>
+      <zmin>0.0</zmin>
+      <zmax>-10.0</zmax>
+    </regionBounds>
+    <initialConditions>
+      <direction>
+        <random>true</random>
+      </direction>
+      <radius>0.5</radius>
+      <speed>0</speed>
+    </initialConditions>
+    <goalSequence>
+      <seekStaticTarget>
+        <targetLocation>
+          <x>27</x>
+          <y>0</y>
+          <z>2</z>
+        </targetLocation>
+        <desiredSpeed>1.3</desiredSpeed>
+        <timeDuration>1000.0</timeDuration>
+      </seekStaticTarget>
+    </goalSequence>
+  </agentRegion>
+  <agentRegion>
+    <numAgents>10</numAgents>
+    <regionBounds>
+      <xmin>30.0</xmin>
+      <xmax>40.0</xmax>
+      <ymin>0</ymin>
+      <ymax>0</ymax>
+      <zmin>0.0</zmin>
+      <zmax>-10.0</zmax>
+    </regionBounds>
+    <initialConditions>
+      <direction>
+        <random>true</random>
+      </direction>
+      <radius>0.5</radius>
+      <speed>0</speed>
+    </initialConditions>
+    <goalSequence>
+      <seekStaticTarget>
+        <targetLocation>
+          <x>33</x>
+          <y>0</y>
+          <z>2</z>
         </targetLocation>
         <desiredSpeed>1.3</desiredSpeed>
         <timeDuration>1000.0</timeDuration>

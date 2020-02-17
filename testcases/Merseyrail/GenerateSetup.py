@@ -1,4 +1,5 @@
 #Creates an .xml file scenario of people boarding and alighting a train
+#for info on the merseyrail train layout see en.wikipedia.org/wiki/British_Rail_Class_507
 
 import xml.etree.ElementTree as ET
 import argparse
@@ -89,11 +90,11 @@ def make_train_obstacles(xmlroot, train_origin, length_x, length_z, wall_thickne
 	#Make the front wall with door gaps
 	left_part = train_origin
 	for i in door_locations:
-		right_part = np.array([i-door_width/2,obstacle_height, wall_thickness])
+		right_part = train_origin + np.array([i-door_width/2,obstacle_height, wall_thickness])
 		make_obstacle(xmlroot, left_part, right_part)
 		
-		left_part = np.array([i+door_width/2,0, 0])
-	right_part = np.array([length_x,obstacle_height, wall_thickness])
+		left_part = train_origin + np.array([i+door_width/2,0, 0])
+	right_part = train_origin + np.array([length_x,obstacle_height, wall_thickness])
 	make_obstacle(xmlroot, left_part, right_part)
 
 
@@ -121,15 +122,28 @@ if __name__ == "__main__":
 
 	outroot = initialize_xml()
 	
-#	train_dims = (30,12) #x,z
-#	train_wall_thickness = 0.1 
+	train_dims = (20,5) #x,z
+	train_wall_thickness = 0.1 
 #	door_locations = [] #located along x-axis
 #	door_size = 3
-#	train_height = 1 #y-axis
-	make_train_obstacles(outroot, (0,0,0), 30, 12, 0.1, [3, 8], 2, args.obstacleHeight)
 	
-	make_agent_region(outroot,10, np.array([[0,0],[-10,-10]]), np.array([15,5]), 0.5)
-	
+	#tile for multiple trains
+	tiling = [-1,0,1]
+	for i in tiling:
+		offset = np.array([i*train_dims[0],0,0])
+		offset2d = np.array([i*train_dims[0],0])
+		make_train_obstacles(outroot, offset, train_dims[0], train_dims[1], 0.1, [7, 13], 2, args.obstacleHeight)
+		
+		#1 large group
+#		make_agent_region(outroot, 20, offset2d + np.array([[0,0],[train_dims[0],-10]]), offset2d+np.array([10,2]), 0.5)
+		
+		#1 group for each door
+		make_agent_region(outroot, 10, offset2d + np.array([[0,0],[train_dims[0]/2,-10]]), offset2d+np.array([7,2]), 0.5)
+		make_agent_region(outroot, 10, offset2d + np.array([[train_dims[0]/2,0],[train_dims[0],-10]]), offset2d+np.array([13,2]), 0.5)
+
+		#alighting
+#		make_agent_region(outroot, 10, offset2d + np.array([[0,0],[train_dims[0],train_dims[1]]]), offset2d+np.array([10,-10]), 0.5)
+		
 	#write xml to file
 	outtree = ET.ElementTree(outroot)
 	print("writing to " + args.outputName)
