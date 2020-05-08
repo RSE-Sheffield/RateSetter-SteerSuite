@@ -97,6 +97,22 @@ def make_train_obstacles(xmlroot, train_origin, length_x, length_z, wall_thickne
 	right_part = train_origin + np.array([length_x,obstacle_height, wall_thickness])
 	make_obstacle(xmlroot, left_part, right_part)
 
+def make_hollow_square_obstacle(xmlroot, origin, length_x, length_z, wall_thickness=0.1, obstacle_height=0.3):
+	bottom_left = np.array([0,0,0])
+	bottom_r = np.array([length_x,0,0])
+	top_l = np.array([0,0,length_z])
+	top_r = np.array([length_x,0,length_z])
+	wall_x = np.array([wall_thickness,obstacle_height,0])
+	wall_z = np.array([0,obstacle_height,wall_thickness])
+
+	wall_0 = np.array([ origin + bottom_left, origin + bottom_r + wall_z])
+	wall_1 = np.array([ origin + bottom_left, origin + top_l + wall_x])
+	wall_2 = np.array([ origin + top_l, origin + top_r + wall_z])
+	wall_3 = np.array([ origin + bottom_r, origin + top_r + wall_x])
+	make_obstacle(xmlroot, wall_0[0], wall_0[1])
+	make_obstacle(xmlroot, wall_1[0], wall_1[1])
+	make_obstacle(xmlroot, wall_2[0], wall_2[1])
+	make_obstacle(xmlroot, wall_3[0], wall_3[1])
 
 
 # Creates an xml root and populates it in accordance with steersuite	
@@ -126,7 +142,11 @@ if __name__ == "__main__":
 	train_wall_thickness = 0.1 
 #	door_locations = [] #located along x-axis
 #	door_size = 3
-	
+	plat_dims = (100,20+train_dims[1]) #x,z
+	plat_origin = np.array([-40,0,-20])
+	make_hollow_square_obstacle(outroot, plat_origin, plat_dims[0], plat_dims[1])
+
+
 	#tile for multiple trains
 	tiling = [-1,0,1]
 	for i in tiling:
