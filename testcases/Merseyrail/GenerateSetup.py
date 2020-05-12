@@ -134,16 +134,17 @@ def initialize_xml():
 
 
 if __name__ == "__main__":
+	agent_radius = 0.75
+	train_dims = (20,5) #x,z
+	train_wall_thickness = 0.1 
+	plat_dims = (100,20+train_dims[1]) #x,z
+	plat_origin = np.array([-40,0,-20])
+
+
 	args = parser.parse_args()
 
 	outroot = initialize_xml()
 	
-	train_dims = (20,5) #x,z
-	train_wall_thickness = 0.1 
-#	door_locations = [] #located along x-axis
-#	door_size = 3
-	plat_dims = (100,20+train_dims[1]) #x,z
-	plat_origin = np.array([-40,0,-20])
 	make_hollow_square_obstacle(outroot, plat_origin, plat_dims[0], plat_dims[1])
 
 
@@ -158,8 +159,8 @@ if __name__ == "__main__":
 #		make_agent_region(outroot, 20, offset2d + np.array([[0,0],[train_dims[0],-10]]), offset2d+np.array([10,2]), 0.5)
 		
 		#1 group for each door
-		make_agent_region(outroot, 10, offset2d + np.array([[0,0],[train_dims[0]/2,-10]]), offset2d+np.array([7,2]), 0.5)
-		make_agent_region(outroot, 10, offset2d + np.array([[train_dims[0]/2,0],[train_dims[0],-10]]), offset2d+np.array([13,2]), 0.5)
+		make_agent_region(outroot, 10, offset2d + np.array([[0,0],[train_dims[0]/2,-10]]), offset2d+np.array([7,3]), agent_radius)
+		make_agent_region(outroot, 10, offset2d + np.array([[train_dims[0]/2,0],[train_dims[0],-10]]), offset2d+np.array([13,3]), agent_radius)
 
 		#alighting
 #		make_agent_region(outroot, 10, offset2d + np.array([[0,0],[train_dims[0],train_dims[1]]]), offset2d+np.array([10,-10]), 0.5)
