@@ -29,7 +29,7 @@ AStarLiteNode::Compare::~Compare()
 {
 }
 
-bool AStarLiteNode::Compare::operator()(const AStarLiteNode& node1, const AStarLiteNode& node2)
+bool AStarLiteNode::Compare::operator()(const AStarLiteNode& node1, const AStarLiteNode& node2) const
 {
 	float f1 = node1.m_f;
     float f2 = node2.m_f;

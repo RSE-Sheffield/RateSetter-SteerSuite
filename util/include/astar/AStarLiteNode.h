@@ -21,7 +21,7 @@ public:
 	public:
 		virtual ~Compare();
 
-		bool operator()(const AStarLiteNode& node1, const AStarLiteNode& node2);
+		bool operator()(const AStarLiteNode& node1, const AStarLiteNode& node2) const;
 	};
 
 	int m_id;		// node id
