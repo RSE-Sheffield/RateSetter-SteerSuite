@@ -21,6 +21,7 @@
 #define MAX_FORCE_MAGNITUDE 3.0f
 // #define MAX_SPEED 1.33f
 #define AGENT_MASS 1.0f
+#define AGENT_WALL_RADIUS 0.4f
 
 using namespace Util;
 using namespace RVO2DGlobals;
@@ -318,7 +319,9 @@ void RVO2DAgent::computeNewVelocity(float dt)
 	orcaLines_.clear();
 
 	const float invTimeHorizonObst = 1.0f / _RVO2DParams.rvo_time_horizon_obstacles;
-
+	
+	auto original_radius = _radius;
+	_radius = AGENT_WALL_RADIUS;
 	/* Create obstacle ORCA lines. */
 	for (size_t i = 0; i < obstacleNeighbors_.size(); ++i) {
 
@@ -327,6 +330,9 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 		const Util::Vector relativePosition1 = obstacle1->point_ - position();
 		const Util::Vector relativePosition2 = obstacle2->point_ - position();
+
+		//printf("obs1: (%f, %f)\t", obstacle1->point_.x, obstacle1->point_.z);
+		//printf("obs2: (%f, %f)\n", obstacle2->point_.x, obstacle2->point_.z);
 
 		/*
 		 * Check if velocity obstacle of obstacle is already taken care of by
@@ -545,6 +551,8 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 	const float invTimeHorizon = 1.0f / _RVO2DParams.rvo_time_horizon;
 
+	_radius = original_radius;
+
 	/* Create agent ORCA lines. */
 	for (size_t i = 0; i < agentNeighbors_.size(); ++i)
 	{
@@ -611,11 +619,13 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		orcaLines_.push_back(line);
 	}
 
+
 	size_t lineFail = linearProgram2(orcaLines_, _RVO2DParams.rvo_max_speed, _prefVelocity, false, _newVelocity);
 
 	if (lineFail < orcaLines_.size()) {
 		linearProgram3(orcaLines_, numObstLines, lineFail, _RVO2DParams.rvo_max_speed, _newVelocity);
 	}
+
 }
 
 void RVO2DAgent::insertAgentNeighbor(const SteerLib::AgentInterface *agent, float &rangeSq)
@@ -647,6 +657,8 @@ void RVO2DAgent::insertAgentNeighbor(const SteerLib::AgentInterface *agent, floa
 void RVO2DAgent::insertObstacleNeighbor(const ObstacleInterface *obstacle, float rangeSq)
 {
 	const ObstacleInterface *const nextObstacle = obstacle->nextObstacle_;
+	//printf("insterting obstacle: pos(%f, %f)\n", obstacle->point_.x, obstacle->point_.z);
+	//printf("\t pos: (%f, %f)\n", obstacle->nextObstacle_->point_.x, obstacle->nextObstacle_->point_.z);
 
 	const float distSq = distSqPointLineSegment(obstacle->point_, nextObstacle->point_, position());
 

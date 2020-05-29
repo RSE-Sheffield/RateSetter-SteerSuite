@@ -134,7 +134,16 @@ def initialize_xml():
 
 
 if __name__ == "__main__":
-	agent_radius = 0.75
+	agent_radius = 1.4
+	agents_per_region= 3
+
+	# platform_depth: 5
+	# platform_length: 150
+	# num_carriages: 3
+	# carriage_length: 20
+	# carriage_depth: 5
+
+	door_width =  1.5
 	train_dims = (20,5) #x,z
 	train_wall_thickness = 0.1 
 	plat_dims = (100,20+train_dims[1]) #x,z
@@ -145,7 +154,11 @@ if __name__ == "__main__":
 
 	outroot = initialize_xml()
 	
+	# station+ rails
 	make_hollow_square_obstacle(outroot, plat_origin, plat_dims[0], plat_dims[1])
+	#block off rails
+	make_obstacle(outroot, np.array([-40,0,0]), np.array([-20,0.1,0]))
+	make_obstacle(outroot, np.array([40,0,0]), np.array([60,0.1,0]))
 
 
 	#tile for multiple trains
@@ -153,14 +166,14 @@ if __name__ == "__main__":
 	for i in tiling:
 		offset = np.array([i*train_dims[0],0,0])
 		offset2d = np.array([i*train_dims[0],0])
-		make_train_obstacles(outroot, offset, train_dims[0], train_dims[1], 0.1, [7, 13], 2, args.obstacleHeight)
+		make_train_obstacles(outroot, offset, train_dims[0], train_dims[1], 0.1, [7, 13], door_width, args.obstacleHeight)
 		
 		#1 large group
 #		make_agent_region(outroot, 20, offset2d + np.array([[0,0],[train_dims[0],-10]]), offset2d+np.array([10,2]), 0.5)
 		
 		#1 group for each door
-		make_agent_region(outroot, 10, offset2d + np.array([[0,0],[train_dims[0]/2,-10]]), offset2d+np.array([7,3]), agent_radius)
-		make_agent_region(outroot, 10, offset2d + np.array([[train_dims[0]/2,0],[train_dims[0],-10]]), offset2d+np.array([13,3]), agent_radius)
+		make_agent_region(outroot, agents_per_region, offset2d + np.array([[0,0],[train_dims[0]/2,-10]]), offset2d+np.array([7,2]), agent_radius)
+		make_agent_region(outroot, agents_per_region, offset2d + np.array([[train_dims[0]/2,0],[train_dims[0],-10]]), offset2d+np.array([13,2]), agent_radius)
 
 		#alighting
 #		make_agent_region(outroot, 10, offset2d + np.array([[0,0],[train_dims[0],train_dims[1]]]), offset2d+np.array([10,-10]), 0.5)
