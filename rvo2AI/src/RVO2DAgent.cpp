@@ -740,7 +740,19 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	 */
 	_velocity.y = 0.0f;
 
-	if ((goalInfo.targetLocation - position()).length() < radius()*REACHED_GOAL_MULTIPLIER ||
+	//First goal hack
+	if ((goalInfo.targetLocation - position()).length() < radius() * REACHED_FIRST_GOAL_MULTIPLIER && !bHitFirstGoal) {
+		//PTI hack
+
+		SteerLib::AgentGoalInfo _goal;
+		_goal.targetLocation = goalInfo.targetLocation + Util::Point(0, 0, 4);
+		_goalQueue.push(_goal);
+
+		bHitFirstGoal = true;
+		_goalQueue.pop();
+
+	}
+	else if(((goalInfo.targetLocation - position()).length() < radius()*REACHED_GOAL_MULTIPLIER  && bHitFirstGoal) ||
 			(goalInfo.goalType == GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL &&
 								Util::boxOverlapsCircle2D(goalInfo.targetRegion.xmin, goalInfo.targetRegion.xmax,
 										goalInfo.targetRegion.zmin, goalInfo.targetRegion.zmax, this->position(), this->radius()))
@@ -762,7 +774,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 
 			//  2. set enabled = false
 			_enabled = false;
-			 */
+				*/
 			return;
 
 		}

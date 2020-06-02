@@ -124,7 +124,7 @@ Options specified by the command line will override options in this configuratio
     -->
         <testCasePlayer>
             <ai>../bin/rvo2dAI</ai>
-            <testcase>../../testcases/Merseyrail/merseyrail.xml</testcase>
+            <testcase>../../testcases/crossing-1.xml</testcase>
             <!--<testcase>../../testcases/bottleneck-squeeze.xml</testcase>-->
         </testCasePlayer>
     </modules>

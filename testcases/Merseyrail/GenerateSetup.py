@@ -5,11 +5,11 @@ import xml.etree.ElementTree as ET
 import argparse
 import numpy as np
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-r", "--radius", help="radius of agents to generate")
-parser.add_argument("-o", "--outputName", default = "merseyrail.xml", help="name of generated file ")
-parser.add_argument("-oh", "--obstacleHeight", default = 1, help="visual height of obstacles")
-args = parser.parse_args()
+# parser = argparse.ArgumentParser()
+# parser.add_argument("-r", "--radius", help="radius of agents to generate")
+# parser.add_argument("-o", "--outputName", default = "merseyrail.xml", help="name of generated file ")
+# parser.add_argument("-oh", "--obstacleHeight", default = 1, help="visual height of obstacles")
+# args = parser.parse_args()
 
 #prettify output
 def indent(elem, level=0):
@@ -83,9 +83,9 @@ def make_train_obstacles(xmlroot, train_origin, length_x, length_z, wall_thickne
 	wall_3 = np.array([train_origin + np.array([length_x,0,0]), train_origin + np.array([length_x + wall_thickness,obstacle_height,length_z])]) # right carriage wall
 	wall_2 = np.array([train_origin + np.array([0,0,length_z]), train_origin + np.array([length_x,obstacle_height,length_z+wall_thickness])]) #back side of carrage
 	
-	make_obstacle(xmlroot, wall_1[0], wall_1[1])
+	# make_obstacle(xmlroot, wall_1[0], wall_1[1])
 	make_obstacle(xmlroot, wall_2[0], wall_2[1])
-	make_obstacle(xmlroot, wall_3[0], wall_3[1])
+	# make_obstacle(xmlroot, wall_3[0], wall_3[1])
 	
 	#Make the front wall with door gaps
 	left_part = train_origin
@@ -134,8 +134,19 @@ def initialize_xml():
 
 
 if __name__ == "__main__":
-	agent_radius = 1.4
-	agents_per_region= 3
+
+	parser = argparse.ArgumentParser(description='Generate Steersuite xml input file for train PTI')
+	parser.add_argument('-n','--numPerDoor', type=int, default=5,
+                		help='number of people per door to spawn (default: 5')
+	parser.add_argument('-r','--radius', type=float, default=0.4,
+                    	help='radius of agents in meters (default: 0.4m)')
+	parser.add_argument("-oh", "--obstacleHeight", default = 1, help="visual height of obstacles")
+	parser.add_argument("-o", "--outputName", default = "merseyrail.xml", help="name of generated file ")
+
+	args = parser.parse_args()
+
+	agent_radius = args.radius
+	agents_per_region= args.numPerDoor
 
 	# platform_depth: 5
 	# platform_length: 150
@@ -172,8 +183,8 @@ if __name__ == "__main__":
 #		make_agent_region(outroot, 20, offset2d + np.array([[0,0],[train_dims[0],-10]]), offset2d+np.array([10,2]), 0.5)
 		
 		#1 group for each door
-		make_agent_region(outroot, agents_per_region, offset2d + np.array([[0,0],[train_dims[0]/2,-10]]), offset2d+np.array([7,2]), agent_radius)
-		make_agent_region(outroot, agents_per_region, offset2d + np.array([[train_dims[0]/2,0],[train_dims[0],-10]]), offset2d+np.array([13,2]), agent_radius)
+		make_agent_region(outroot, agents_per_region, offset2d + np.array([[0,0],[train_dims[0]/2,-20]]), offset2d+np.array([7,0]), agent_radius)
+		make_agent_region(outroot, agents_per_region, offset2d + np.array([[train_dims[0]/2,0],[train_dims[0],-20]]), offset2d+np.array([13,0]), agent_radius)
 
 		#alighting
 #		make_agent_region(outroot, 10, offset2d + np.array([[0,0],[train_dims[0],train_dims[1]]]), offset2d+np.array([10,-10]), 0.5)

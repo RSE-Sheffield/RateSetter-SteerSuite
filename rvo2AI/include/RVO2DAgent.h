@@ -134,6 +134,9 @@ protected:
 
 	SteerLib::EngineInterface * _gEngine;
 
+	//hack PTI behaviour
+	bool bHitFirstGoal = false;
+
 
 	friend class KdTree;
 	friend class RVO2DAIModule;
