@@ -21,7 +21,6 @@
 #define MAX_FORCE_MAGNITUDE 3.0f
 // #define MAX_SPEED 1.33f
 #define AGENT_MASS 1.0f
-#define AGENT_WALL_RADIUS 0.4f
 
 using namespace Util;
 using namespace RVO2DGlobals;
@@ -234,6 +233,9 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	assert(_forward.length()!=0.0f);
 	assert(_goalQueue.size() != 0);
 	assert(_radius != 0.0f);
+
+	_max_radius = 1.4f;
+	_min_radius = MIN_RADIUS;
 }
 
 /*
@@ -329,7 +331,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 	const float invTimeHorizonObst = 1.0f / _RVO2DParams.rvo_time_horizon_obstacles;
 	
 	auto original_radius = _radius;
-	_radius = AGENT_WALL_RADIUS;
+	_radius = MIN_RADIUS;
 	/* Create obstacle ORCA lines. */
 	for (size_t i = 0; i < obstacleNeighbors_.size(); ++i) {
 
@@ -684,6 +686,18 @@ void RVO2DAgent::insertObstacleNeighbor(const ObstacleInterface *obstacle, float
 	}
 }
 
+float interpolation(float y_max, float y_min, float x_max, float x_min, float x)
+{
+	if (x > x_max) {
+		return y_max;
+	}
+	else if (x < x_min) {
+		return y_min;
+	}
+	else {
+		return (x - x_min) / (x_max - x_min) * (y_max - y_min) + y_min;
+	}
+}
 
 void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 {
@@ -805,13 +819,17 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 
 
 	// Update goal door 
+	// Shortest distance to nearest door goal
 	float shortestDist = (goalInfo.targetLocation - position()).length();
 	for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
 		if ((*it - position()).length() < shortestDist) {
-			shortestDist = (*it - position()).length() < shortestDist;
+			shortestDist = (*it - position()).length();
 			goalInfo.targetLocation = *it;
 		}
 	}
+
+	// Adjust agent radius depending on distance to goal
+	_radius = interpolation(_max_radius, _min_radius, 5, 3, shortestDist);
 }
 
 

@@ -140,6 +140,11 @@ protected:
 
 	friend class KdTree;
 	friend class RVO2DAIModule;
+
+	//Agent PTI radius
+	float _max_radius;
+	float _min_radius;
+
 };
 
 /**
