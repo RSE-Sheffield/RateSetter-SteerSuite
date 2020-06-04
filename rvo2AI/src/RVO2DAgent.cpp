@@ -27,6 +27,14 @@ using namespace Util;
 using namespace RVO2DGlobals;
 using namespace SteerLib;
 
+// PTI goal locations hack
+std::vector<Util::Point> PossibleGoals = { Util::Point(-13,0,0),
+								Util::Point(-7,0,0),
+								Util::Point(7,0,0),
+								Util::Point(13,0,0),
+								Util::Point(27, 0, 0),
+								Util::Point(33, 0, 0) };
+
 // #define _DEBUG_ENTROPY 1
 
 RVO2DAgent::RVO2DAgent()
@@ -740,9 +748,8 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	 */
 	_velocity.y = 0.0f;
 
-	//First goal hack
+	//First goal hack. Add another goal further in the train
 	if ((goalInfo.targetLocation - position()).length() < radius() * REACHED_FIRST_GOAL_MULTIPLIER && !bHitFirstGoal) {
-		//PTI hack
 
 		SteerLib::AgentGoalInfo _goal;
 		_goal.targetLocation = goalInfo.targetLocation + Util::Point(0, 0, 4);
@@ -796,6 +803,15 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 
 	_position.y = getSimulationEngine()->getSpatialDatabase()->getLocation(this).y;
 
+
+	// Update goal door 
+	float shortestDist = (goalInfo.targetLocation - position()).length();
+	for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
+		if ((*it - position()).length() < shortestDist) {
+			shortestDist = (*it - position()).length() < shortestDist;
+			goalInfo.targetLocation = *it;
+		}
+	}
 }
 
 

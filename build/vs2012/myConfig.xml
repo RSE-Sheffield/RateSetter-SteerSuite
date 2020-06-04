@@ -9,7 +9,7 @@ Options specified by the command line will override options in this configuratio
     Options related to the simulation engine
     -->
         <!-- can be either "fixed-fast" (fixed simulation frame rate, running as fast as possible), "fixed-real-time" (fixed simulation frame rate, running in real-time), or "variable-real-time" (variable simulation frame rate in real-time). -->
-        <clockMode>fixed-fast</clockMode>
+        <clockMode>fixed-real-time</clockMode>
         <!-- The fixed frames-per-second for the simulation clock.  This value is used when simulationClockMode is "fixed-fast" or "fixed-real-time". -->
         <fixedFPS>60</fixedFPS>
         <!-- The maximum time-step allowed when the clock is in "variable-real-time" mode.  If the proposed time-step is larger, this value will be used instead, at the expense of breaking synchronization between simulation time and real-time. -->
@@ -19,7 +19,7 @@ Options specified by the command line will override options in this configuratio
         <!-- The default directory to search for dynamic plug-in modules at runtime. -->
         <moduleSearchPath>./</moduleSearchPath>
         <!-- The default number of frames to simulate - 0 means run the entire simulation until all agents are disabled. -->
-        <numFrames>0</numFrames>
+        <numFrames>500000</numFrames>
         <!-- The default number of threads to run on the simulation -->
         <numThreads>1</numThreads>
         <!-- The default directory to search for test cases at runtime. -->

@@ -92,7 +92,7 @@
     <zmax>0.1</zmax>
   </obstacle>
   <agentRegion>
-    <numAgents>20</numAgents>
+    <numAgents>10</numAgents>
     <regionBounds>
       <xmin>-20.0</xmin>
       <xmax>-10.0</xmax>
@@ -105,7 +105,7 @@
       <direction>
         <random>true</random>
       </direction>
-      <radius>1.15</radius>
+      <radius>1.4</radius>
       <speed>0</speed>
     </initialConditions>
     <goalSequence>
@@ -121,7 +121,7 @@
     </goalSequence>
   </agentRegion>
   <agentRegion>
-    <numAgents>20</numAgents>
+    <numAgents>10</numAgents>
     <regionBounds>
       <xmin>-10.0</xmin>
       <xmax>0.0</xmax>
@@ -134,7 +134,7 @@
       <direction>
         <random>true</random>
       </direction>
-      <radius>1.15</radius>
+      <radius>1.4</radius>
       <speed>0</speed>
     </initialConditions>
     <goalSequence>
@@ -182,7 +182,7 @@
     <zmax>0.1</zmax>
   </obstacle>
   <agentRegion>
-    <numAgents>20</numAgents>
+    <numAgents>10</numAgents>
     <regionBounds>
       <xmin>0.0</xmin>
       <xmax>10.0</xmax>
@@ -195,7 +195,7 @@
       <direction>
         <random>true</random>
       </direction>
-      <radius>1.15</radius>
+      <radius>1.4</radius>
       <speed>0</speed>
     </initialConditions>
     <goalSequence>
@@ -211,7 +211,7 @@
     </goalSequence>
   </agentRegion>
   <agentRegion>
-    <numAgents>20</numAgents>
+    <numAgents>10</numAgents>
     <regionBounds>
       <xmin>10.0</xmin>
       <xmax>20.0</xmax>
@@ -224,7 +224,7 @@
       <direction>
         <random>true</random>
       </direction>
-      <radius>1.15</radius>
+      <radius>1.4</radius>
       <speed>0</speed>
     </initialConditions>
     <goalSequence>
@@ -272,7 +272,7 @@
     <zmax>0.1</zmax>
   </obstacle>
   <agentRegion>
-    <numAgents>20</numAgents>
+    <numAgents>10</numAgents>
     <regionBounds>
       <xmin>20.0</xmin>
       <xmax>30.0</xmax>
@@ -285,7 +285,7 @@
       <direction>
         <random>true</random>
       </direction>
-      <radius>1.15</radius>
+      <radius>1.4</radius>
       <speed>0</speed>
     </initialConditions>
     <goalSequence>
@@ -301,7 +301,7 @@
     </goalSequence>
   </agentRegion>
   <agentRegion>
-    <numAgents>20</numAgents>
+    <numAgents>10</numAgents>
     <regionBounds>
       <xmin>30.0</xmin>
       <xmax>40.0</xmax>
@@ -314,7 +314,7 @@
       <direction>
         <random>true</random>
       </direction>
-      <radius>1.15</radius>
+      <radius>1.4</radius>
       <speed>0</speed>
     </initialConditions>
     <goalSequence>

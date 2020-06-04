@@ -136,9 +136,9 @@ def initialize_xml():
 if __name__ == "__main__":
 
 	parser = argparse.ArgumentParser(description='Generate Steersuite xml input file for train PTI')
-	parser.add_argument('-n','--numPerDoor', type=int, default=5,
+	parser.add_argument('-n','--numPerDoor', type=int, default=10,
                 		help='number of people per door to spawn (default: 5')
-	parser.add_argument('-r','--radius', type=float, default=0.4,
+	parser.add_argument('-r','--radius', type=float, default=1.4,
                     	help='radius of agents in meters (default: 0.4m)')
 	parser.add_argument("-oh", "--obstacleHeight", default = 1, help="visual height of obstacles")
 	parser.add_argument("-o", "--outputName", default = "merseyrail.xml", help="name of generated file ")
@@ -185,6 +185,8 @@ if __name__ == "__main__":
 		#1 group for each door
 		make_agent_region(outroot, agents_per_region, offset2d + np.array([[0,0],[train_dims[0]/2,-20]]), offset2d+np.array([7,0]), agent_radius)
 		make_agent_region(outroot, agents_per_region, offset2d + np.array([[train_dims[0]/2,0],[train_dims[0],-20]]), offset2d+np.array([13,0]), agent_radius)
+		print(offset2d+np.array([7,0]))
+		print(offset2d+np.array([13,0]))
 
 		#alighting
 #		make_agent_region(outroot, 10, offset2d + np.array([[0,0],[train_dims[0],train_dims[1]]]), offset2d+np.array([10,-10]), 0.5)
