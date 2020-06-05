@@ -64,6 +64,25 @@ SteerLib::EngineInterface * RVO2DAgent::getSimulationEngine()
 	return _gEngine;
 }
 
+void RVO2DAgent::addGoal(const SteerLib::AgentGoalInfo& newGoal)
+{
+	if (newGoal.goalType != SteerLib::GOAL_TYPE_SEEK_STATIC_TARGET &&
+		newGoal.goalType != GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL) {
+		throw Util::GenericException("Currently the PPR agent does not support goal types other than GOAL_TYPE_SEEK_STATIC_TARGET and GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL.");
+	}
+	_goalQueue.push(newGoal);
+	if (_goalQueue.size() == 1) {
+		_currentGoal = newGoal;
+		if (_currentGoal.targetIsRandom) {
+
+			SteerLib::AgentGoalInfo _goal;
+			_goal.targetLocation = getSimulationEngine()->getSpatialDatabase()->randomPositionWithoutCollisions(1.0f, true);
+			_goalQueue.push(_goal);
+			_currentGoal.targetLocation = _goal.targetLocation;
+		}
+	}
+
+}
 void RVO2DAgent::setParameters(Behaviour behave)
 {
 	this->_RVO2DParams.setParameters(behave);
@@ -234,7 +253,7 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	assert(_goalQueue.size() != 0);
 	assert(_radius != 0.0f);
 
-	_max_radius = 1.4f;
+	_max_radius = _radius;
 	_min_radius = MIN_RADIUS;
 }
 
@@ -723,6 +742,27 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		goalDirection = normalize(_currentLocalTarget - position());
 
 	}
+	// Update target location to be closest point of the goal box
+	else if (goalInfo.goalType == GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL)
+	{
+		float nearest_x;
+		if (position().x < goalInfo.targetRegion.xmin) nearest_x = goalInfo.targetRegion.xmin;
+		else if (position().x > goalInfo.targetRegion.xmax) nearest_x = goalInfo.targetRegion.xmax;
+		else nearest_x = position().x;
+
+		float nearest_y;
+		if (position().y < goalInfo.targetRegion.ymin) nearest_y = goalInfo.targetRegion.ymin;
+		else if (position().y > goalInfo.targetRegion.ymax) nearest_y = goalInfo.targetRegion.ymax;
+		else nearest_y = position().y;
+
+		float nearest_z;
+		if (position().z < goalInfo.targetRegion.zmin) nearest_z = goalInfo.targetRegion.zmin;
+		else if (position().z > goalInfo.targetRegion.zmax) nearest_z = goalInfo.targetRegion.zmax;
+		else nearest_z = position().z;
+
+		goalInfo.targetLocation = Util::Point(nearest_x, nearest_y, nearest_z);
+		goalDirection = normalize(goalInfo.targetLocation - position());
+	}
 	else
 	{
 		goalDirection = normalize(goalInfo.targetLocation - position());
@@ -766,11 +806,11 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	if ((goalInfo.targetLocation - position()).length() < radius() * REACHED_FIRST_GOAL_MULTIPLIER && !bHitFirstGoal) {
 
 		SteerLib::AgentGoalInfo _goal;
-		_goal.targetLocation = goalInfo.targetLocation + Util::Point(0, 0, 4);
-		_goalQueue.push(_goal);
+		//_goal.targetLocation = goalInfo.targetLocation + Util::Point(0, 0, 4);
+		//_goalQueue.push(_goal);
 
 		bHitFirstGoal = true;
-		_goalQueue.pop();
+		//_goalQueue.pop();
 
 	}
 	else if(((goalInfo.targetLocation - position()).length() < radius()*REACHED_GOAL_MULTIPLIER  && bHitFirstGoal) ||

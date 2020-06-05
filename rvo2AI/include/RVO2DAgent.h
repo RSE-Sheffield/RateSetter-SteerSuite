@@ -50,7 +50,7 @@ public:
 	const SteerLib::AgentGoalInfo & currentGoal() const { return _goalQueue.front(); }
 	size_t id() const { return _id;}
 	const std::queue<SteerLib::AgentGoalInfo> & agentGoals() const { return _goalQueue; }
-	void addGoal(const SteerLib::AgentGoalInfo & newGoal) { throw Util::GenericException("addGoals() not implemented yet for ORCAAgent"); }
+	void addGoal(const SteerLib::AgentGoalInfo& newGoal);
 	void clearGoals() { throw Util::GenericException("clearGoals() not implemented yet for ORCAAgent"); }
 	void setParameters(SteerLib::Behaviour behave);
 	/// @name The SteerLib::SpatialDatabaseItemInterface
