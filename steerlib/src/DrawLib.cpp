@@ -233,6 +233,8 @@ void DrawLib::drawCircle(const Point & loc, const Color& color, float scale, int
 	}
 }
 
+float pedestrian_radius = 1.0f;
+float pedestrian_height = 3.0f;
 
 
 //
@@ -246,9 +248,19 @@ void DrawLib::drawAgentDisc(const Point & pos, const Vector & dir, float radius,
 		glColor(color);
 		glTranslate(pos);
 		glRotatef(rad,0.0f,1.0f,0.0f);
-		glScalef(radius, radius*4.0f, radius);
 
+
+		// Draws the agent 
+		glPushMatrix();
+		glScalef(pedestrian_radius, pedestrian_height, pedestrian_radius);
 		_drawDisplayList(_agentDisplayList);
+		glPopMatrix();
+
+		// Draw the interaction radius
+		glScalef(radius, 0.5, radius);
+		_drawDisplayList(_agentDisplayList);
+
+
 	}
 	glPopMatrix();
 }
@@ -265,9 +277,17 @@ void DrawLib::drawAgentDisc(const Point & pos, const Vector & dir, const Vector 
 		glRotatef(yaxisrad,0.0f,1.0f,0.0f);
 		glRotatef(xaxisrad,1.0f,0.0f,0.0f);
 		glRotatef(zaxisrad,0.0f,0.0f,1.0f);
-		glScalef(radius, radius*4.0f, radius);
 
+		// Draws the agent 
+		glPushMatrix();
+		glScalef(pedestrian_radius, pedestrian_height, pedestrian_radius);
 		_drawDisplayList(_agentDisplayList);
+		glPopMatrix();
+
+		// Draw the interaction radius
+		glScalef(radius, 0.5, radius);
+		_drawDisplayList(_agentDisplayList);
+
 	}
 	glPopMatrix();
 }
@@ -280,9 +300,20 @@ void DrawLib::drawAgentDisc(const Point & pos, float radius, const Color& color)
 	{
 		glColor(color);
 		glTranslate(pos);
-		glScalef(radius, radius*4.0f, radius);
+		// glScalef(radius, radius*4.0f, radius);
 
-		_drawDisplayList(_agentDotDisplayList);
+		// _drawDisplayList(_agentDotDisplayList);
+
+		// Draws the agent 
+		glPushMatrix();
+		glScalef(pedestrian_radius, pedestrian_height, pedestrian_radius);
+		_drawDisplayList(_agentDisplayList);
+		glPopMatrix();
+
+		// Draw the interaction radius
+		glScalef(radius, 0.5, radius);
+		_drawDisplayList(_agentDisplayList);
+
 	}
 	glPopMatrix();
 }
