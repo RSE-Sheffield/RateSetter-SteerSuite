@@ -21,7 +21,7 @@ using namespace Util;
 
 TestCaseReader::TestCaseReader()
 {
-	_randomNumberGenerator.seed(2);
+	_randomNumberGenerator.seed(time(NULL));
 }
 
 void TestCaseReader::readTestCaseFromFile( const std::string & testCaseFilename )
