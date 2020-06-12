@@ -74,7 +74,7 @@ void RVO2DAIModule::init( const SteerLib::OptionDictionary & options, SteerLib::
 	logStats = false;
 	gShowAllStats = false;
 	logFilename = "rvo2AI.log";
-	dont_plan=true;
+	dont_plan = false;
 
 	rvo_max_neighbors = MAX_NEIGHBORS;
 	rvo_max_speed = MAX_SPEED;

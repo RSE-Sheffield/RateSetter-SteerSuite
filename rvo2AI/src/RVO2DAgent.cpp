@@ -68,7 +68,7 @@ void RVO2DAgent::addGoal(const SteerLib::AgentGoalInfo& newGoal)
 {
 	if (newGoal.goalType != SteerLib::GOAL_TYPE_SEEK_STATIC_TARGET &&
 		newGoal.goalType != GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL) {
-		throw Util::GenericException("Currently the PPR agent does not support goal types other than GOAL_TYPE_SEEK_STATIC_TARGET and GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL.");
+		throw Util::GenericException("Currently the RVO agent does not support goal types other than GOAL_TYPE_SEEK_STATIC_TARGET and GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL.");
 	}
 	_goalQueue.push(newGoal);
 	if (_goalQueue.size() == 1) {
@@ -255,6 +255,34 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 
 	_max_radius = _radius;
 	_min_radius = MIN_RADIUS;
+	SteerLib::AgentGoalInfo insidetrainGoal;
+	insidetrainGoal.goalType = GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL;
+	insidetrainGoal.targetIsRandom = false;
+	insidetrainGoal.timeDuration = 1000;
+	insidetrainGoal.desiredSpeed = 1.3f;
+	insidetrainGoal.targetRegion = Util::AxisAlignedBox(-18.f, 38.f, -1.f, 1.f, 3.f, 5.f);
+	addGoal(insidetrainGoal);
+
+
+	// read params from file
+	std::string param_name;
+	float param_value;
+	std::ifstream paramsFile("params.txt");
+	if (paramsFile.is_open()) {
+		while (paramsFile >> param_name >> param_value)
+		{
+			if (param_name == "region_near") {
+				_near_dist = param_value;
+			}
+			else if (param_name == "region_far") {
+				_far_dist = param_value;
+			}
+			else if (param_name == "min_soc_dist") {
+				_min_radius = param_value;
+			}
+		}
+		paramsFile.close();
+	}
 }
 
 /*
@@ -802,18 +830,35 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	 */
 	_velocity.y = 0.0f;
 
-	//First goal hack. Add another goal further in the train
-	if ((goalInfo.targetLocation - position()).length() < radius() * REACHED_FIRST_GOAL_MULTIPLIER && !bHitFirstGoal) {
+	// In case an agent passes the first goal marker but gets stuck on the train outside
+	if (_position.z < -0.3f && _goalQueue.size() == 1) {
+		// Shortest distance to nearest door goal
+		Util::Point newGoalLoc;
+		float shortestDist = (goalInfo.targetLocation - position()).length();
+		for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
+			if ((*it - position()).length() < shortestDist) {
+				shortestDist = (*it - position()).length();
+				newGoalLoc = *it;
+			}
+		}
 
-		SteerLib::AgentGoalInfo _goal;
-		//_goal.targetLocation = goalInfo.targetLocation + Util::Point(0, 0, 4);
-		//_goalQueue.push(_goal);
 
-		bHitFirstGoal = true;
-		//_goalQueue.pop();
+		SteerLib::AgentGoalInfo newGoal;
+		newGoal.goalType = GOAL_TYPE_SEEK_STATIC_TARGET;
+		newGoal.targetIsRandom = false;
+		newGoal.timeDuration = 1000;
+		newGoal.desiredSpeed = 1.3f;
+		newGoal.targetLocation = newGoalLoc;
 
+		// Add the door goal at front of queue
+		auto currentGoal = _goalQueue.front();
+		_goalQueue.pop();
+		addGoal(newGoal);
+		addGoal(currentGoal);
 	}
-	else if(((goalInfo.targetLocation - position()).length() < radius()*REACHED_GOAL_MULTIPLIER  && bHitFirstGoal) ||
+
+
+	if(((goalInfo.targetLocation - position()).length() < radius()*REACHED_GOAL_MULTIPLIER ) ||
 			(goalInfo.goalType == GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL &&
 								Util::boxOverlapsCircle2D(goalInfo.targetRegion.xmin, goalInfo.targetRegion.xmax,
 										goalInfo.targetRegion.zmin, goalInfo.targetRegion.zmax, this->position(), this->radius()))
@@ -869,7 +914,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	}
 
 	// Adjust agent radius depending on distance to goal
-	_radius = interpolation(_max_radius, _min_radius, 5, 3, shortestDist);
+	_radius = interpolation(_max_radius, _min_radius, _far_dist, _near_dist, shortestDist);
 }
 
 

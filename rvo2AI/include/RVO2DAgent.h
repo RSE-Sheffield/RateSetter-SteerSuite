@@ -144,6 +144,8 @@ protected:
 	//Agent PTI radius
 	float _max_radius;
 	float _min_radius;
+	float _near_dist;
+	float _far_dist;
 
 };
 

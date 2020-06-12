@@ -134,8 +134,8 @@ def initialize_xml():
 
 
 if __name__ == "__main__":
-	default_agent_radius = 0.9
-	default_agents_per_region = 10
+	default_agent_radius = 1.0
+	default_agents_per_region = 20
 
 	parser = argparse.ArgumentParser(description='Generate Steersuite xml input file for train PTI')
 	parser.add_argument('-n','--numPerDoor', type=int, default=default_agents_per_region,

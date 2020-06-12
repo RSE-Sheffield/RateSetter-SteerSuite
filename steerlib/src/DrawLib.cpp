@@ -26,7 +26,7 @@ int DrawLib::_flagDisplayList = -1;
 int DrawLib::_cubeDisplayList = -1;
 int DrawLib::_sphereDisplayList = -1;
 int DrawLib::_cylinderDisplayList = -1;
-GLUquadricObj * DrawLib::_quadric = NULL;
+GLUquadricObj* DrawLib::_quadric = NULL;
 bool DrawLib::_initialized = false;
 
 void DrawLib::init() {
@@ -56,7 +56,7 @@ void DrawLib::init() {
 //
 void DrawLib::setBackgroundColor(const Color& color)
 {
-    glClearColor(color.r, color.g, color.b, 1.0f);
+	glClearColor(color.r, color.g, color.b, 1.0f);
 }
 
 
@@ -94,7 +94,7 @@ void DrawLib::positionLights()
 //
 // drawLine()
 //
-void DrawLib::drawLine(const Point & startPoint, const Point & endPoint)
+void DrawLib::drawLine(const Point& startPoint, const Point& endPoint)
 {
 	// draw line
 	glBegin(GL_LINES);
@@ -106,7 +106,7 @@ void DrawLib::drawLine(const Point & startPoint, const Point & endPoint)
 	glEnd();
 }
 
-void DrawLib::drawLine(const Point & startPoint, const Point & endPoint, const Color &color)
+void DrawLib::drawLine(const Point& startPoint, const Point& endPoint, const Color& color)
 {
 	glColor(color);
 	// draw line
@@ -119,9 +119,9 @@ void DrawLib::drawLine(const Point & startPoint, const Point & endPoint, const C
 	glEnd();
 }
 
-void DrawLib::drawLineAlpha(const Point & startPoint, const Point & endPoint, const Color &color, float alpha)
+void DrawLib::drawLineAlpha(const Point& startPoint, const Point& endPoint, const Color& color, float alpha)
 {
-	glColor4f (color.r, color.g, color.b, alpha);
+	glColor4f(color.r, color.g, color.b, alpha);
 	// draw line
 	glBegin(GL_LINES);
 	{
@@ -133,28 +133,28 @@ void DrawLib::drawLineAlpha(const Point & startPoint, const Point & endPoint, co
 }
 
 
-void DrawLib::drawLine(const Point & startPoint, const Point & endPoint, const Color &color, float thickness)
+void DrawLib::drawLine(const Point& startPoint, const Point& endPoint, const Color& color, float thickness)
 {
 	glLineWidth(thickness);
 	drawLine(startPoint, endPoint, color);
 	glLineWidth(1.0f);
 }
 
-void DrawLib::drawRay(const Ray & r, const Color & color)
+void DrawLib::drawRay(const Ray& r, const Color& color)
 {
-	drawLine(r.pos, r.pos + (r.dir*r.maxt), color);
-	drawLine(r.pos, r.pos + (r.dir*r.mint), color);
+	drawLine(r.pos, r.pos + (r.dir * r.maxt), color);
+	drawLine(r.pos, r.pos + (r.dir * r.mint), color);
 }
 
 //
 // drawQuad()
 //
-void DrawLib::drawQuad(const Point & a, const Point & b, const Point & c, const Point & d)
+void DrawLib::drawQuad(const Point& a, const Point& b, const Point& c, const Point& d)
 {
 	// Assuming the quad is convex and planar.  that way, we only have to compute the normal once.
-	Vector norm = normalize(cross((b-a),(d-a)));
+	Vector norm = normalize(cross((b - a), (d - a)));
 	glBegin(GL_QUADS);
-    {
+	{
 		glNormal(norm);
 		glVertex(a);
 		glNormal(norm);
@@ -163,27 +163,27 @@ void DrawLib::drawQuad(const Point & a, const Point & b, const Point & c, const 
 		glVertex(c);
 		glNormal(norm);
 		glVertex(d);
-    }
-    glEnd();
+	}
+	glEnd();
 }
 
 
 //
 // drawStar()
 //
-void DrawLib::drawStar(const Point & pos, const Vector & dir, float radius, const Color& color)
+void DrawLib::drawStar(const Point& pos, const Vector& dir, float radius, const Color& color)
 {
 	Vector forward = radius * normalize(dir);
 	Vector side;
 	side = cross(forward, Vector(0.0f, 1.0f, 0.0f));
 
-	float theta = M_PI/4;
+	float theta = M_PI / 4;
 
 	DrawLib::glColor(color);
 
 	// draw star
-	drawQuad(pos-side, pos-forward, pos+side, pos+forward);
-	drawQuad(pos - rotateInXZPlane(side,theta), pos - rotateInXZPlane(forward,theta), pos + rotateInXZPlane(side,theta), pos + rotateInXZPlane(forward,theta));
+	drawQuad(pos - side, pos - forward, pos + side, pos + forward);
+	drawQuad(pos - rotateInXZPlane(side, theta), pos - rotateInXZPlane(forward, theta), pos + rotateInXZPlane(side, theta), pos + rotateInXZPlane(forward, theta));
 }
 
 
@@ -203,7 +203,7 @@ void DrawLib::drawFlag(const Point & loc, const Color& color)
 	glPopMatrix();
 }
 */
-void DrawLib::drawFlag(const Point & loc, const Color& color, float scale)
+void DrawLib::drawFlag(const Point& loc, const Color& color, float scale)
 {
 	glPushMatrix();
 	{
@@ -215,74 +215,105 @@ void DrawLib::drawFlag(const Point & loc, const Color& color, float scale)
 	glPopMatrix();
 }
 
-void DrawLib::drawCircle(const Point & loc, const Color& color, float scale, int points)
+void DrawLib::drawCircle(const Point& loc, const Color& color, float scale, int points)
 {
 
-	float angleIncrement = (2*M_PI)/(float)points;
+	float angleIncrement = (2 * M_PI) / (float)points;
 	// angleIncrement = 90.0f;
-	Util::Vector turningVector = Vector(1,0,0) * scale;
+	Util::Vector turningVector = Vector(1, 0, 0) * scale;
 	Util::Vector nextTurningVector = rotateInXZPlane(turningVector, angleIncrement);
 
 	for (int i = 0; i < points; i++)
 	{
 
-		DrawLib::drawLine( loc + turningVector, loc + nextTurningVector, color);
+		DrawLib::drawLine(loc + turningVector, loc + nextTurningVector, color);
 		turningVector = nextTurningVector;
 		nextTurningVector = rotateInXZPlane(turningVector, angleIncrement);
 
 	}
 }
 
+float pedestrian_radius = 0.4f;
+float pedestrian_height = 3.0f;
 
 
 //
 // drawAgentDisc() - use only after the agent display lists are built.
 //
-void DrawLib::drawAgentDisc(const Point & pos, const Vector & dir, float radius, const Color& color)
+void DrawLib::drawAgentDisc(const Point& pos, const Vector& dir, float radius, const Color& color)
 {
 	glPushMatrix();
 	{
-		float rad = atan2(dir.z, dir.x)*(-M_180_OVER_PI);
+		float rad = atan2(dir.z, dir.x) * (-M_180_OVER_PI);
 		glColor(color);
 		glTranslate(pos);
-		glRotatef(rad,0.0f,1.0f,0.0f);
-		glScalef(radius, radius*4.0f, radius);
+		glRotatef(rad, 0.0f, 1.0f, 0.0f);
 
+
+		// Draws the agent 
+		glPushMatrix();
+		glScalef(pedestrian_radius, pedestrian_height, pedestrian_radius);
 		_drawDisplayList(_agentDisplayList);
+		glPopMatrix();
+
+		// Draw the interaction radius
+		glScalef(radius, 0.5, radius);
+		_drawDisplayList(_agentDisplayList);
+
+
 	}
 	glPopMatrix();
 }
 
-void DrawLib::drawAgentDisc(const Point & pos, const Vector & dir, const Vector & up, float radius, const Color& color)
+void DrawLib::drawAgentDisc(const Point& pos, const Vector& dir, const Vector& up, float radius, const Color& color)
 {
 	glPushMatrix();
 	{
-		float yaxisrad = atan2(dir.z, dir.x)*(-M_180_OVER_PI);
-		float xaxisrad = atan2(dir.y, dir.z)*(-M_180_OVER_PI);
-		float zaxisrad = atan2(dir.y, dir.x)*(-M_180_OVER_PI);
+		float yaxisrad = atan2(dir.z, dir.x) * (-M_180_OVER_PI);
+		float xaxisrad = atan2(dir.y, dir.z) * (-M_180_OVER_PI);
+		float zaxisrad = atan2(dir.y, dir.x) * (-M_180_OVER_PI);
 		glColor(color);
 		glTranslate(pos);
-		glRotatef(yaxisrad,0.0f,1.0f,0.0f);
-		glRotatef(xaxisrad,1.0f,0.0f,0.0f);
-		glRotatef(zaxisrad,0.0f,0.0f,1.0f);
-		glScalef(radius, radius*4.0f, radius);
+		glRotatef(yaxisrad, 0.0f, 1.0f, 0.0f);
+		glRotatef(xaxisrad, 1.0f, 0.0f, 0.0f);
+		glRotatef(zaxisrad, 0.0f, 0.0f, 1.0f);
 
+		// Draws the agent 
+		glPushMatrix();
+		glScalef(pedestrian_radius, pedestrian_height, pedestrian_radius);
 		_drawDisplayList(_agentDisplayList);
+		glPopMatrix();
+
+		// Draw the interaction radius
+		glScalef(radius, 0.5, radius);
+		_drawDisplayList(_agentDisplayList);
+
 	}
 	glPopMatrix();
 }
 //
 // drawAgentDisc() - use only after the agent display lists are built.
 //
-void DrawLib::drawAgentDisc(const Point & pos, float radius, const Color& color)
+void DrawLib::drawAgentDisc(const Point& pos, float radius, const Color& color)
 {
 	glPushMatrix();
 	{
 		glColor(color);
 		glTranslate(pos);
-		glScalef(radius, radius*4.0f, radius);
+		// glScalef(radius, radius*4.0f, radius);
 
-		_drawDisplayList(_agentDotDisplayList);
+		// _drawDisplayList(_agentDotDisplayList);
+
+		// Draws the agent 
+		glPushMatrix();
+		glScalef(pedestrian_radius, pedestrian_height, pedestrian_radius);
+		_drawDisplayList(_agentDisplayList);
+		glPopMatrix();
+
+		// Draw the interaction radius
+		glScalef(radius, 0.5, radius);
+		_drawDisplayList(_agentDisplayList);
+
 	}
 	glPopMatrix();
 }
@@ -292,10 +323,10 @@ void DrawLib::drawAgentDisc(const Point & pos, float radius, const Color& color)
 //
 void DrawLib::drawBox(float xmin, float xmax, float ymin, float ymax, float zmin, float zmax)
 {
-	Point topLeft(xmin, ymin-0.01f, zmin);
-	Point topRight(xmax, ymin-0.01f, zmin);
-	Point botLeft(xmin, ymin-0.01f, zmax);
-	Point botRight(xmax, ymin-0.01f, zmax);
+	Point topLeft(xmin, ymin - 0.01f, zmin);
+	Point topRight(xmax, ymin - 0.01f, zmin);
+	Point botLeft(xmin, ymin - 0.01f, zmax);
+	Point botRight(xmax, ymin - 0.01f, zmax);
 
 	Point topLefth(xmin, ymax, zmin);
 	Point topRighth(xmax, ymax, zmin);
@@ -321,20 +352,20 @@ void DrawLib::drawBox(float xmin, float xmax, float ymin, float ymax, float zmin
 //
 void DrawLib::drawBoxWireFrame(float xmin, float xmax, float ymin, float ymax, float zmin, float zmax)
 {
-	Point topLeft(xmin, ymin-0.01f, zmin);
-	Point topRight(xmax, ymin-0.01f, zmin);
-	Point botLeft(xmin, ymin-0.01f, zmax);
-	Point botRight(xmax, ymin-0.01f, zmax);
+	Point topLeft(xmin, ymin - 0.01f, zmin);
+	Point topRight(xmax, ymin - 0.01f, zmin);
+	Point botLeft(xmin, ymin - 0.01f, zmax);
+	Point botRight(xmax, ymin - 0.01f, zmax);
 
 	Point topLefth(xmin, ymax, zmin);
 	Point topRighth(xmax, ymax, zmin);
 	Point botLefth(xmin, ymax, zmax);
 	Point botRighth(xmax, ymax, zmax);
 
-	DrawLib::drawLine(topRight,topRighth);
-	DrawLib::drawLine(topLeft,topLefth);
-	DrawLib::drawLine(botLeft,botLefth);
-	DrawLib::drawLine(botRight,botRighth);
+	DrawLib::drawLine(topRight, topRighth);
+	DrawLib::drawLine(topLeft, topLefth);
+	DrawLib::drawLine(botLeft, botLefth);
+	DrawLib::drawLine(botRight, botRighth);
 
 	DrawLib::drawLine(topRighth, topLefth);
 	DrawLib::drawLine(topLefth, botLefth);
@@ -351,31 +382,31 @@ void DrawLib::drawBoxWireFrame(float xmin, float xmax, float ymin, float ymax, f
 //
 // drawCylinder() - draws a cylinder 
 //
-void DrawLib::drawCylinder(const Point & pos, float radius, float ymin, float ymax )
+void DrawLib::drawCylinder(const Point& pos, float radius, float ymin, float ymax)
 {
 	glPushMatrix();
 	{
 		glTranslate(pos);
-		glScalef(radius, fabsf(ymax-ymin), radius);
+		glScalef(radius, fabsf(ymax - ymin), radius);
 
 		_drawDisplayList(_cylinderDisplayList);
 	}
 	glPopMatrix();
 }
 
-void DrawLib::drawCylinder(const Point & pos, float radius, float ymin, float ymax, Color color)
+void DrawLib::drawCylinder(const Point& pos, float radius, float ymin, float ymax, Color color)
 {
 	glColor(color);
-	drawCylinder(pos ,radius ,ymin ,ymax );
+	drawCylinder(pos, radius, ymin, ymax);
 
 }
 
 //
 // drawHighlight() - draws a highlight that can be used to identify various objects for annotation
 //
-void DrawLib::drawHighlight(const Point & pos, const Vector & dir, float radius, const Color& color)
+void DrawLib::drawHighlight(const Point& pos, const Vector& dir, float radius, const Color& color)
 {
-	drawStar(pos+Vector(0.f,0.249f,0.f), dir, radius*1.75f, color);
+	drawStar(pos + Vector(0.f, 0.249f, 0.f), dir, radius * 1.75f, color);
 }
 
 
@@ -392,7 +423,7 @@ int DrawLib::_startDefiningDisplayList()
 	GLuint newDisplayList = glGenLists(1);
 
 	// see if a new one was actually created
-	if(newDisplayList == 0)
+	if (newDisplayList == 0)
 		return -1;
 
 	// save the new list
@@ -414,7 +445,7 @@ int DrawLib::_startDefiningDisplayList()
 int DrawLib::_endDefiningDisplayList(int displayList)
 {
 	// check to make sure we're actually ending the current list
-	if(_currentDisplayListBeingWritten != displayList)
+	if (_currentDisplayListBeingWritten != displayList)
 		return -1;
 
 	// end the display list
@@ -432,7 +463,7 @@ int DrawLib::_endDefiningDisplayList(int displayList)
 //
 int DrawLib::_drawDisplayList(int displayList)
 {
-	if(displayList < 0 || displayList >= (int)_displayLists.size())
+	if (displayList < 0 || displayList >= (int)_displayLists.size())
 		return -1;
 	glCallList(_displayLists[displayList]);
 	return displayList;
@@ -471,10 +502,10 @@ int DrawLib::_buildAgentDisplayList()
 	glColor3f(0.0f, 0.0f, 0.0f);
 
 
-	drawQuad(Point(1.0f, h+.01f, 0.0f),
-		Point(-0.6f, h+0.01f, -0.5f),
-		Point(-0.62f, h+0.01f, 0.0f),
-		Point(-0.6f, h+0.01f, 0.5f));
+	drawQuad(Point(1.0f, h + .01f, 0.0f),
+		Point(-0.6f, h + 0.01f, -0.5f),
+		Point(-0.62f, h + 0.01f, 0.0f),
+		Point(-0.6f, h + 0.01f, 0.5f));
 
 	_endDefiningDisplayList(dl);
 
@@ -521,24 +552,24 @@ int DrawLib::_buildFlagDisplayList()
 	glPushMatrix();
 	{
 		// raise the flag
-		glRotatef(-90,1,0,0);
+		glRotatef(-90, 1, 0, 0);
 
 		// flag
 		drawQuad(Point(0.0f, 0.0f, 1.05f),
-			Point(0.5,  0.0f, 0.9f),
+			Point(0.5, 0.0f, 0.9f),
 			Point(0.0f, 0.0f, 0.75f),
 			Point(-0.02f, 0.0f, 0.9f));
 
-		drawQuad(Point(-0.02f,  0.0f,  0.9f),
-			Point(0.0f,  0.0f,  0.75f),
-			Point(0.5f,  0.0f, 0.9f),
+		drawQuad(Point(-0.02f, 0.0f, 0.9f),
+			Point(0.0f, 0.0f, 0.75f),
+			Point(0.5f, 0.0f, 0.9f),
 			Point(0.0f, 0.0f, 1.05f));
 
 		// flag pole
 
 		glColor(Color(0.6f, 0.6f, 0.6f));
 		gluCylinder(_quadric, 0.05, 0.05, 1.1, 32, 1);
-		glTranslatef(0.0f,  0.0f, 1.1f);
+		glTranslatef(0.0f, 0.0f, 1.1f);
 		gluSphere(_quadric, .07, 16, 16);
 	}
 	glPopMatrix();
@@ -649,4 +680,3 @@ void DrawLib::drawSphere()
 }
 
 #endif // ifdef ENABLE_GUI
-
