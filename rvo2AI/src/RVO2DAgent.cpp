@@ -254,7 +254,7 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	assert(_radius != 0.0f);
 
 	_max_radius = _radius;
-	_min_radius = MIN_RADIUS;
+	//_min_radius = MIN_RADIUS;
 	SteerLib::AgentGoalInfo insidetrainGoal;
 	insidetrainGoal.goalType = GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL;
 	insidetrainGoal.targetIsRandom = false;
@@ -271,7 +271,7 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	if (paramsFile.is_open()) {
 		while (paramsFile >> param_name >> param_value)
 		{
-			if (param_name == "region_near") {
+			if (param_name == "region_close") {
 				_near_dist = param_value;
 			}
 			else if (param_name == "region_far") {
@@ -283,6 +283,7 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 		}
 		paramsFile.close();
 	}
+	std::cout << "vars: \tneardist:" << _near_dist << " \tmin_r" << _min_radius << "\tregionfar " << _far_dist << "\n";
 }
 
 /*
@@ -742,7 +743,7 @@ float interpolation(float y_max, float y_min, float x_max, float x_min, float x)
 		return y_min;
 	}
 	else {
-		return (x - x_min) / (x_max - x_min) * (y_max - y_min) + y_min;
+		return (x - x_min) / (x_max - x_min) * ((y_max - y_min) + y_min);
 	}
 }
 
@@ -795,6 +796,35 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	{
 		goalDirection = normalize(goalInfo.targetLocation - position());
 	}
+
+	// In case an agent passes the first goal marker but gets stuck on the train outside
+	if (_position.z < -0.3f && _goalQueue.size() == 1) {
+		// Shortest distance to nearest door goal
+		Util::Point newGoalLoc;
+		float shortestDist = (goalInfo.targetLocation - position()).length();
+		for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
+			if ((*it - position()).length() < shortestDist) {
+				shortestDist = (*it - position()).length();
+				newGoalLoc = *it;
+			}
+		}
+
+
+		SteerLib::AgentGoalInfo newGoal;
+		newGoal.goalType = GOAL_TYPE_SEEK_STATIC_TARGET;
+		newGoal.targetIsRandom = false;
+		newGoal.timeDuration = 1000;
+		newGoal.desiredSpeed = 1.3f;
+		newGoal.targetLocation = newGoalLoc;
+
+		// Add the door goal at front of queue
+		auto currentGoal = _goalQueue.front();
+		_goalQueue.pop();
+		addGoal(newGoal);
+		addGoal(currentGoal);
+	}
+
+
 	_prefVelocity = goalDirection * _RVO2DParams.rvo_max_speed;
 #ifdef _DEBUG_ENTROPY
 	std::cout << "Preferred velocity is: " << prefVelocity_ << std::endl;
@@ -830,34 +860,6 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	 */
 	_velocity.y = 0.0f;
 
-	// In case an agent passes the first goal marker but gets stuck on the train outside
-	if (_position.z < -0.3f && _goalQueue.size() == 1) {
-		// Shortest distance to nearest door goal
-		Util::Point newGoalLoc;
-		float shortestDist = (goalInfo.targetLocation - position()).length();
-		for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
-			if ((*it - position()).length() < shortestDist) {
-				shortestDist = (*it - position()).length();
-				newGoalLoc = *it;
-			}
-		}
-
-
-		SteerLib::AgentGoalInfo newGoal;
-		newGoal.goalType = GOAL_TYPE_SEEK_STATIC_TARGET;
-		newGoal.targetIsRandom = false;
-		newGoal.timeDuration = 1000;
-		newGoal.desiredSpeed = 1.3f;
-		newGoal.targetLocation = newGoalLoc;
-
-		// Add the door goal at front of queue
-		auto currentGoal = _goalQueue.front();
-		_goalQueue.pop();
-		addGoal(newGoal);
-		addGoal(currentGoal);
-	}
-
-
 	if(((goalInfo.targetLocation - position()).length() < radius()*REACHED_GOAL_MULTIPLIER ) ||
 			(goalInfo.goalType == GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL &&
 								Util::boxOverlapsCircle2D(goalInfo.targetRegion.xmin, goalInfo.targetRegion.xmax,
@@ -866,7 +868,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	{
 		_goalQueue.pop();
 		// std::cout << "Made it to a goal" << std::endl;
-		if (_goalQueue.size() != 0) {
+		if (_goalQueue.size() >= 1) {
 			// in this case, there are still more goals, so start steering to the next goal.
 			goalDirection = _goalQueue.front().targetLocation - _position;
 			_prefVelocity = Util::Vector(goalDirection.x, 0.0f, goalDirection.z);
@@ -903,16 +905,19 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	_position.y = getSimulationEngine()->getSpatialDatabase()->getLocation(this).y;
 
 
-	// Update goal door 
-	// Shortest distance to nearest door goal
+	 // Update goal door 
+	 // Shortest distance to nearest door goal
 	float shortestDist = (goalInfo.targetLocation - position()).length();
 	for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
 		if ((*it - position()).length() < shortestDist) {
 			shortestDist = (*it - position()).length();
-			goalInfo.targetLocation = *it;
+			//update goal if doors are the current goal
+			if (_goalQueue.size() == 2) {
+				_goalQueue.front().targetLocation = *it;
+				goalInfo.targetLocation = *it;
+			}
 		}
 	}
-
 	// Adjust agent radius depending on distance to goal
 	_radius = interpolation(_max_radius, _min_radius, _far_dist, _near_dist, shortestDist);
 }
