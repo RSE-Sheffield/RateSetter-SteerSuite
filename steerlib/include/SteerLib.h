@@ -17,6 +17,7 @@
 ///    SteerLib's include/ directory your project's include path.
 ///  - Also remember to link the compiled %SteerLib library into your project.
 ///
+#include <random>
 
 #include "Globals.h"
 #include "Util.h"

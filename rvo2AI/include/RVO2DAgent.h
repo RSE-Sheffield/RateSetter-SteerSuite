@@ -9,7 +9,6 @@
 
 /// @file SimpleAgent.h
 /// @brief Declares the SimpleAgent class.
-
 #include <queue>
 #include "SteerLib.h"
 // #include "SimpleAgent.h"

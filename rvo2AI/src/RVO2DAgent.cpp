@@ -123,6 +123,11 @@ bool RVO2DAgent::collidesAtTimeWith(const Util::Point & p1, const Util::Vector &
 
 void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialConditions, SteerLib::EngineInterface * engineInfo)
 {
+	//random amount of variation in initial conditions
+	std::normal_distribution<> d{ 0, 0.2 };
+	std::random_device rd;
+	std::mt19937 gen{ rd() };
+
 	// compute the "old" bounding box of the agent before it is reset.  its OK that it will be invalid if the agent was previously disabled
 	// because the value is not used in that case.
 	// std::cout << "resetting agent " << this << std::endl;
@@ -156,7 +161,7 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	// std::cout << initialConditions << std::endl;
 	_position = initialConditions.position;
 	_forward = normalize(initialConditions.direction);
-	_radius = initialConditions.radius;
+	_radius = initialConditions.radius + d(gen);
 	_velocity = initialConditions.speed * _forward;
 
 	neighborDist_ = _RVO2DParams.rvo_neighbor_distance;
@@ -254,7 +259,6 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	assert(_radius != 0.0f);
 
 	_max_radius = _radius;
-	//_min_radius = MIN_RADIUS;
 	SteerLib::AgentGoalInfo insidetrainGoal;
 	insidetrainGoal.goalType = GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL;
 	insidetrainGoal.targetIsRandom = false;
@@ -283,7 +287,6 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 		}
 		paramsFile.close();
 	}
-	std::cout << "vars: \tneardist:" << _near_dist << " \tmin_r" << _min_radius << "\tregionfar " << _far_dist << "\n";
 }
 
 /*
@@ -736,6 +739,9 @@ void RVO2DAgent::insertObstacleNeighbor(const ObstacleInterface *obstacle, float
 
 float interpolation(float y_max, float y_min, float x_max, float x_min, float x)
 {
+	if (x_max == x_min) {
+		return y_max;
+	}
 	if (x > x_max) {
 		return y_max;
 	}
@@ -743,7 +749,7 @@ float interpolation(float y_max, float y_min, float x_max, float x_min, float x)
 		return y_min;
 	}
 	else {
-		return (x - x_min) / (x_max - x_min) * ((y_max - y_min) + y_min);
+		return (x - x_min) / (x_max - x_min) * (y_max - y_min) + y_min;
 	}
 }
 
@@ -797,8 +803,8 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		goalDirection = normalize(goalInfo.targetLocation - position());
 	}
 
-	// In case an agent passes the first goal marker but gets stuck on the train outside
-	if (_position.z < -0.3f && _goalQueue.size() == 1) {
+	// In case an agent passes the first goal marker but gets stuck on the train outside. Add a door as a goal
+	if (_position.z < -0.2f && _goalQueue.size() == 1) {
 		// Shortest distance to nearest door goal
 		Util::Point newGoalLoc;
 		float shortestDist = (goalInfo.targetLocation - position()).length();
@@ -823,7 +829,10 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		addGoal(newGoal);
 		addGoal(currentGoal);
 	}
-
+	// If agent is in train, ensure goal is within train
+	if (_position.z > 0.1f && _goalQueue.size() == 2) {
+		_goalQueue.pop();
+	}
 
 	_prefVelocity = goalDirection * _RVO2DParams.rvo_max_speed;
 #ifdef _DEBUG_ENTROPY
@@ -907,7 +916,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 
 	 // Update goal door 
 	 // Shortest distance to nearest door goal
-	float shortestDist = (goalInfo.targetLocation - position()).length();
+	float shortestDist = INFINITY;
 	for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
 		if ((*it - position()).length() < shortestDist) {
 			shortestDist = (*it - position()).length();

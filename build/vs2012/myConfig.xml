@@ -87,9 +87,9 @@ Options specified by the command line will override options in this configuratio
         <!-- The background color of the openGL visualization -->
         <backgroundColor> <r>0.5</r> <g>0.5</g> <b>0.5</b> </backgroundColor>
         <!-- The 3-D point the camera will look at -->
-        <cameraLookAt> <x>10</x> <y>0</y> <z>5</z> </cameraLookAt>
+        <cameraLookAt> <x>10</x> <y>0</y> <z>-5</z> </cameraLookAt>
         <!-- Camera's physical position in the 3-D scene -->
-        <cameraPosition> <x>10</x> <y>37</y> <z>-40</z> </cameraPosition>
+        <cameraPosition> <x>10</x> <y>37</y> <z>40</z> </cameraPosition>
         <!-- The vector that represnts the upright orientation for the camera -->
         <cameraUp> <x>0</x> <y>1</y> <z>0</z> </cameraUp>
         <!-- The vertical field of view of the camera, in degrees -->
