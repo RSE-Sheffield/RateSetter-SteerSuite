@@ -145,6 +145,10 @@ protected:
 	float _min_radius;
 	float _near_dist;
 	float _far_dist;
+	// how many frames spent less than SD.
+	int close_frames = 0;
+	bool counted_this_frame = false;
+
 
 };
 

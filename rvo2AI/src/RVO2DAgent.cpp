@@ -123,6 +123,8 @@ bool RVO2DAgent::collidesAtTimeWith(const Util::Point & p1, const Util::Vector &
 
 void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialConditions, SteerLib::EngineInterface * engineInfo)
 {
+	counted_this_frame = false;
+	close_frames = 0;
 	//random amount of variation in initial conditions
 	std::normal_distribution<> d{ 0, 0.2 };
 	std::random_device rd;
@@ -161,7 +163,8 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	// std::cout << initialConditions << std::endl;
 	_position = initialConditions.position;
 	_forward = normalize(initialConditions.direction);
-	_radius = initialConditions.radius + d(gen);
+	//_radius = initialConditions.radius + d(gen);
+	_radius = initialConditions.radius;
 	_velocity = initialConditions.speed * _forward;
 
 	neighborDist_ = _RVO2DParams.rvo_neighbor_distance;
@@ -625,6 +628,13 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		const float combinedRadius = radius() + other->radius();
 		const float combinedRadiusSq = sqr(combinedRadius);
 
+		//count SD invalidations
+		if (absSq(relativePosition) < SD && !counted_this_frame) {
+			counted_this_frame = true;
+			close_frames++;
+		}
+
+
 		Line line;
 		Util::Vector u;
 
@@ -680,6 +690,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		orcaLines_.push_back(line);
 	}
 
+	counted_this_frame = false;
 
 	size_t lineFail = linearProgram2(orcaLines_, _RVO2DParams.rvo_max_speed, _prefVelocity, false, _newVelocity);
 
@@ -929,6 +940,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	}
 	// Adjust agent radius depending on distance to goal
 	_radius = interpolation(_max_radius, _min_radius, _far_dist, _near_dist, shortestDist);
+
 }
 
 

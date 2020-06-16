@@ -29,7 +29,7 @@
 #define USE_PLANNING 1
 #define DRAW_ANNOTATIONS 1
 
-
+#define SD 2.0f
 
 class RVO2DParameters
 {

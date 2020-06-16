@@ -14,6 +14,7 @@
 #include "SteerLib.h"
 #include <vector>
 #include "RVO2D_Parameters.h"
+#include "RVO2DAgent.h"
 #include "Logger.h"
 
 
@@ -92,7 +93,7 @@ public:
 
 	void preprocessFrame(float timeStamp, float dt, unsigned int frameNumber);
 	void postprocessFrame(float timeStamp, float dt, unsigned int frameNumber);
-	std::vector<SteerLib::AgentInterface * > agents_;
+	std::vector<RVO2DAgent* > agents_;
 
 protected:
 	std::string logFilename; // = "pprAI.log";

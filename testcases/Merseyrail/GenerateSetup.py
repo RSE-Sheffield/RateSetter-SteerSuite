@@ -134,8 +134,9 @@ def initialize_xml():
 
 
 if __name__ == "__main__":
-	default_agent_radius = 1.4
-	default_agents_per_region = 9
+	default_agent_radius = 0.4
+	default_agents_per_region = 10
+	default_platform_depth = 20
 
 	parser = argparse.ArgumentParser(description='Generate Steersuite xml input file for train PTI')
 	parser.add_argument('-n','--numPerDoor', type=int, default=default_agents_per_region,
@@ -144,6 +145,7 @@ if __name__ == "__main__":
                     	help='radius of agents in meters (default: 0.4m)')
 	parser.add_argument("-oh", "--obstacleHeight", default = 1, help="visual height of obstacles")
 	parser.add_argument("-o", "--outputName", default = "merseyrail.xml", help="name of generated file ")
+	parser.add_argument("-d", "--depthPlatform", type = float, default = default_platform_depth, help="depth of the platform (z)")
 
 	args = parser.parse_args()
 
@@ -156,11 +158,16 @@ if __name__ == "__main__":
 	# carriage_length: 20
 	# carriage_depth: 5
 
+	wide_platform_depth = 25
+	narrow_platform_depth = 3
+	platform_depth = args.depthPlatform
+
+
 	door_width =  1.5
 	train_dims = (20,5) #x,z
 	train_wall_thickness = 0.1 
-	plat_dims = (100,20+train_dims[1]) #x,z
-	plat_origin = np.array([-40,0,-20])
+	plat_dims = ([100,platform_depth]) #x,z
+	plat_origin = np.array([-40,0,-platform_depth])
 
 
 	args = parser.parse_args()
@@ -168,7 +175,7 @@ if __name__ == "__main__":
 	outroot = initialize_xml()
 	
 	# station+ rails
-	make_hollow_square_obstacle(outroot, plat_origin, plat_dims[0], plat_dims[1])
+	make_hollow_square_obstacle(outroot, plat_origin, plat_dims[0], plat_dims[1] + train_dims[1])
 	#block off rails
 	make_obstacle(outroot, np.array([-40,0,0]), np.array([-20,0.1,0]))
 	make_obstacle(outroot, np.array([40,0,0]), np.array([60,0.1,0]))
@@ -185,8 +192,8 @@ if __name__ == "__main__":
 #		make_agent_region(outroot, 20, offset2d + np.array([[0,0],[train_dims[0],-10]]), offset2d+np.array([10,2]), 0.5)
 		
 		#1 group for each door
-		make_agent_region(outroot, agents_per_region, offset2d + np.array([[0,0],[train_dims[0]/2,-20]]), offset2d+np.array([7,0]), agent_radius)
-		make_agent_region(outroot, agents_per_region, offset2d + np.array([[train_dims[0]/2,0],[train_dims[0],-20]]), offset2d+np.array([13,0]), agent_radius)
+		make_agent_region(outroot, agents_per_region, offset2d + np.array([[0,0],[train_dims[0]/2,-platform_depth]]), offset2d+np.array([7,0]), agent_radius)
+		make_agent_region(outroot, agents_per_region, offset2d + np.array([[train_dims[0]/2,0],[train_dims[0],-platform_depth]]), offset2d+np.array([13,0]), agent_radius)
 
 		#alighting
 #		make_agent_region(outroot, 10, offset2d + np.array([[0,0],[train_dims[0],train_dims[1]]]), offset2d+np.array([10,-10]), 0.5)

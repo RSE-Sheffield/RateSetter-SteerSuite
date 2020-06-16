@@ -223,13 +223,35 @@ void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int fra
 	int i = 0;
 	i = i + i;
 	
-	bool earlyQuit = true;
+	//check if quiting this iteration
+	bool quitting = true;
 	for (auto& agent : agents_) {
-		if (agent->agentGoals().size() > 1) {
-			earlyQuit = false;
+		if(!agent->finished()) {
+			quitting = false;
 			break;
 		}
 	}
+
+	if (quitting) {
+		//count average how many frames people were less than SD
+		float close_agents_frames = 0.0f;
+		int max_individual = 0;
+		for (RVO2DAgent* agent : agents_) {
+			//std::cout << "Agnet " << *agent << "\tcf " << agent->close_frames << "\n";
+			close_agents_frames += agent->close_frames;
+			max_individual = agent->close_frames > max_individual ? agent->close_frames : max_individual;
+		}
+		close_agents_frames /= agents_.size();
+		std::cout << "Average frames less than SD: " << close_agents_frames << " SD frames\n";
+		std::cout << "Max individual time: " << max_individual << " max frames \n";
+	}
+	//bool earlyQuit = true;
+	//for (auto& agent : agents_) {
+	//	if (agent->agentGoals().size() > 1) {
+	//		earlyQuit = false;
+	//		break;
+	//	}
+	//}
 	/*if (earlyQuit) {
 		std::cout << "Frame post-process: finished simualation early\n";
 			for (auto& agent : agents_) {
