@@ -1,15 +1,11 @@
 #Creates an .xml file scenario of people boarding and alighting a train
 #for info on the merseyrail train layout see en.wikipedia.org/wiki/British_Rail_Class_507
+import random
+import argparse
+import math
 
 import xml.etree.ElementTree as ET
-import argparse
 import numpy as np
-
-# parser = argparse.ArgumentParser()
-# parser.add_argument("-r", "--radius", help="radius of agents to generate")
-# parser.add_argument("-o", "--outputName", default = "merseyrail.xml", help="name of generated file ")
-# parser.add_argument("-oh", "--obstacleHeight", default = 1, help="visual height of obstacles")
-# args = parser.parse_args()
 
 #prettify output
 def indent(elem, level=0):
@@ -83,9 +79,9 @@ def make_train_obstacles(xmlroot, train_origin, length_x, length_z, wall_thickne
 	wall_3 = np.array([train_origin + np.array([length_x,0,0]), train_origin + np.array([length_x + wall_thickness,obstacle_height,length_z])]) # right carriage wall
 	wall_2 = np.array([train_origin + np.array([0,0,length_z]), train_origin + np.array([length_x,obstacle_height,length_z+wall_thickness])]) #back side of carrage
 	
-	# make_obstacle(xmlroot, wall_1[0], wall_1[1])
+	make_obstacle(xmlroot, wall_1[0], wall_1[1])
 	make_obstacle(xmlroot, wall_2[0], wall_2[1])
-	# make_obstacle(xmlroot, wall_3[0], wall_3[1])
+	make_obstacle(xmlroot, wall_3[0], wall_3[1])
 	
 	#Make the front wall with door gaps
 	left_part = train_origin
@@ -114,6 +110,73 @@ def make_hollow_square_obstacle(xmlroot, origin, length_x, length_z, wall_thickn
 	make_obstacle(xmlroot, wall_2[0], wall_2[1])
 	make_obstacle(xmlroot, wall_3[0], wall_3[1])
 
+def make_agent(xmlparent, radius, location, goal_location):
+	agent= ET.SubElement(xmlparent, 'agent')
+
+	#initial conditions
+	initialConditions= ET.SubElement(agent, 'initialConditions')
+	direction = ET.SubElement(initialConditions, 'direction')
+	direction_x = ET.SubElement(direction, 'x').text = "0"
+	direction_y = ET.SubElement(direction, 'y').text = "0"
+	direction_z = ET.SubElement(direction, 'z').text = "0"
+	position = ET.SubElement(initialConditions, 'position')
+	position_x = ET.SubElement(position, 'x').text = str(location[0])
+	position_y = ET.SubElement(position, 'y').text = "0"
+	position_z = ET.SubElement(position, 'z').text = str(location[1])
+	radius = ET.SubElement(initialConditions, 'radius').text= str(radius)
+	speed = ET.SubElement(initialConditions, 'speed').text= "0"
+
+	#goal sequence
+	goalSequence= ET.SubElement(agent, 'goalSequence')
+
+	seekStaticTarget = ET.SubElement(goalSequence, 'seekStaticTarget')
+	targetLocation = ET.SubElement(seekStaticTarget, 'targetLocation')
+	x = ET.SubElement(targetLocation, 'x').text= str(goal_location[0])
+	y = ET.SubElement(targetLocation, 'y').text= "0"
+	z = ET.SubElement(targetLocation, 'z').text= str(goal_location[1])
+	desiredSpeed = ET.SubElement(seekStaticTarget, 'desiredSpeed').text = "1.3"
+	timeDuration = ET.SubElement(seekStaticTarget, 'timeDuration').text = "1000.0"
+
+
+# each agent is given a "box" within the larger box, where it can spawn at some point within.
+# This helps maintain randomness each run
+def make_manual_agents_in_square(xmlroot, origin, lengths, num_agents, radius, goal_location):
+	# Rows in x dir, columns across z
+
+	
+	# Can we fit all the agents?
+	nums_per_side = [math.floor(abs(lengths[0]/(radius*2))), math.floor(abs(lengths[1]/(radius*2)))]
+	total_num = int(nums_per_side[0] * nums_per_side[1])
+	if total_num < num_agents:
+		print("Too many agents attempting to spawn ")
+
+	# calculate the boxes available
+	box_lengths = lengths / nums_per_side
+	box_occupancy = list(range(0,total_num))
+	box_size = box_lengths
+	box_center = box_size / 2
+	extra_space = (box_size - (2*radius)) / 2
+	# print("nums per side")
+	# print(nums_per_side)
+	# print("box_size")
+	# print(box_size)
+	# print("origin: ")
+	# print(origin)
+
+	for i in range(num_agents):
+		# select a free box
+		boxId = random.choice(box_occupancy)
+
+		# convert boxId to real location in x-y and create
+		row_id = math.floor(boxId / nums_per_side[0])
+		colum_id = boxId % nums_per_side[0]
+		col_loc = origin[0] + (colum_id * box_size[0]) + box_center[0] #+ (-extra_space[1] + random.uniform(0,2) * extra_space[1])
+		row_loc = origin[1] + (row_id   * box_size[1]) + box_center[1] #+ (-extra_space[0] + random.uniform(0,2) * extra_space[0])
+		make_agent(xmlroot, radius, [col_loc, row_loc], goal_location)
+
+		# Set id as occupied
+		box_occupancy.remove(boxId)
+
 
 # Creates an xml root and populates it in accordance with steersuite	
 def initialize_xml():
@@ -134,9 +197,9 @@ def initialize_xml():
 
 
 if __name__ == "__main__":
-	default_agent_radius = 0.4
+	default_agent_radius = 1
 	default_agents_per_region = 10
-	default_platform_depth = 20
+	default_platform_depth = 6
 
 	parser = argparse.ArgumentParser(description='Generate Steersuite xml input file for train PTI')
 	parser.add_argument('-n','--numPerDoor', type=int, default=default_agents_per_region,
@@ -152,12 +215,6 @@ if __name__ == "__main__":
 	agent_radius = args.radius
 	agents_per_region= args.numPerDoor
 
-	# platform_depth: 5
-	# platform_length: 150
-	# num_carriages: 3
-	# carriage_length: 20
-	# carriage_depth: 5
-
 	wide_platform_depth = 25
 	narrow_platform_depth = 3
 	platform_depth = args.depthPlatform
@@ -170,8 +227,6 @@ if __name__ == "__main__":
 	plat_origin = np.array([-40,0,-platform_depth])
 
 
-	args = parser.parse_args()
-
 	outroot = initialize_xml()
 	
 	# station+ rails
@@ -182,22 +237,21 @@ if __name__ == "__main__":
 
 
 	#tile for multiple trains
-	tiling = [-1,0,1]
+	# train sides:
+	# make_obstacle(outroot, np.array([-20,0,0]), np.array([-20,0.1,5]))
+	# make_obstacle(outroot, np.array([40,0,0]), np.array([40,0.1,5]))
+	tiling = [-1, 0, 1]
 	for i in tiling:
 		offset = np.array([i*train_dims[0],0,0])
 		offset2d = np.array([i*train_dims[0],0])
 		make_train_obstacles(outroot, offset, train_dims[0], train_dims[1], 0.1, [7, 13], door_width, args.obstacleHeight)
 		
-		#1 large group
-#		make_agent_region(outroot, 20, offset2d + np.array([[0,0],[train_dims[0],-10]]), offset2d+np.array([10,2]), 0.5)
-		
-		#1 group for each door
-		make_agent_region(outroot, agents_per_region, offset2d + np.array([[0,0],[train_dims[0]/2,-platform_depth]]), offset2d+np.array([7,0]), agent_radius)
-		make_agent_region(outroot, agents_per_region, offset2d + np.array([[train_dims[0]/2,0],[train_dims[0],-platform_depth]]), offset2d+np.array([13,0]), agent_radius)
-
-		#alighting
-#		make_agent_region(outroot, 10, offset2d + np.array([[0,0],[train_dims[0],train_dims[1]]]), offset2d+np.array([10,-10]), 0.5)
-		
+		lengths = np.array([train_dims[0] / 2, -platform_depth])
+		make_manual_agents_in_square(outroot, offset2d, lengths, agents_per_region, agent_radius, goal_location=offset2d+np.array([7,0]))
+		make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths, agents_per_region, agent_radius, goal_location=offset2d+np.array([7,0]))
+		# make_agent_region(outroot, agents_per_region, offset2d + np.array([[0,0],[train_dims[0]/2,-platform_depth]]), offset2d+np.array([7,0]), agent_radius)
+		# make_agent_region(outroot, agents_per_region, offset2d + np.array([[train_dims[0]/2,0],[train_dims[0],-platform_depth]]), offset2d+np.array([13,0]), agent_radius)
+	
 	#write xml to file
 	outtree = ET.ElementTree(outroot)
 	print("writing to " + args.outputName)
