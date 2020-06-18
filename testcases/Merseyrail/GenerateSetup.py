@@ -3,6 +3,7 @@
 import random
 import argparse
 import math
+import sys
 
 import xml.etree.ElementTree as ET
 import numpy as np
@@ -148,7 +149,8 @@ def make_manual_agents_in_square(xmlroot, origin, lengths, num_agents, radius, g
 	nums_per_side = [math.floor(abs(lengths[0]/(radius*2))), math.floor(abs(lengths[1]/(radius*2)))]
 	total_num = int(nums_per_side[0] * nums_per_side[1])
 	if total_num < num_agents:
-		print("Too many agents attempting to spawn ")
+		raise Exception("Too many agents attempting to spawn") 
+		return
 
 	# calculate the boxes available
 	box_lengths = lengths / nums_per_side
@@ -194,32 +196,7 @@ def initialize_xml():
 
 	return outroot
 
-
-
-if __name__ == "__main__":
-	default_agent_radius = 1
-	default_agents_per_region = 10
-	default_platform_depth = 6
-
-	parser = argparse.ArgumentParser(description='Generate Steersuite xml input file for train PTI')
-	parser.add_argument('-n','--numPerDoor', type=int, default=default_agents_per_region,
-                		help='number of people per door to spawn (default: 5')
-	parser.add_argument('-r','--radius', type=float, default=default_agent_radius,
-                    	help='radius of agents in meters (default: 0.4m)')
-	parser.add_argument("-oh", "--obstacleHeight", default = 1, help="visual height of obstacles")
-	parser.add_argument("-o", "--outputName", default = "merseyrail.xml", help="name of generated file ")
-	parser.add_argument("-d", "--depthPlatform", type = float, default = default_platform_depth, help="depth of the platform (z)")
-
-	args = parser.parse_args()
-
-	agent_radius = args.radius
-	agents_per_region= args.numPerDoor
-
-	wide_platform_depth = 25
-	narrow_platform_depth = 3
-	platform_depth = args.depthPlatform
-
-
+def generate_xml(radius, agents_per_region, platform_depth, outputName):
 	door_width =  1.5
 	train_dims = (20,5) #x,z
 	train_wall_thickness = 0.1 
@@ -247,8 +224,13 @@ if __name__ == "__main__":
 		make_train_obstacles(outroot, offset, train_dims[0], train_dims[1], 0.1, [7, 13], door_width, args.obstacleHeight)
 		
 		lengths = np.array([train_dims[0] / 2, -platform_depth])
-		make_manual_agents_in_square(outroot, offset2d, lengths, agents_per_region, agent_radius, goal_location=offset2d+np.array([7,0]))
-		make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths, agents_per_region, agent_radius, goal_location=offset2d+np.array([7,0]))
+		try:
+			make_manual_agents_in_square(outroot, offset2d, lengths, agents_per_region, agent_radius, goal_location=offset2d+np.array([7,0]))
+			make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths, agents_per_region, agent_radius, goal_location=offset2d+np.array([7,0]))
+		except:
+			print("issue making agents", file=sys.stderr)
+			raise Exception("issue making agents")
+			return
 		# make_agent_region(outroot, agents_per_region, offset2d + np.array([[0,0],[train_dims[0]/2,-platform_depth]]), offset2d+np.array([7,0]), agent_radius)
 		# make_agent_region(outroot, agents_per_region, offset2d + np.array([[train_dims[0]/2,0],[train_dims[0],-platform_depth]]), offset2d+np.array([13,0]), agent_radius)
 	
@@ -257,3 +239,27 @@ if __name__ == "__main__":
 	print("writing to " + args.outputName)
 	indent(outroot)
 	outtree.write(args.outputName)
+
+if __name__ == "__main__":
+	default_agent_radius = 1
+	default_agents_per_region = 10
+	default_platform_depth = 6
+
+	parser = argparse.ArgumentParser(description='Generate Steersuite xml input file for train PTI')
+	parser.add_argument('-n','--numPerDoor', type=int, default=default_agents_per_region,
+                		help='number of people per door to spawn (default: 5')
+	parser.add_argument('-r','--radius', type=float, default=default_agent_radius,
+                    	help='radius of agents in meters (default: 0.4m)')
+	parser.add_argument("-oh", "--obstacleHeight", default = 1, help="visual height of obstacles")
+	parser.add_argument("-o", "--outputName", default = "merseyrail.xml", help="name of generated file ")
+	parser.add_argument("-d", "--depthPlatform", type = float, default = default_platform_depth, help="depth of the platform (z)")
+
+	args = parser.parse_args()
+
+	agent_radius = args.radius
+	agents_per_region= args.numPerDoor
+	outputName = args.outputName
+	platform_depth = args.depthPlatform
+
+
+	generate_xml(agent_radius, agents_per_region, platform_depth, outputName)
