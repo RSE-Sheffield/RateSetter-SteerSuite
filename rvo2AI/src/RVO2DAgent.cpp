@@ -262,13 +262,13 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	assert(_radius != 0.0f);
 
 	_max_radius = _radius;
-	SteerLib::AgentGoalInfo insidetrainGoal;
-	insidetrainGoal.goalType = GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL;
-	insidetrainGoal.targetIsRandom = false;
-	insidetrainGoal.timeDuration = 1000;
-	insidetrainGoal.desiredSpeed = 1.3f;
-	insidetrainGoal.targetRegion = Util::AxisAlignedBox(-18.f, 38.f, -1.f, 1.f, 3.f, 5.f);
-	addGoal(insidetrainGoal);
+	//SteerLib::AgentGoalInfo insidetrainGoal;
+	//insidetrainGoal.goalType = GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL;
+	//insidetrainGoal.targetIsRandom = false;
+	//insidetrainGoal.timeDuration = 1000;
+	//insidetrainGoal.desiredSpeed = 1.3f;
+	//insidetrainGoal.targetRegion = Util::AxisAlignedBox(-18.f, 38.f, -1.f, 1.f, 3.f, 5.f);
+	//addGoal(insidetrainGoal);
 
 
 	// read params from file
@@ -629,7 +629,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		const float combinedRadiusSq = sqr(combinedRadius);
 
 		//count SD invalidations
-		if (absSq(relativePosition) < SD && !counted_this_frame) {
+		if (absSq(relativePosition) < SD*SD && !counted_this_frame) {
 			counted_this_frame = true;
 			close_frames++;
 		}
@@ -932,7 +932,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		if ((*it - position()).length() < shortestDist) {
 			shortestDist = (*it - position()).length();
 			//update goal if doors are the current goal
-			if (_goalQueue.size() == 2) {
+			if (_goalQueue.front().goalType == GOAL_TYPE_SEEK_STATIC_TARGET) {
 				_goalQueue.front().targetLocation = *it;
 				goalInfo.targetLocation = *it;
 			}
