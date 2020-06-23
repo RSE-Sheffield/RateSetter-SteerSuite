@@ -27,12 +27,13 @@ using namespace RVO2DGlobals;
 using namespace SteerLib;
 
 // PTI goal locations hack
-std::vector<Util::Point> PossibleGoals = { Util::Point(-13,0,0),
-								Util::Point(-7,0,0),
-								Util::Point(7,0,0),
-								Util::Point(13,0,0),
-								Util::Point(27, 0, 0),
-								Util::Point(33, 0, 0) };
+float depth = 0.5f;
+std::vector<Util::Point> PossibleGoals = { Util::Point(-13,0,depth),
+								Util::Point(-7,0,depth),
+								Util::Point(7,0,depth),
+								Util::Point(13,0,depth),
+								Util::Point(27, 0, depth),
+								Util::Point(33, 0, depth) };
 
 // #define _DEBUG_ENTROPY 1
 
@@ -126,7 +127,7 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	counted_this_frame = false;
 	close_frames = 0;
 	//random amount of variation in initial conditions
-	std::normal_distribution<> d{ 0, 0.2 };
+	std::normal_distribution<> d{ 10, 5 };
 	std::random_device rd;
 	std::mt19937 gen{ rd() };
 
@@ -262,6 +263,7 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	assert(_radius != 0.0f);
 
 	_max_radius = _radius;
+	_receprocity_factor = 1;//d(gen);
 	//SteerLib::AgentGoalInfo insidetrainGoal;
 	//insidetrainGoal.goalType = GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL;
 	//insidetrainGoal.targetIsRandom = false;
@@ -629,7 +631,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		const float combinedRadiusSq = sqr(combinedRadius);
 
 		//count SD invalidations
-		if (absSq(relativePosition) < SD*SD && !counted_this_frame) {
+		if (abs(relativePosition) < SD && !counted_this_frame) {
 			counted_this_frame = true;
 			close_frames++;
 		}
@@ -685,7 +687,8 @@ void RVO2DAgent::computeNewVelocity(float dt)
 			line.direction = Util::Vector(unitW.z, 0.0f, -unitW.x);
 			u = (combinedRadius * invTimeStep - wLength) * unitW;
 		}
-
+		const RVO2DAgent* otherRVO = dynamic_cast<const RVO2DAgent*>(other);
+		float combined_reciprocity = _receprocity_factor / (_receprocity_factor + otherRVO->_receprocity_factor);
 		line.point = velocity() + 0.5f * u;
 		orcaLines_.push_back(line);
 	}
@@ -814,34 +817,8 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		goalDirection = normalize(goalInfo.targetLocation - position());
 	}
 
-	// In case an agent passes the first goal marker but gets stuck on the train outside. Add a door as a goal
-	if (_position.z < -0.2f && _goalQueue.size() == 1) {
-		// Shortest distance to nearest door goal
-		Util::Point newGoalLoc;
-		float shortestDist = (goalInfo.targetLocation - position()).length();
-		for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
-			if ((*it - position()).length() < shortestDist) {
-				shortestDist = (*it - position()).length();
-				newGoalLoc = *it;
-			}
-		}
-
-
-		SteerLib::AgentGoalInfo newGoal;
-		newGoal.goalType = GOAL_TYPE_SEEK_STATIC_TARGET;
-		newGoal.targetIsRandom = false;
-		newGoal.timeDuration = 1000;
-		newGoal.desiredSpeed = 1.3f;
-		newGoal.targetLocation = newGoalLoc;
-
-		// Add the door goal at front of queue
-		auto currentGoal = _goalQueue.front();
-		_goalQueue.pop();
-		addGoal(newGoal);
-		addGoal(currentGoal);
-	}
 	// If agent is in train, ensure goal is within train
-	if (_position.z > 0.1f && _goalQueue.size() == 2) {
+	if (_position.z > 0.4f && _goalQueue.size() == 2) {
 		_goalQueue.pop();
 	}
 
@@ -940,6 +917,33 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	}
 	// Adjust agent radius depending on distance to goal
 	_radius = interpolation(_max_radius, _min_radius, _far_dist, _near_dist, shortestDist);
+
+	// In case an agent passes the first goal marker but gets stuck on the train outside. Add a door as a goal
+	if (_position.z < -0.2f && _goalQueue.size() == 1 && shortestDist > 0.4) {
+		// Shortest distance to nearest door goal
+		Util::Point newGoalLoc;
+		float shortestDist = (goalInfo.targetLocation - position()).length();
+		for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
+			if ((*it - position()).length() < shortestDist) {
+				shortestDist = (*it - position()).length();
+				newGoalLoc = *it;
+			}
+		}
+
+
+		SteerLib::AgentGoalInfo newGoal;
+		newGoal.goalType = GOAL_TYPE_SEEK_STATIC_TARGET;
+		newGoal.targetIsRandom = false;
+		newGoal.timeDuration = 1000;
+		newGoal.desiredSpeed = 1.3f;
+		newGoal.targetLocation = newGoalLoc;
+
+		// Add the door goal at front of queue
+		auto currentGoal = _goalQueue.front();
+		_goalQueue.pop();
+		addGoal(newGoal);
+		addGoal(currentGoal);
+	}
 
 }
 

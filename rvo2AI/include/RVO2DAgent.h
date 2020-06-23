@@ -148,6 +148,7 @@ protected:
 	// how many frames spent less than SD.
 	int close_frames = 0;
 	bool counted_this_frame = false;
+	float _receprocity_factor;
 
 
 };

@@ -26,6 +26,9 @@ def indent(elem, level=0):
 
 #generate a steersuite xml obstacle, given 2 opposite points on a cuboid	
 def make_obstacle(xmlparent, point1, point2):
+	if(point1[0] > point2[0] or point1[1] > point2[1]):
+		print("obstacle args are incorrect way round")
+
 	obstacle = ET.SubElement(xmlparent, 'obstacle')
 	xmin = ET.SubElement(obstacle, 'xmin').text= str(point1[0])
 	xmax = ET.SubElement(obstacle, 'xmax').text= str(point2[0])
@@ -35,6 +38,11 @@ def make_obstacle(xmlparent, point1, point2):
 	zmax = ET.SubElement(obstacle, 'zmax').text= str(point2[2])
 
 def make_obstacle_2d(xmlparent, point1, point2):
+	xmin = point1[0] if (point1[0] < point2[0]) else point2[0]
+	zmin = point1[1] if (point1[1] < point2[1]) else point2[1]
+	xmax = point2[0] if (point1[0] < point2[0]) else point1[0]
+	zmax = point2[1] if (point1[1] < point2[1]) else point1[1]
+
 	if(point1[0] > point2[0] or point1[1] > point2[1]):
 		print("obstacle args are incorrect way round")
 	obstacle = ET.SubElement(xmlparent, 'obstacle')
@@ -248,6 +256,9 @@ def generate_xml(radius, agents_per_region, platform_depth, outputName):
 
 
 	outroot = initialize_xml()
+
+	# Location of doors (for goal purposes)
+	# door_goals = []
 	
 	# station+ rails
 	make_hollow_square_obstacle(outroot, plat_origin, plat_dims[0], plat_dims[1] + train_dims[1])
@@ -281,16 +292,18 @@ def generate_xml(radius, agents_per_region, platform_depth, outputName):
 		}
 
 
-		
+		goals = [ goal_door, goal_in_train]
+		# door_goals.append(offset + np.array([7,0,0]))
+		# door_goals.append(offset + np.array([13,0,0]))
+
 		lengths = np.array([train_dims[0] / 2, -platform_depth])
-		# make_manual_agents_in_square(outroot, offset2d, lengths, agents_per_region, agent_radius, goal_location=offset2d+np.array([7,0]))
-		# leftover = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths, agents_per_region, agent_radius, goal_location=offset2d+np.array([7,0]))
-		leftover = 1
+		make_manual_agents_in_square(outroot, offset2d, lengths, agents_per_region, agent_radius, goals)
+		leftover = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths, agents_per_region, agent_radius, goals)
 		if(leftover > 0):
-			print(leftover)
 			bAddingCorridors = True
 			width = 6
-			height = 10
+			height = (2 * leftover / math.floor(width / (2*agent_radius)) + 1)* (2*agent_radius)
+			20
 			corridor_origin = offset2d + np.array([(train_dims[0] - width) / 2, -platform_depth])
 			add_corridor(outroot, corridor_origin, width, height)
 			# print("issue making agents", file=sys.stderr)
@@ -306,12 +319,18 @@ def generate_xml(radius, agents_per_region, platform_depth, outputName):
 			}
 			goals = [ goal_door, goal_in_train]
 
-			make_manual_agents_in_square(outroot, corridor_origin, np.array([width, -height]), leftover, agent_radius, goals)
+			corridor_leftover = make_manual_agents_in_square(outroot, corridor_origin, np.array([width, -height]), leftover*2, agent_radius, goals)
+			if corridor_leftover > 0:
+				print("corridor too small")
 
 			# raise Exception("issue making agents")
 	if not(bAddingCorridors):
 		make_obstacle(outroot, np.array([-20,0,-platform_depth]), np.array([40,0.1,-platform_depth]))
 
+	# write goals to file
+	# with file open as f:
+	# 	for g in door_goals:
+	# 		f.write("%f,%f,%f\n", g[0],g[1],g[2])
 
 	#write xml to file
 	outtree = ET.ElementTree(outroot)
