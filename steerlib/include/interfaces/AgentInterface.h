@@ -114,6 +114,7 @@ namespace SteerLib {
 
 		// So AgentInterface can get Simulation members
 		virtual SteerLib::EngineInterface * getSimulationEngine() = 0;
+		std::queue<SteerLib::AgentGoalInfo> _goalQueue;
 
 #define AGENT_NEIGHBOURS 10
 		virtual void insertAgentNeighbor(const SteerLib::AgentInterface * agent, float &rangeSq);
@@ -213,7 +214,6 @@ namespace SteerLib {
 		// holds the location of the best local target along the midtermpath
 		Util::Point _currentLocalTarget;
 		SteerLib::AgentGoalInfo _currentGoal;
-		std::queue<SteerLib::AgentGoalInfo> _goalQueue;
 
 // #define DRAW_HISTORIES 1
 
