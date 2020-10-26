@@ -20,16 +20,17 @@
 // #define PREFERRED_SPEED 1.33f
 #define	 TIME_HORIZON_OBSTACLES 2.0f
 
-#define NEXT_WAYPOINT_DISTANCE 5
+#define NEXT_WAYPOINT_DISTANCE 500
 
-#define REACHED_WAYPOINT_MULTIPLIER 1
-#define REACHED_GOAL_MULTIPLIER 1
+#define REACHED_WAYPOINT_MULTIPLIER 0.5
+#define REACHED_GOAL_MULTIPLIER 0.5
 #define MIN_RADIUS 0.4f
 
-#define USE_PLANNING 1
+#define USE_PLANNING 0
 #define DRAW_ANNOTATIONS 1
 
-#define SD 2.0f
+// social distancing + 2*person radius
+#define SD 2.8f
 
 class RVO2DParameters
 {

@@ -36,7 +36,7 @@
     <xmax>100</xmax>
     <ymin>0</ymin>
     <ymax>1</ymax>
-    <zmin>8.01</zmin>
+    <zmin>3.01</zmin>
     <zmax>100</zmax>
   </obstacle>
 
@@ -46,7 +46,7 @@
     <ymin>0</ymin>
     <ymax>1</ymax>
     <zmin>-100</zmin>
-    <zmax>-8</zmax>
+    <zmax>-3</zmax>
   </obstacle>
 
   <agentRegion>

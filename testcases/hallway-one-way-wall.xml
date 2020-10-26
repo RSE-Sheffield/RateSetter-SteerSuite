@@ -36,7 +36,7 @@
     <xmax>100</xmax>
     <ymin>0</ymin>
     <ymax>1</ymax>
-    <zmin>8.01</zmin>
+    <zmin>2.01</zmin>
     <zmax>100</zmax>
   </obstacle>
 
@@ -46,11 +46,20 @@
     <ymin>0</ymin>
     <ymax>1</ymax>
     <zmin>-100</zmin>
-    <zmax>-8</zmax>
+    <zmax>-2</zmax>
+  </obstacle>
+  <obstacle>
+    <xmin>49</xmin>
+    <xmax>50</xmax>
+    <ymin>0</ymin>
+    <ymax>1</ymax>
+    <zmin>-2</zmin>
+    <zmax>1.18</zmax>
   </obstacle>
 
+
   <agentRegion>
-    <numAgents>10</numAgents>
+    <numAgents>30</numAgents>
     <regionBounds>
       <xmin>-97</xmin>
       <xmax>70</xmax>
@@ -61,7 +70,7 @@
     </regionBounds>
     <initialConditions>
       <direction> <x>0</x> <y>0</y> <z>0</z> </direction>
-      <radius>0.5</radius>
+      <radius>1.5</radius>
       <speed>1.2</speed>
     </initialConditions>
     <goalSequence>

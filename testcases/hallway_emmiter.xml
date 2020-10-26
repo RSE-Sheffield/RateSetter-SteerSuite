@@ -25,7 +25,7 @@
   </header>
   
   <suggestedCameraView>
-    <position> <x>0</x> <y>100</y> <z>-30</z> </position>
+    <position> <x>0</x> <y>20</y> <z>-10</z> </position>
     <lookat> <x>0</x> <y>0</y> <z>0</z> </lookat>
     <up> <x>0</x> <y>1</y> <z>0</z> </up>
     <fovy>45</fovy>
@@ -36,7 +36,7 @@
     <xmax>100</xmax>
     <ymin>0</ymin>
     <ymax>1</ymax>
-    <zmin>8.01</zmin>
+    <zmin>2.01</zmin>
     <zmax>100</zmax>
   </obstacle>
 
@@ -46,28 +46,28 @@
     <ymin>0</ymin>
     <ymax>1</ymax>
     <zmin>-100</zmin>
-    <zmax>-8</zmax>
+    <zmax>-2</zmax>
   </obstacle>
 
   <agentRegion>
-    <numAgents>10</numAgents>
+    <numAgents>40</numAgents>
     <regionBounds>
       <xmin>-97</xmin>
       <xmax>70</xmax>
       <ymin>0</ymin>
       <ymax>0</ymax>
-      <zmin>-7</zmin>
-      <zmax>7</zmax>
+      <zmin>-2</zmin>
+      <zmax>2</zmax>
     </regionBounds>
     <initialConditions>
       <direction> <x>0</x> <y>0</y> <z>0</z> </direction>
-      <radius>0.5</radius>
+      <radius>1.4</radius>
       <speed>1.2</speed>
     </initialConditions>
     <goalSequence>
 		<seekAxisAlignedBoxRegion>
 			<targetLocation>
-			  <x>100</x>
+			  <x>1000</x>
 			  <y>0</y>
 			  <z>0</z>
 			</targetLocation>

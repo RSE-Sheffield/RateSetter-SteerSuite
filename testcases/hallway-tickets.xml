@@ -49,8 +49,82 @@
     <zmax>-8</zmax>
   </obstacle>
 
+<obstacle>
+    <xmin>-100</xmin>
+    <xmax>100</xmax>
+    <ymin>0</ymin>
+    <ymax>1</ymax>
+    <zmin>-100</zmin>
+    <zmax>-8</zmax>
+  </obstacle>
+<obstacle>
+    <xmin>-1</xmin>
+    <xmax>1</xmax>
+    <ymin>0</ymin>
+    <ymax>1</ymax>
+    <zmin>-8</zmin>
+    <zmax>-7.7</zmax>
+  </obstacle>
+<obstacle>
+    <xmin>-1</xmin>
+    <xmax>1</xmax>
+    <ymin>0</ymin>
+    <ymax>1</ymax>
+    <zmin>-6.3</zmin>
+    <zmax>-6</zmax>
+  </obstacle> 
+<obstacle>
+    <xmin>-1</xmin>
+    <xmax>1</xmax>
+    <ymin>0</ymin>
+    <ymax>1</ymax>
+    <zmin>-5</zmin>
+    <zmax>-4.7</zmax>
+  </obstacle>
+<obstacle>
+    <xmin>-1</xmin>
+    <xmax>1</xmax>
+    <ymin>0</ymin>
+    <ymax>1</ymax>
+    <zmin>-3.3</zmin>
+    <zmax>-3</zmax>
+  </obstacle>
+<obstacle>
+    <xmin>-1</xmin>
+    <xmax>1</xmax>
+    <ymin>0</ymin>
+    <ymax>1</ymax>
+    <zmin>-2</zmin>
+    <zmax>-1.7</zmax>
+  </obstacle>
+<obstacle>
+    <xmin>-1</xmin>
+    <xmax>1</xmax>
+    <ymin>0</ymin>
+    <ymax>1</ymax>
+    <zmin>2.7</zmin>
+    <zmax>3</zmax>
+  </obstacle>
+<obstacle>
+    <xmin>-1</xmin>
+    <xmax>1</xmax>
+    <ymin>0</ymin>
+    <ymax>1</ymax>
+    <zmin>4.5</zmin>
+    <zmax>5</zmax>
+  </obstacle>
+<obstacle>
+    <xmin>-1</xmin>
+    <xmax>1</xmax>
+    <ymin>0</ymin>
+    <ymax>1</ymax>
+    <zmin>6.5</zmin>
+    <zmax>7</zmax>
+  </obstacle>
+
+  
   <agentRegion>
-    <numAgents>10</numAgents>
+    <numAgents>100</numAgents>
     <regionBounds>
       <xmin>-97</xmin>
       <xmax>70</xmax>

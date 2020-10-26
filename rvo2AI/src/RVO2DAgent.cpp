@@ -21,6 +21,8 @@
 #define MAX_FORCE_MAGNITUDE 3.0f
 // #define MAX_SPEED 1.33f
 #define AGENT_MASS 1.0f
+//set this define if using the merseyrail/PTI testcase
+//#define TRAINHACKS
 
 using namespace Util;
 using namespace RVO2DGlobals;
@@ -161,7 +163,7 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	velocity_ = velocity_ * initialConditions.speed;
 */
 	// initialize the agent based on the initial conditions
-	// std::cout << initialConditions << std::endl;
+	// std::cout << initialConditions << std::endl; 
 	_position = initialConditions.position;
 	_forward = normalize(initialConditions.direction);
 	//_radius = initialConditions.radius + d(gen);
@@ -845,11 +847,12 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	{
 		goalDirection = normalize(goalInfo.targetLocation - position());
 	}
-
+#ifdef TRAINHACKS
 	// If agent is in train, ensure goal is within train
 	if (_position.z > 0.4f && _goalQueue.size() == 2) {
 		_goalQueue.pop();
 	}
+#endif
 
 	_prefVelocity = goalDirection * _RVO2DParams.rvo_max_speed;
 #ifdef _DEBUG_ENTROPY
@@ -932,6 +935,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 
 
 	 // Update goal door 
+#ifdef TRAINHACKS
 	 // Shortest distance to nearest door goal
 	float shortestDist = INFINITY;
 	for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
@@ -973,7 +977,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		addGoal(newGoal);
 		addGoal(currentGoal);
 	}
-
+#endif
 }
 
 
