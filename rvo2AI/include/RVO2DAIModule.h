@@ -22,6 +22,7 @@
 // extern SteerLib::EngineInterface * gEngine;
 // extern SteerLib::SpatialDataBaseInterface * gSpatialDatabase;
 
+enum boarding_status { boarding, alighting };
 
 
 namespace RVO2DGlobals {
@@ -95,6 +96,19 @@ public:
 	void postprocessFrame(float timeStamp, float dt, unsigned int frameNumber);
 	std::vector<RVO2DAgent* > agents_;
 
+	class train_door
+	{
+	public:
+		train_door(Util::Point location);
+	private:
+		Util::Point location;
+		boarding_status status;
+		Util::AxisAlignedBox vestibule;
+
+		boarding_status check_boarding_status(RVO2DAIModule* RVOModule);
+	};
+	std::vector<train_door> tds;
+
 protected:
 	std::string logFilename; // = "pprAI.log";
 	bool logStats; // = false;
@@ -103,5 +117,7 @@ protected:
 
 	SteerLib::EngineInterface * _gEngine;
 };
+
+
 
 #endif

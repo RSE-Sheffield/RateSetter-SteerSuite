@@ -16,6 +16,7 @@
 #include "Obstacle.h"
 #include "RVO2D_Parameters.h"
 
+enum status {agent_unset, agent_boarding, agent_alighting};
 
 /**
  * @brief An example agent with very basic AI, that is part of the simpleAI plugin.
@@ -149,7 +150,7 @@ protected:
 	int close_frames = 0;
 	bool counted_this_frame = false;
 	float _receprocity_factor;
-
+	status loading_status;
 
 };
 

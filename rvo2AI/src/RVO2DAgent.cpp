@@ -22,20 +22,23 @@
 // #define MAX_SPEED 1.33f
 #define AGENT_MASS 1.0f
 //set this define if using the merseyrail/PTI testcase
-//#define TRAINHACKS
+#define TRAINHACKS
 
 using namespace Util;
 using namespace RVO2DGlobals;
 using namespace SteerLib;
 
 // PTI goal locations hack
-float depth = 0.5f;
+float depth = 0.f;
 std::vector<Util::Point> PossibleGoals = { Util::Point(-13,0,depth),
 								Util::Point(-7,0,depth),
 								Util::Point(7,0,depth),
 								Util::Point(13,0,depth),
 								Util::Point(27, 0, depth),
 								Util::Point(33, 0, depth) };
+
+
+
 
 // #define _DEBUG_ENTROPY 1
 
@@ -293,6 +296,14 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 			}
 		}
 		paramsFile.close();
+	}
+
+	//set boarding status depending on position of agent. Those in the train must alight, those outside must board
+	if( _position.z >= 0 ){
+		loading_status = status::agent_alighting;
+	}
+	else {
+		loading_status = status::agent_boarding;
 	}
 }
 
@@ -849,12 +860,24 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	}
 #ifdef TRAINHACKS
 	// If agent is in train, ensure goal is within train
-	if (_position.z > 0.4f && _goalQueue.size() == 2) {
+	if (_position.z > 0.4f && _goalQueue.size() == 2 && loading_status == status::agent_boarding ) {
+		_goalQueue.pop();
+	}
+	else if (status::agent_alighting && _goalQueue.size() == 2 && _position.z < -0.4f) {
 		_goalQueue.pop();
 	}
 #endif
 
-	_prefVelocity = goalDirection * _RVO2DParams.rvo_max_speed;
+	//Boarding/alighting affects whether to want to move
+	if (loading_status == status::agent_boarding) {
+		_prefVelocity = Util::Vector(0, 0, 0);
+	}
+	else if (loading_status == status::agent_alighting) {
+		_prefVelocity = goalDirection * _RVO2DParams.rvo_max_speed;
+	}
+
+
+
 #ifdef _DEBUG_ENTROPY
 	std::cout << "Preferred velocity is: " << prefVelocity_ << std::endl;
 #endif
@@ -938,13 +961,19 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 #ifdef TRAINHACKS
 	 // Shortest distance to nearest door goal
 	float shortestDist = INFINITY;
-	for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
-		if ((*it - position()).length() < shortestDist) {
-			shortestDist = (*it - position()).length();
-			//update goal if doors are the current goal
-			if (_goalQueue.front().goalType == GOAL_TYPE_SEEK_STATIC_TARGET) {
+	if (_goalQueue.front().goalType == GOAL_TYPE_SEEK_STATIC_TARGET) {
+		for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
+			if ((*it - position()).length() < shortestDist) {
+				shortestDist = (*it - position()).length();
+				
+				//update goal if doors are the current goal
 				_goalQueue.front().targetLocation = *it;
 				goalInfo.targetLocation = *it;
+
+				//alighting people have door target outside of the train
+				if (loading_status == status::agent_alighting) {
+					goalInfo.targetLocation.z = 0.f;
+				}
 			}
 		}
 	}
@@ -952,7 +981,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	_radius = interpolation(_max_radius, _min_radius, _far_dist, _near_dist, shortestDist);
 
 	// In case an agent passes the first goal marker but gets stuck on the train outside. Add a door as a goal
-	if (_position.z < -0.2f && _goalQueue.size() == 1 && shortestDist > 0.4) {
+	if (_position.z < -0.2f && _goalQueue.size() == 1 && shortestDist > 0.4 && loading_status == status::agent_boarding) {
 		// Shortest distance to nearest door goal
 		Util::Point newGoalLoc;
 		float shortestDist = (goalInfo.targetLocation - position()).length();
@@ -976,6 +1005,35 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		_goalQueue.pop();
 		addGoal(newGoal);
 		addGoal(currentGoal);
+	}
+	if (_position.z > 0.2f && _goalQueue.size() == 1 && shortestDist > 0.4 && loading_status == status::agent_alighting) {
+		// Shortest distance to nearest door goal
+		Util::Point newGoalLoc;
+		float shortestDist = (goalInfo.targetLocation - position()).length();
+		for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
+			if ((*it - position()).length() < shortestDist) {
+				shortestDist = (*it - position()).length();
+				newGoalLoc = *it;
+				newGoalLoc.z = 0.f;
+			}
+		}
+
+
+		SteerLib::AgentGoalInfo newGoal;
+		newGoal.goalType = GOAL_TYPE_SEEK_STATIC_TARGET;
+		newGoal.targetIsRandom = false;
+		newGoal.timeDuration = 1000;
+		newGoal.desiredSpeed = 1.3f;
+		newGoal.targetLocation = newGoalLoc;
+
+		// Add the door goal at front of queue
+		auto currentGoal = _goalQueue.front();
+		_goalQueue.pop();
+		addGoal(newGoal);
+		addGoal(currentGoal);
+	}
+	if (_id == 10) {
+		printf("%d %f\n", _goalQueue.size(), _position.z);
 	}
 #endif
 }
@@ -1228,3 +1286,4 @@ void linearProgram3(const std::vector<Line> &lines, size_t numObstLines, size_t 
 		}
 	}
 }
+

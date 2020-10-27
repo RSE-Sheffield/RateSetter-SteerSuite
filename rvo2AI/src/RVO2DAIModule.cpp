@@ -21,6 +21,17 @@
 // SteerLib::EngineInterface * gEngine;
 // SteerLib::SpatialDataBaseInterface * gSpatialDatabase;
 
+
+float depths = 0.5f;
+std::vector<Util::Point> traindoors = { Util::Point(-13,0,depths),
+								Util::Point(-7,0,depths),
+								Util::Point(7,0,depths),
+								Util::Point(13,0,depths),
+								Util::Point(27, 0, depths),
+								Util::Point(33, 0, depths) };
+
+
+
 namespace RVO2DGlobals
 {
 
@@ -167,6 +178,12 @@ void RVO2DAIModule::init( const SteerLib::OptionDictionary & options, SteerLib::
 
 		_rvoLogger->writeData(labelStream.str());
 
+	}
+
+	tds.clear();
+	for (auto& goal : traindoors) {
+		train_door td = train_door(goal);	
+		tds.push_back(td);
 	}
 }
 
@@ -352,4 +369,29 @@ void RVO2DAIModule::cleanupSimulation()
 	gPhaseProfilers->reactivePhaseProfiler.reset();
 	gPhaseProfilers->steeringPhaseProfiler.reset();
 	// kdTree_->deleteObstacleTree(kdTree_->obstacleTree_);
+}
+ 
+
+RVO2DAIModule::train_door::train_door(Util::Point location)
+{
+	this->location = location;
+	this->vestibule = Util::AxisAlignedBox(location.x - 2.5, location.x + 2.5, 0, location.y, 0, 5);
+	this->status = boarding_status::alighting;
+}
+
+boarding_status RVO2DAIModule::train_door::check_boarding_status(RVO2DAIModule *RVOModule)
+{
+	//doors that are boarding will always allow boarding
+	if (status == boarding_status::boarding) {
+		return boarding_status::boarding;
+	}
+
+	for (auto& agent : RVOModule->agents_) {
+		if (agent->position().x >= vestibule.xmin && agent->position().x <= vestibule.xmax &&
+			agent->position().y >= vestibule.ymin && agent->position().y <= vestibule.ymax &&
+			agent->position().z >= vestibule.zmin && agent->position().z <= vestibule.zmax) {
+			return boarding_status::alighting;
+		}
+	}
+	return boarding_status::boarding;
 }

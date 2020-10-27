@@ -298,16 +298,19 @@ def generate_xml(radius, agents_per_region, platform_depth, outputName):
 
 
 		lengths = np.array([train_dims[0] / 2, -platform_depth])
+		leftover = 0
 		make_manual_agents_in_square(outroot, offset2d, lengths, agents_per_region, agent_radius, goals)
 		leftover = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths, agents_per_region, agent_radius, goals)
 
 		#agents within train
 		goal_alight = {
-			"goal_type": "statictarget",
-			"goal_location": [0,0]
+			"goal_type": "boxregion",
+			"targetLocation": [0,0],
+			"goal_region": [-18,38, -3,-5]
 		}
+
 		lengths_carriage = np.array([train_dims[0] / 2, platform_depth])
-		make_manual_agents_in_square(outroot, offset2d, lengths_carriage, 5, agent_radius, [goal_alight])
+		make_manual_agents_in_square(outroot, offset2d, lengths_carriage, 5, agent_radius, [goal_door, goal_alight])
 
 		if(leftover > 0):
 			bAddingCorridors = True
