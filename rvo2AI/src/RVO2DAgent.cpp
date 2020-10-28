@@ -301,6 +301,7 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	//set boarding status depending on position of agent. Those in the train must alight, those outside must board
 	if( _position.z >= 0 ){
 		loading_status = status::agent_alighting;
+		_color = Util::gDarkOrange;
 	}
 	else {
 		loading_status = status::agent_boarding;
