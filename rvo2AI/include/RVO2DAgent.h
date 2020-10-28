@@ -16,7 +16,6 @@
 #include "Obstacle.h"
 #include "RVO2D_Parameters.h"
 
-enum status {agent_unset, agent_boarding, agent_alighting};
 
 /**
  * @brief An example agent with very basic AI, that is part of the simpleAI plugin.
@@ -84,6 +83,7 @@ public:
 		this->_currentLocalTarget = _waypoints.front();
 	}
 #endif
+	//int chosen_door;
 
 protected:
 	/// Updates position, velocity, and orientation of the agent, given the force and dt time step.
@@ -150,7 +150,8 @@ protected:
 	int close_frames = 0;
 	bool counted_this_frame = false;
 	float _receprocity_factor;
-	status loading_status;
+	//status loading_status;
+
 
 };
 

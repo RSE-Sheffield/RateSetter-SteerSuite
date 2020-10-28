@@ -283,8 +283,8 @@ def generate_xml(radius, agents_per_region, platform_depth, outputName):
 
 		goal_in_train = {
 			"goal_type": "boxregion",
-			"targetLocation": [0,0],
-			"goal_region": [-18,38, 3,5]
+			"targetLocation": [4,5],
+			"goal_region": [-18,38, 4,5]
 		}
 		goal_door = {
 			"goal_type": "statictarget",
@@ -292,20 +292,15 @@ def generate_xml(radius, agents_per_region, platform_depth, outputName):
 		}
 
 
-		goals = [ goal_door, goal_in_train]
-		# door_goals.append(offset + np.array([7,0,0]))
-		# door_goals.append(offset + np.array([13,0,0]))
-
-
 		lengths = np.array([train_dims[0] / 2, -platform_depth])
 		leftover = 0
-		make_manual_agents_in_square(outroot, offset2d, lengths, agents_per_region, agent_radius, goals)
-		leftover = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths, agents_per_region, agent_radius, goals)
+		make_manual_agents_in_square(outroot, offset2d, lengths, agents_per_region, agent_radius, [ goal_door, goal_in_train])
+		leftover = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths, agents_per_region, agent_radius, [ goal_door, goal_in_train])
 
 		#agents within train
 		goal_alight = {
 			"goal_type": "boxregion",
-			"targetLocation": [0,0],
+			"targetLocation": [-3,-5],
 			"goal_region": [-18,38, -3,-5]
 		}
 

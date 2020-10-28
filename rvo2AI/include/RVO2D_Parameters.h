@@ -14,7 +14,7 @@
 #define RVO2D_PARAMETERS_H_
 
 #define NEIGHBOR_DISTANCE 10.0f
-#define MAX_NEIGHBORS 10
+#define MAX_NEIGHBORS 60
 #define TIME_HORIZON 2.0f
 #define MAX_SPEED 1.33f
 // #define PREFERRED_SPEED 1.33f

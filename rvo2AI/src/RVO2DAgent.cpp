@@ -859,21 +859,53 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		goalDirection = normalize(goalInfo.targetLocation - position());
 	}
 #ifdef TRAINHACKS
-	// If agent is in train, ensure goal is within train
+	/*// If agent is in train, ensure goal is within train
 	if (_position.z > 0.4f && _goalQueue.size() == 2 && loading_status == status::agent_boarding ) {
 		_goalQueue.pop();
 	}
 	else if (status::agent_alighting && _goalQueue.size() == 2 && _position.z < -0.4f) {
 		_goalQueue.pop();
-	}
+	}*/
 #endif
 
-	//Boarding/alighting affects whether to want to move
-	if (loading_status == status::agent_boarding) {
-		_prefVelocity = Util::Vector(0, 0, 0);
+	int agent_to_print = 14;
+	if (id() == agent_to_print) {
+		printf("chosen door: %d %d \t goals: %d \t gz: %f\n", chosen_door, loading_status, _goalQueue.size(), goalInfo.targetLocation.z);
 	}
-	else if (loading_status == status::agent_alighting) {
-		_prefVelocity = goalDirection * _RVO2DParams.rvo_max_speed;
+
+	//Boarding/alighting affects whether to want to move
+	switch(loading_status){
+		case status::agent_boarding:
+		{
+			//see if anyone nearby is alighting and using the same door
+			bool can_board = true;
+
+			for (size_t i = 0; i < agentNeighbors_.size(); ++i)
+			{
+				const SteerLib::AgentInterface* other = agentNeighbors_[i].second;
+				if (id() == agent_to_print) {
+					printf("%d: %d %d \t", other->id(),  other->chosen_door, other->loading_status);
+				}
+				if (other->chosen_door == chosen_door && other->loading_status == status::agent_alighting) {
+					can_board = false;
+				}
+			}
+
+			if (can_board) {
+				_prefVelocity = goalDirection * _RVO2DParams.rvo_max_speed;
+			}
+			else {
+				_prefVelocity = Util::Vector(0, 0, 0);
+			}
+		}
+			break;
+
+		case status::agent_alighting:
+			_prefVelocity = goalDirection * _RVO2DParams.rvo_max_speed;
+			break;
+	}
+	if (id() == agent_to_print) {
+		printf("\n ");
 	}
 
 
@@ -962,10 +994,13 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	 // Shortest distance to nearest door goal
 	float shortestDist = INFINITY;
 	if (_goalQueue.front().goalType == GOAL_TYPE_SEEK_STATIC_TARGET) {
+		int index = -1;
 		for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
+			index++;
 			if ((*it - position()).length() < shortestDist) {
 				shortestDist = (*it - position()).length();
-				
+				chosen_door = index;
+
 				//update goal if doors are the current goal
 				_goalQueue.front().targetLocation = *it;
 				goalInfo.targetLocation = *it;
@@ -985,10 +1020,13 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		// Shortest distance to nearest door goal
 		Util::Point newGoalLoc;
 		float shortestDist = (goalInfo.targetLocation - position()).length();
+		int index = -1;
 		for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
+			index++;
 			if ((*it - position()).length() < shortestDist) {
 				shortestDist = (*it - position()).length();
 				newGoalLoc = *it;
+				chosen_door = index;
 			}
 		}
 
@@ -1006,15 +1044,18 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		addGoal(newGoal);
 		addGoal(currentGoal);
 	}
-	if (_position.z > 0.2f && _goalQueue.size() == 1 && shortestDist > 0.4 && loading_status == status::agent_alighting) {
+	/*if (_position.z > 0.2f && _goalQueue.size() == 1 && shortestDist > 0.4 && loading_status == status::agent_alighting) {
 		// Shortest distance to nearest door goal
 		Util::Point newGoalLoc;
 		float shortestDist = (goalInfo.targetLocation - position()).length();
+		int index = -1;
 		for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
+			index++;
 			if ((*it - position()).length() < shortestDist) {
 				shortestDist = (*it - position()).length();
 				newGoalLoc = *it;
 				newGoalLoc.z = 0.f;
+				chosen_door = index;
 			}
 		}
 
@@ -1031,10 +1072,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		_goalQueue.pop();
 		addGoal(newGoal);
 		addGoal(currentGoal);
-	}
-	if (_id == 10) {
-		printf("%d %f\n", _goalQueue.size(), _position.z);
-	}
+	}*/
 #endif
 }
 

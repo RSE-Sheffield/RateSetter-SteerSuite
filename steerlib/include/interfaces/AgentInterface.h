@@ -21,6 +21,7 @@
 
 #define FURTHEST_LOCAL_TARGET_DISTANCE 40
 // #define DONT_PLAN 1
+enum status { agent_unset, agent_boarding, agent_alighting };
 
 namespace SteerLib {
 
@@ -115,6 +116,8 @@ namespace SteerLib {
 		// So AgentInterface can get Simulation members
 		virtual SteerLib::EngineInterface * getSimulationEngine() = 0;
 		std::queue<SteerLib::AgentGoalInfo> _goalQueue;
+		int chosen_door;
+		status loading_status;
 
 #define AGENT_NEIGHBOURS 10
 		virtual void insertAgentNeighbor(const SteerLib::AgentInterface * agent, float &rangeSq);
