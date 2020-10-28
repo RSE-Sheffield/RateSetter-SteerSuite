@@ -793,6 +793,7 @@ void RVO2DAgent::insertObstacleNeighbor(const ObstacleInterface *obstacle, float
 	}
 }
 
+//interpolated the value x to a vlaue betweeen y_max and y_min depending on the value of x compared to x_max and x_min 
 float interpolation(float y_max, float y_min, float x_max, float x_min, float x)
 {
 	if (x_max == x_min) {
@@ -868,7 +869,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	}*/
 #endif
 
-	int agent_to_print = 14;
+	int agent_to_print = -1;
 	if (id() == agent_to_print) {
 		printf("chosen door: %d %d \t goals: %d \t gz: %f\n", chosen_door, loading_status, _goalQueue.size(), goalInfo.targetLocation.z);
 	}
@@ -1013,7 +1014,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		}
 	}
 	// Adjust agent radius depending on distance to goal
-	_radius = interpolation(_max_radius, _min_radius, _far_dist, _near_dist, shortestDist);
+	_radius = interpolation(_min_radius, _max_radius, _far_dist, _near_dist, _position.z);
 
 	// In case an agent passes the first goal marker but gets stuck on the train outside. Add a door as a goal
 	if (_position.z < -0.2f && _goalQueue.size() == 1 && shortestDist > 0.4 && loading_status == status::agent_boarding) {

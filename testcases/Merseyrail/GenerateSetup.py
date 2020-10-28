@@ -304,8 +304,8 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 
 		lengths = np.array([train_dims[0] / 2, -platform_depth])
 		leftover = 0
-		make_manual_agents_in_square(outroot, offset2d, lengths, agents_per_region, agent_radius, [ goal_door, goal_in_train])
-		leftover = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths, agents_per_region, agent_radius, [ goal_door, goal_in_train])
+		make_manual_agents_in_square(outroot, offset2d- 0.3, lengths, agents_per_region, agent_radius, [ goal_door, goal_in_train])
+		leftover = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]) -0.3, lengths, agents_per_region, agent_radius, [ goal_door, goal_in_train])
 
 		lengths_carriage = np.array([train_dims[0] / 2, platform_depth])
 		make_manual_agents_in_square(outroot, offset2d, lengths_carriage, agents_in_carriage, agent_radius, [goal_door, goal_alight])
@@ -366,6 +366,7 @@ if __name__ == "__main__":
 	parser.add_argument("-oh", "--obstacleHeight", default = 1, help="visual height of obstacles")
 	parser.add_argument("-o", "--outputName", default = "merseyrail.xml", help="name of generated file ")
 	parser.add_argument("-d", "--depthPlatform", type = float, default = default_platform_depth, help="depth of the platform (z)")
+	parser.add_argument("-rand", "--randomSeed", type = int, default = 42, help="random seed for simulation")
 
 	args = parser.parse_args()
 
@@ -375,5 +376,7 @@ if __name__ == "__main__":
 	outputName = args.outputName
 	platform_depth = args.depthPlatform
 
+	if(args.randomSeed != -1):
+		random.seed(args.randomSeed)
 
 	generate_xml(agent_radius, agents_per_region, agents_per_carriage, platform_depth, outputName)
