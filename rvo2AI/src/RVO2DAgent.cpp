@@ -888,7 +888,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 				if (id() == agent_to_print) {
 					printf("%d: %d %d \t", other->id(),  other->chosen_door, other->loading_status);
 				}
-				if (other->chosen_door == chosen_door && other->loading_status == status::agent_alighting) {
+				if (other->chosen_door == chosen_door && other->loading_status == status::agent_alighting && other->position().z > -1.5f) {
 					can_board = false;
 				}
 			}
