@@ -200,7 +200,7 @@ def make_manual_agents_in_square(xmlroot, origin, lengths, num_agents, radius, g
 	box_occupancy = list(range(0,total_num))
 	box_size = box_lengths
 	box_center = box_size / 2
-	extra_space = (box_size - (2*radius)) / 2
+	extra_space = np.abs(box_size - (2*radius)) / 2
 	# print("nums per side")
 	# print(nums_per_side)
 	# print("box_size")
@@ -212,11 +212,16 @@ def make_manual_agents_in_square(xmlroot, origin, lengths, num_agents, radius, g
 		# select a free box
 		boxId = random.choice(box_occupancy)
 
+		# choose some space in the box
+		offset_range = 0.1
+		x_off = random.uniform(0, offset_range) * 2 - offset_range
+		y_off = random.uniform(0, offset_range) * 2 - offset_range
+
 		# convert boxId to real location in x-y and create
 		row_id = math.floor(boxId / nums_per_side[0])
 		colum_id = boxId % nums_per_side[0]
-		col_loc = origin[0] + (colum_id * box_size[0]) + box_center[0] #+ (-extra_space[1] + random.uniform(0,2) * extra_space[1])
-		row_loc = origin[1] + (row_id   * box_size[1]) + box_center[1] #+ (-extra_space[0] + random.uniform(0,2) * extra_space[0])
+		col_loc = origin[0] + (colum_id * box_size[0]) + box_center[0] + x_off#+ (-extra_space[1] + random.uniform(0,2) * extra_space[1])
+		row_loc = origin[1] + (row_id   * box_size[1]) + box_center[1] + y_off#+ (-extra_space[0] + random.uniform(0,2) * extra_space[0])
 		make_agent(xmlroot, radius, [col_loc, row_loc], goals)
 
 		# Set id as occupied
@@ -247,13 +252,13 @@ def add_corridor(xmlparent, origin, width, height):
 	make_obstacle_2d(xmlparent, origin + np.array([0,-height]), origin + np.array([width,-height+0.1]))
 
 
-def generate_xml(radius, agents_per_region, platform_depth, outputName):
+def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, outputName):
 	door_width =  1.5
 	train_dims = (20,5) #x,z
 	train_wall_thickness = 0.1 
 	plat_dims = ([100,platform_depth]) #x,z
 	plat_origin = np.array([-40,0,-platform_depth])
-
+	
 
 	outroot = initialize_xml()
 
@@ -290,6 +295,11 @@ def generate_xml(radius, agents_per_region, platform_depth, outputName):
 			"goal_type": "statictarget",
 			"goal_location": [0,0]
 		}
+		goal_alight = {
+			"goal_type": "boxregion",
+			"targetLocation": [-3,-5],
+			"goal_region": [-18,38, -3,-5]
+		}
 
 
 		lengths = np.array([train_dims[0] / 2, -platform_depth])
@@ -297,15 +307,9 @@ def generate_xml(radius, agents_per_region, platform_depth, outputName):
 		make_manual_agents_in_square(outroot, offset2d, lengths, agents_per_region, agent_radius, [ goal_door, goal_in_train])
 		leftover = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths, agents_per_region, agent_radius, [ goal_door, goal_in_train])
 
-		#agents within train
-		goal_alight = {
-			"goal_type": "boxregion",
-			"targetLocation": [-3,-5],
-			"goal_region": [-18,38, -3,-5]
-		}
-
 		lengths_carriage = np.array([train_dims[0] / 2, platform_depth])
-		make_manual_agents_in_square(outroot, offset2d, lengths_carriage, 5, agent_radius, [goal_door, goal_alight])
+		make_manual_agents_in_square(outroot, offset2d, lengths_carriage, agents_in_carriage, agent_radius, [goal_door, goal_alight])
+		make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths_carriage, agents_in_carriage, agent_radius, [goal_door, goal_alight])
 
 		if(leftover > 0):
 			bAddingCorridors = True
@@ -349,11 +353,14 @@ def generate_xml(radius, agents_per_region, platform_depth, outputName):
 if __name__ == "__main__":
 	default_agent_radius = 0.9
 	default_agents_per_region = 10
+	default_agents_per_carriage = 10
 	default_platform_depth = 6
 
 	parser = argparse.ArgumentParser(description='Generate Steersuite xml input file for train PTI')
 	parser.add_argument('-n','--numPerDoor', type=int, default=default_agents_per_region,
-                		help='number of people per door to spawn (default: 5')
+                		help='number of people per door to spawn (default: 10')
+	parser.add_argument('-nc','--numPerCarriage', type=int, default=default_agents_per_region,
+                		help='number of people per door to spawn starting within the carriage (default: 10')
 	parser.add_argument('-r','--radius', type=float, default=default_agent_radius,
                     	help='radius of agents in meters (default: 0.4m)')
 	parser.add_argument("-oh", "--obstacleHeight", default = 1, help="visual height of obstacles")
@@ -364,8 +371,9 @@ if __name__ == "__main__":
 
 	agent_radius = args.radius
 	agents_per_region= args.numPerDoor
+	agents_per_carriage= args.numPerCarriage
 	outputName = args.outputName
 	platform_depth = args.depthPlatform
 
 
-	generate_xml(agent_radius, agents_per_region, platform_depth, outputName)
+	generate_xml(agent_radius, agents_per_region, agents_per_carriage, platform_depth, outputName)
