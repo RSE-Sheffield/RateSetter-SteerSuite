@@ -101,9 +101,11 @@ namespace Util {
 		static void drawLineAlpha(const Point & startPoint, const Point & endPoint, const Color &color, float alpha);
 		static void drawLine(const Point & startPoint, const Point & endPoint, const Color &color, float thickness);
 		static void drawRay(const Ray & r, const Color & color);
-		static void drawQuad(const Point & a, const Point & b, const Point & c, const Point & d);
+		static void drawQuad(const Point& a, const Point& b, const Point& c, const Point& d);
+		static void drawQuad(const Point & a, const Point & b, const Point & c, const Point & d, const Color &color);
 		// static void drawCircle(const Point & center, float radius);
 		static void drawBox(float xmin, float xmax, float ymin, float ymax, float zmin, float zmax);
+		static void drawBox(float xmin, float xmax, float ymin, float ymax, float zmin, float zmax, const Color& color);
 		static void drawBoxWireFrame(float xmin, float xmax, float ymin, float ymax, float zmin, float zmax);
 		// static void drawOrientedBox(...);
 		// static void drawOrientedBoxWireFrame(...);

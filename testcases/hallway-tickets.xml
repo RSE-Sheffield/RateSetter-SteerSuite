@@ -36,7 +36,7 @@
     <xmax>100</xmax>
     <ymin>0</ymin>
     <ymax>1</ymax>
-    <zmin>8.01</zmin>
+    <zmin>4.01</zmin>
     <zmax>100</zmax>
   </obstacle>
 
@@ -46,80 +46,56 @@
     <ymin>0</ymin>
     <ymax>1</ymax>
     <zmin>-100</zmin>
-    <zmax>-8</zmax>
+    <zmax>-4</zmax>
   </obstacle>
 
 <obstacle>
-    <xmin>-100</xmin>
-    <xmax>100</xmax>
+    <xmin>-1</xmin>
+    <xmax>1</xmax>
     <ymin>0</ymin>
     <ymax>1</ymax>
-    <zmin>-100</zmin>
-    <zmax>-8</zmax>
+    <zmin>-4</zmin>
+    <zmax>-3.5</zmax>
   </obstacle>
 <obstacle>
     <xmin>-1</xmin>
     <xmax>1</xmax>
     <ymin>0</ymin>
     <ymax>1</ymax>
-    <zmin>-8</zmin>
-    <zmax>-7.7</zmax>
-  </obstacle>
-<obstacle>
-    <xmin>-1</xmin>
-    <xmax>1</xmax>
-    <ymin>0</ymin>
-    <ymax>1</ymax>
-    <zmin>-6.3</zmin>
-    <zmax>-6</zmax>
+    <zmin>-2.5</zmin>
+    <zmax>-2</zmax>
   </obstacle> 
 <obstacle>
     <xmin>-1</xmin>
     <xmax>1</xmax>
     <ymin>0</ymin>
     <ymax>1</ymax>
-    <zmin>-5</zmin>
-    <zmax>-4.7</zmax>
+    <zmin>-1</zmin>
+    <zmax>-0.5</zmax>
   </obstacle>
 <obstacle>
     <xmin>-1</xmin>
     <xmax>1</xmax>
     <ymin>0</ymin>
     <ymax>1</ymax>
-    <zmin>-3.3</zmin>
-    <zmax>-3</zmax>
+    <zmin>0.5</zmin>
+    <zmax>1</zmax>
   </obstacle>
 <obstacle>
     <xmin>-1</xmin>
     <xmax>1</xmax>
     <ymin>0</ymin>
     <ymax>1</ymax>
-    <zmin>-2</zmin>
-    <zmax>-1.7</zmax>
+    <zmin>2</zmin>
+    <zmax>2.5</zmax>
   </obstacle>
 <obstacle>
     <xmin>-1</xmin>
     <xmax>1</xmax>
     <ymin>0</ymin>
     <ymax>1</ymax>
-    <zmin>2.7</zmin>
-    <zmax>3</zmax>
-  </obstacle>
-<obstacle>
-    <xmin>-1</xmin>
-    <xmax>1</xmax>
-    <ymin>0</ymin>
-    <ymax>1</ymax>
-    <zmin>4.5</zmin>
-    <zmax>5</zmax>
-  </obstacle>
-<obstacle>
-    <xmin>-1</xmin>
-    <xmax>1</xmax>
-    <ymin>0</ymin>
-    <ymax>1</ymax>
-    <zmin>6.5</zmin>
-    <zmax>7</zmax>
+    <zmin>3.5</zmin>
+    <zmax>4</zmax>
   </obstacle>
 
   
@@ -135,7 +111,7 @@
     </regionBounds>
     <initialConditions>
       <direction> <x>0</x> <y>0</y> <z>0</z> </direction>
-      <radius>0.5</radius>
+      <radius>0.9</radius>
       <speed>1.2</speed>
     </initialConditions>
     <goalSequence>

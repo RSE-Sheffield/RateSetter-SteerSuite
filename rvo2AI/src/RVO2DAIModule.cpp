@@ -232,6 +232,7 @@ void RVO2DAIModule::preprocessFrame(float timeStamp, float dt, unsigned int fram
 		dynamic_cast<RVO2DAgent *>(agents_[i])->computeNeighbors();
 		dynamic_cast<RVO2DAgent *>(agents_[i])->computeNewVelocity(dt);
 	}*/
+
 }
 
 void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int frameNumber)
@@ -240,6 +241,7 @@ void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int fra
 	int i = 0;
 	i = i + i;
 	
+
 	//check if quiting this iteration
 	bool quitting = true;
 	for (auto& agent : agents_) {

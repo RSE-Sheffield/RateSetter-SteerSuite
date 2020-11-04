@@ -125,7 +125,9 @@ Options specified by the command line will override options in this configuratio
         <testCasePlayer>
             <ai>../bin/rvo2dAI</ai>
             <testcase>../../testcases/Merseyrail/merseyrail.xml</testcase>
-            <!--<testcase>../../testcases/hallway-one-way-wall.xml</testcase>-->
+            <!--<testcase>../../testcases/hallway-two-way.xml</testcase>-->
+            <!--<testcase>../../testcases/hallway-tickets.xml</testcase>-->
+            <testcase>../../testcases/hallway-barrier.xml</testcase>
         </testCasePlayer>
     </modules>
     <mouse>

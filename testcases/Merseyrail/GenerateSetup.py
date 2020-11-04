@@ -213,7 +213,7 @@ def make_manual_agents_in_square(xmlroot, origin, lengths, num_agents, radius, g
 		boxId = random.choice(box_occupancy)
 
 		# choose some space in the box
-		offset_range = 0.1
+		offset_range = 0.0
 		x_off = random.uniform(0, offset_range) * 2 - offset_range
 		y_off = random.uniform(0, offset_range) * 2 - offset_range
 
@@ -298,7 +298,7 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 		goal_alight = {
 			"goal_type": "boxregion",
 			"targetLocation": [-3,-5],
-			"goal_region": [-18,38, -3,-5]
+			"goal_region": [-18,38, -platform_depth+1,-platform_depth]
 		}
 
 
@@ -307,7 +307,7 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 		make_manual_agents_in_square(outroot, offset2d- 0.3, lengths, agents_per_region, agent_radius, [ goal_door, goal_in_train])
 		leftover = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]) -0.3, lengths, agents_per_region, agent_radius, [ goal_door, goal_in_train])
 
-		lengths_carriage = np.array([train_dims[0] / 2, platform_depth])
+		lengths_carriage = np.array([train_dims[0] / 2, 5])
 		make_manual_agents_in_square(outroot, offset2d, lengths_carriage, agents_in_carriage, agent_radius, [goal_door, goal_alight])
 		make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths_carriage, agents_in_carriage, agent_radius, [goal_door, goal_alight])
 
@@ -339,16 +339,108 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 	if not(bAddingCorridors):
 		make_obstacle(outroot, np.array([-20,0,-platform_depth]), np.array([40,0.1,-platform_depth]))
 
-	# write goals to file
-	# with file open as f:
-	# 	for g in door_goals:
-	# 		f.write("%f,%f,%f\n", g[0],g[1],g[2])
 
 	#write xml to file
 	outtree = ET.ElementTree(outroot)
 	print("writing to " + args.outputName)
 	indent(outroot)
 	outtree.write(args.outputName)
+
+
+def generate_xml_intercity(radius, agents_per_region, agents_in_carriage, platform_depth, outputName):
+	door_width =  1.3
+	train_dims = (24,5) #x,z
+	train_wall_thickness = 0.1 
+	plat_dims = ([100,platform_depth]) #x,z
+	plat_origin = np.array([-40,0,-platform_depth])
+	
+
+	outroot = initialize_xml()
+
+	# Location of doors (for goal purposes)
+	# door_goals = []
+	
+	# station+ rails
+	make_hollow_square_obstacle(outroot, plat_origin, plat_dims[0], plat_dims[1] + train_dims[1])
+	make_obstacle(outroot, np.array([-40,0,-platform_depth]), np.array([-20,0.1,-platform_depth]))
+	make_obstacle(outroot, np.array([40,0,-platform_depth]), np.array([60,0.1,-platform_depth]))
+
+	#block off rails
+	make_obstacle(outroot, np.array([-40,0,0]), np.array([-train_dims[0],0.1,0]))
+	make_obstacle(outroot, np.array([2*train_dims[0],0,0]), np.array([60,0.1,0]))
+
+
+	#tile for multiple trains
+	# train sides:
+	# make_obstacle(outroot, np.array([-20,0,0]), np.array([-20,0.1,5]))
+	# make_obstacle(outroot, np.array([40,0,0]), np.array([40,0.1,5]))
+	bAddingCorridors = False
+	tiling = [-1, 0, 1]
+	for i in tiling:
+		offset = np.array([i*train_dims[0],0,0])
+		offset2d = np.array([i*train_dims[0],0])
+		make_train_obstacles(outroot, offset, train_dims[0], train_dims[1], train_wall_thickness, [2,22], door_width, args.obstacleHeight)
+
+		goal_in_train = {
+			"goal_type": "boxregion",
+			"targetLocation": [4,5],
+			"goal_region": [-24,48, 4,5]
+		}
+		goal_door = {
+			"goal_type": "statictarget",
+			"goal_location": [0,0]
+		}
+		goal_alight = {
+			"goal_type": "boxregion",
+			"targetLocation": [-3,-5],
+			"goal_region": [-24,48, -platform_depth+1,-platform_depth]
+		}
+
+
+		lengths = np.array([train_dims[0] / 2, -platform_depth])
+		leftover = 0
+		make_manual_agents_in_square(outroot, offset2d- 0.3, lengths, agents_per_region, agent_radius, [ goal_door, goal_in_train])
+		leftover = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]) -0.3, lengths, agents_per_region, agent_radius, [ goal_door, goal_in_train])
+
+		lengths_carriage = np.array([train_dims[0] / 2, 5])
+		make_manual_agents_in_square(outroot, offset2d, lengths_carriage, agents_in_carriage, agent_radius, [goal_door, goal_alight])
+		make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths_carriage, agents_in_carriage, agent_radius, [goal_door, goal_alight])
+
+		if(leftover > 0):
+			bAddingCorridors = True
+			width = 6
+			height = (2 * leftover / math.floor(width / (2*agent_radius)) + 1)* (2*agent_radius)
+			20
+			corridor_origin = offset2d + np.array([(train_dims[0] - width) / 2, -platform_depth])
+			add_corridor(outroot, corridor_origin, width, height)
+			# print("issue making agents", file=sys.stderr)
+			# add walls opposite carriage
+			make_obstacle_2d( outroot, offset2d + np.array([0,-platform_depth - train_wall_thickness]), corridor_origin)
+			make_obstacle_2d( outroot, corridor_origin + np.array([width,-train_wall_thickness]), offset2d + np.array([ train_dims[0],-platform_depth]))
+
+			# Add remaining agents
+			goal_corridor = {
+				"goal_type": "boxregion",
+				"targetLocation": [0,0],
+				"goal_region": [corridor_origin[0] + 1.5, corridor_origin[0] + width - 1.5, -platform_depth+1.5, -platform_depth + 2]
+			}
+			goals = [ goal_door, goal_in_train]
+
+			corridor_leftover = make_manual_agents_in_square(outroot, corridor_origin, np.array([width, -height]), leftover*2, agent_radius, goals)
+			if corridor_leftover > 0:
+				print("corridor too small")
+
+			# raise Exception("issue making agents")
+	if not(bAddingCorridors):
+		make_obstacle(outroot, np.array([-20,0,-platform_depth]), np.array([40,0.1,-platform_depth]))
+
+
+	#write xml to file
+	outtree = ET.ElementTree(outroot)
+	print("writing to " + args.outputName)
+	indent(outroot)
+	outtree.write(args.outputName)
+
 
 if __name__ == "__main__":
 	default_agent_radius = 0.9
@@ -362,11 +454,12 @@ if __name__ == "__main__":
 	parser.add_argument('-nc','--numPerCarriage', type=int, default=default_agents_per_region,
                 		help='number of people per door to spawn starting within the carriage (default: 10')
 	parser.add_argument('-r','--radius', type=float, default=default_agent_radius,
-                    	help='radius of agents in meters (default: 0.4m)')
+                    	help='radius of agents social distance in meters (default: 0.9m)')
 	parser.add_argument("-oh", "--obstacleHeight", default = 1, help="visual height of obstacles")
 	parser.add_argument("-o", "--outputName", default = "merseyrail.xml", help="name of generated file ")
 	parser.add_argument("-d", "--depthPlatform", type = float, default = default_platform_depth, help="depth of the platform (z)")
-	parser.add_argument("-rand", "--randomSeed", type = int, default = 42, help="random seed for simulation")
+	parser.add_argument("-rand", "--randomSeed", type = int, default = -1, help="random seed for simulation. -1 for no seeding")
+	parser.add_argument("-c", "--carriage", type = int, default = 0, help="suburban (0) or intercity (1) train type", metavar="[0,1]")
 
 	args = parser.parse_args()
 
@@ -379,4 +472,9 @@ if __name__ == "__main__":
 	if(args.randomSeed != -1):
 		random.seed(args.randomSeed)
 
-	generate_xml(agent_radius, agents_per_region, agents_per_carriage, platform_depth, outputName)
+	if args.carriage == 0:
+		generate_xml(agent_radius, agents_per_region, agents_per_carriage, platform_depth, outputName)
+	elif args.carriage == 1:
+		generate_xml_intercity(agent_radius, agents_per_region, agents_per_carriage, platform_depth, outputName)
+	else:
+		print("invalid argument for carriage")

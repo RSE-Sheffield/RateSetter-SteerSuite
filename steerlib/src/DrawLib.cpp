@@ -167,6 +167,23 @@ void DrawLib::drawQuad(const Point& a, const Point& b, const Point& c, const Poi
 	glEnd();
 }
 
+void DrawLib::drawQuad(const Point& a, const Point& b, const Point& c, const Point& d, const Color& color)
+{
+	// Assuming the quad is convex and planar.  that way, we only have to compute the normal once.
+	Vector norm = normalize(cross((b - a), (d - a)));
+	glBegin(GL_QUADS);
+	{
+		glNormal(norm);
+		glVertex(a);
+		glNormal(norm);
+		glVertex(b);
+		glNormal(norm);
+		glVertex(c);
+		glNormal(norm);
+		glVertex(d);
+	}
+	glEnd();
+}
 
 //
 // drawStar()
@@ -323,6 +340,33 @@ void DrawLib::drawAgentDisc(const Point& pos, float radius, const Color& color)
 //
 void DrawLib::drawBox(float xmin, float xmax, float ymin, float ymax, float zmin, float zmax)
 {
+	Point topLeft(xmin, ymin - 0.01f, zmin);
+	Point topRight(xmax, ymin - 0.01f, zmin);
+	Point botLeft(xmin, ymin - 0.01f, zmax);
+	Point botRight(xmax, ymin - 0.01f, zmax);
+
+	Point topLefth(xmin, ymax, zmin);
+	Point topRighth(xmax, ymax, zmin);
+	Point botLefth(xmin, ymax, zmax);
+	Point botRighth(xmax, ymax, zmax);
+
+	// upper/lower plane
+	DrawLib::drawQuad(botLefth, botRighth, topRighth, topLefth);
+	DrawLib::drawQuad(topLeft, topRight, botRight, botLeft);
+
+	// top/bot sides
+	DrawLib::drawQuad(topLeft, topLefth, topRighth, topRight);
+	DrawLib::drawQuad(botRight, botRighth, botLefth, botLeft);
+
+	// left/right sides
+	DrawLib::drawQuad(botLeft, botLefth, topLefth, topLeft);
+	DrawLib::drawQuad(topRight, topRighth, botRighth, botRight);
+
+}
+void DrawLib::drawBox(float xmin, float xmax, float ymin, float ymax, float zmin, float zmax, const Color& color)
+{
+	glColor(color);
+
 	Point topLeft(xmin, ymin - 0.01f, zmin);
 	Point topRight(xmax, ymin - 0.01f, zmin);
 	Point botLeft(xmin, ymin - 0.01f, zmax);

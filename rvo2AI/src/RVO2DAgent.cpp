@@ -22,7 +22,9 @@
 // #define MAX_SPEED 1.33f
 #define AGENT_MASS 1.0f
 //set this define if using the merseyrail/PTI testcase
-#define TRAINHACKS
+//#define TRAINHACKS
+//#define SLOWREGION
+//#define DRAW_VESTIBULE
 
 using namespace Util;
 using namespace RVO2DGlobals;
@@ -30,14 +32,27 @@ using namespace SteerLib;
 
 // PTI goal locations hack
 float depth = 0.f;
+
+//#define INTERCITY
+#ifdef SUBURBAN
 std::vector<Util::Point> PossibleGoals = { Util::Point(-13,0,depth),
 								Util::Point(-7,0,depth),
 								Util::Point(7,0,depth),
 								Util::Point(13,0,depth),
 								Util::Point(27, 0, depth),
 								Util::Point(33, 0, depth) };
-
-
+#endif
+#ifdef INTERCITY
+std::vector<Util::Point> PossibleGoals = { Util::Point(-22,0,depth),
+								Util::Point(-2,0,depth),
+								Util::Point(2,0,depth),
+								Util::Point(22,0,depth),
+								Util::Point(26, 0, depth),
+								Util::Point(46, 0, depth) };
+#endif
+#ifdef SLOWREGION
+	Util::AxisAlignedBox slowRegion = Util::AxisAlignedBox(-5, 5, 0, 0, -5, 5);
+#endif
 
 
 // #define _DEBUG_ENTROPY 1
@@ -298,6 +313,7 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 		paramsFile.close();
 	}
 
+#ifdef TRAINHACKS
 	//set boarding status depending on position of agent. Those in the train must alight, those outside must board
 	if( _position.z >= 0 ){
 		loading_status = status::agent_alighting;
@@ -306,6 +322,7 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	else {
 		loading_status = status::agent_boarding;
 	}
+#endif
 }
 
 /*
@@ -905,12 +922,26 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		case status::agent_alighting:
 			_prefVelocity = goalDirection * _RVO2DParams.rvo_max_speed;
 			break;
+		default:
+			_prefVelocity = goalDirection * _RVO2DParams.rvo_max_speed;
 	}
 	if (id() == agent_to_print) {
 		printf("\n ");
 	}
 
-
+#ifdef SLOWREGION
+	//scale prefered velocity if agent is "on stairs"
+	Util::Color slow_color = Util::gCyan; // _color for ticket barrier. _gCyan for stairs
+	static Util::Color original_color = _color;
+	float slow_speed_factor = 0.4; //0.9 for ticket barrier. 0.7 for stairs
+	if (_position.x < slowRegion.xmax && _position.x > slowRegion.xmin && _position.z < slowRegion.zmax && _position.z > slowRegion.zmin) {
+		_prefVelocity *= slow_speed_factor;
+		_color = slow_color;
+	}
+	else {
+		_color = original_color;
+	}
+#endif
 
 #ifdef _DEBUG_ENTROPY
 	std::cout << "Preferred velocity is: " << prefVelocity_ << std::endl;
@@ -1016,6 +1047,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	}
 	// Adjust agent radius depending on distance to goal
 	_radius = interpolation(_min_radius, _max_radius, _far_dist, _near_dist, _position.z);
+	//_radius = interpolation(_max_radius, _min_radius, 3.f, 0.f, abs(_position.z));
 
 	// In case an agent passes the first goal marker but gets stuck on the train outside. Add a door as a goal
 	if (_position.z < -0.2f && _goalQueue.size() == 1 && shortestDist > 0.4 && loading_status == status::agent_boarding) {
@@ -1082,6 +1114,13 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 void RVO2DAgent::draw()
 {
 #ifdef ENABLE_GUI
+#ifdef DRAW_VESTIBULE
+	//draw vestibules
+	for (auto& it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
+		Util::DrawLib::drawBox(it->x - 2.5, it->x + 2.5, 0, 0.1, -1.5, 5, Util::gDarkGreen);
+	}
+#endif
+
 	AgentInterface::draw();
 	_position.y = getSimulationEngine()->getSpatialDatabase()->getLocation(this).y;
 	// if the agent is selected, do some annotations just for demonstration
