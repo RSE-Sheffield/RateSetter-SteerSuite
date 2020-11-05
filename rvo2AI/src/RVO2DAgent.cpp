@@ -22,7 +22,7 @@
 // #define MAX_SPEED 1.33f
 #define AGENT_MASS 1.0f
 //set this define if using the merseyrail/PTI testcase
-//#define TRAINHACKS
+#define TRAINHACKS
 //#define SLOWREGION
 //#define DRAW_VESTIBULE
 
@@ -33,7 +33,7 @@ using namespace SteerLib;
 // PTI goal locations hack
 float depth = 0.f;
 
-//#define INTERCITY
+#define SUBURBAN
 #ifdef SUBURBAN
 std::vector<Util::Point> PossibleGoals = { Util::Point(-13,0,depth),
 								Util::Point(-7,0,depth),

@@ -27,7 +27,7 @@ def indent(elem, level=0):
 #generate a steersuite xml obstacle, given 2 opposite points on a cuboid	
 def make_obstacle(xmlparent, point1, point2):
 	if(point1[0] > point2[0] or point1[1] > point2[1]):
-		print("obstacle args are incorrect way round")
+		raise Exception("obstacle args are incorrect way round")
 
 	obstacle = ET.SubElement(xmlparent, 'obstacle')
 	xmin = ET.SubElement(obstacle, 'xmin').text= str(point1[0])
@@ -38,20 +38,21 @@ def make_obstacle(xmlparent, point1, point2):
 	zmax = ET.SubElement(obstacle, 'zmax').text= str(point2[2])
 
 def make_obstacle_2d(xmlparent, point1, point2):
-	xmin = point1[0] if (point1[0] < point2[0]) else point2[0]
-	zmin = point1[1] if (point1[1] < point2[1]) else point2[1]
-	xmax = point2[0] if (point1[0] < point2[0]) else point1[0]
-	zmax = point2[1] if (point1[1] < point2[1]) else point1[1]
+	xmin, xmax = (point1[0],point2[0]) if (point1[0] < point2[0]) else (point2[0],point2[0])
+	zmin, zmax = (point1[1], point2[1]) if (point1[1] < point2[1]) else (point2[1], point1[1])
+	# xmax = point2[0] if (point1[0] < point2[0]) else point1[0]
+	# zmax = point2[1] if (point1[1] < point2[1]) else point1[1]
 
-	if(point1[0] > point2[0] or point1[1] > point2[1]):
-		print("obstacle args are incorrect way round")
+	# if(point1[0] > point2[0] or point1[1] > point2[1]):
+	# 	raise Exception("obstacle 2d args are incorrect way round")
+
 	obstacle = ET.SubElement(xmlparent, 'obstacle')
-	xmin = ET.SubElement(obstacle, 'xmin').text= str(point1[0])
-	xmax = ET.SubElement(obstacle, 'xmax').text= str(point2[0])
+	xmin = ET.SubElement(obstacle, 'xmin').text= str(xmin)
+	xmax = ET.SubElement(obstacle, 'xmax').text= str(xmax)
 	ymin = ET.SubElement(obstacle, 'ymin').text= "0"
 	ymax = ET.SubElement(obstacle, 'ymax').text= "0.5"
-	zmin = ET.SubElement(obstacle, 'zmin').text= str(point1[1])
-	zmax = ET.SubElement(obstacle, 'zmax').text= str(point2[1])
+	zmin = ET.SubElement(obstacle, 'zmin').text= str(zmin)
+	zmax = ET.SubElement(obstacle, 'zmax').text= str(zmax)
 
 	
 #Create an xml steersuite agent region that populates a region with similar parameters	
@@ -97,8 +98,10 @@ def make_train_obstacles(xmlroot, train_origin, length_x, length_z, wall_thickne
 	wall_2 = np.array([train_origin + np.array([0,0,length_z]), train_origin + np.array([length_x,obstacle_height,length_z+wall_thickness])]) #back side of carrage
 	
 	make_obstacle(xmlroot, wall_1[0], wall_1[1])
-	make_obstacle(xmlroot, wall_2[0], wall_2[1])
+	# make_obstacle(xmlroot, wall_2[0], wall_2[1])
 	make_obstacle(xmlroot, wall_3[0], wall_3[1])
+	make_obstacle(xmlroot, wall_2[0], wall_2[0] + np.array([length_x/2 - 3,obstacle_height,0]))
+	make_obstacle(xmlroot, wall_2[0] + np.array([length_x/2 + 3,0,0]), wall_2[1])
 	
 	#Make the front wall with door gaps
 	left_part = train_origin
@@ -252,13 +255,19 @@ def add_corridor(xmlparent, origin, width, height):
 	make_obstacle_2d(xmlparent, origin + np.array([0,-height]), origin + np.array([width,-height+0.1]))
 
 
-def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, outputName):
+def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, outputName, carriage_type):
 	door_width =  1.5
-	train_dims = (20,5) #x,z
 	train_wall_thickness = 0.1 
 	plat_dims = ([100,platform_depth]) #x,z
 	plat_origin = np.array([-40,0,-platform_depth])
-	
+	if(carriage_type == 0):
+		train_dims = (20,5) #x,z
+		doors_pos = (7, 13)
+	elif(carriage_type == 1):
+		train_dims = (24,5)
+		doors_pos = (2, 22)
+	else:
+		print("invalid argument for carriage")
 
 	outroot = initialize_xml()
 
@@ -266,9 +275,12 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 	# door_goals = []
 	
 	# station+ rails
-	make_hollow_square_obstacle(outroot, plat_origin, plat_dims[0], plat_dims[1] + train_dims[1])
+	# make_hollow_square_obstacle(outroot, plat_origin, plat_dims[0], plat_dims[1] + train_dims[1])
 	make_obstacle(outroot, np.array([-40,0,-platform_depth]), np.array([-20,0.1,-platform_depth]))
 	make_obstacle(outroot, np.array([40,0,-platform_depth]), np.array([60,0.1,-platform_depth]))
+	# pltofrom sides
+	make_obstacle(outroot, np.array([-40,0,-platform_depth]), np.array([-40,0.1,0]))
+	make_obstacle(outroot, np.array([60,0,-platform_depth]), np.array([60,0.1,0]))
 
 	#block off rails
 	make_obstacle(outroot, np.array([-40,0,0]), np.array([-20,0.1,0]))
@@ -280,11 +292,12 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 	# make_obstacle(outroot, np.array([-20,0,0]), np.array([-20,0.1,5]))
 	# make_obstacle(outroot, np.array([40,0,0]), np.array([40,0.1,5]))
 	bAddingCorridors = False
+	bAddingCarriageCorridors = False
 	tiling = [-1, 0, 1]
 	for i in tiling:
 		offset = np.array([i*train_dims[0],0,0])
 		offset2d = np.array([i*train_dims[0],0])
-		make_train_obstacles(outroot, offset, train_dims[0], train_dims[1], train_wall_thickness, [7, 13], door_width, args.obstacleHeight)
+		make_train_obstacles(outroot, offset, train_dims[0], train_dims[1], train_wall_thickness, doors_pos, door_width, args.obstacleHeight)
 
 		goal_in_train = {
 			"goal_type": "boxregion",
@@ -298,7 +311,7 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 		goal_alight = {
 			"goal_type": "boxregion",
 			"targetLocation": [-3,-5],
-			"goal_region": [-18,38, -platform_depth+1,-platform_depth]
+			"goal_region": [-18,38, -platform_depth+1.5,-platform_depth]
 		}
 
 
@@ -309,7 +322,7 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 
 		lengths_carriage = np.array([train_dims[0] / 2, 5])
 		make_manual_agents_in_square(outroot, offset2d, lengths_carriage, agents_in_carriage, agent_radius, [goal_door, goal_alight])
-		make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths_carriage, agents_in_carriage, agent_radius, [goal_door, goal_alight])
+		leftover_carriage = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths_carriage, agents_in_carriage, agent_radius, [goal_door, goal_alight])
 
 		if(leftover > 0):
 			bAddingCorridors = True
@@ -324,20 +337,33 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 			make_obstacle_2d( outroot, corridor_origin + np.array([width,-train_wall_thickness]), offset2d + np.array([ train_dims[0],-platform_depth]))
 
 			# Add remaining agents
-			goal_corridor = {
-				"goal_type": "boxregion",
-				"targetLocation": [0,0],
-				"goal_region": [corridor_origin[0] + 1.5, corridor_origin[0] + width - 1.5, -platform_depth+1.5, -platform_depth + 2]
-			}
 			goals = [ goal_door, goal_in_train]
 
 			corridor_leftover = make_manual_agents_in_square(outroot, corridor_origin, np.array([width, -height]), leftover*2, agent_radius, goals)
 			if corridor_leftover > 0:
 				print("corridor too small")
 
+
+		if(leftover_carriage > 0):
+			bAddingCarriageCorridors = True
+			width = 6
+			height = (2 * leftover_carriage / math.floor(width / (2*agent_radius)) + 1)* (2*agent_radius)
+			20
+			carriage_corridor_origin = offset2d + np.array([(train_dims[0] - width) / 2, train_dims[1]])
+			add_corridor(outroot, carriage_corridor_origin, width, -height)
+
+			# Add remaining agents
+			goals = [ goal_door, goal_alight]
+
+			corridor_leftover = make_manual_agents_in_square(outroot, carriage_corridor_origin, np.array([width, height]), leftover_carriage*2, agent_radius, goals)
+			# if corridor_leftover > 0:
+			# 	print("corridor too small")
+
 			# raise Exception("issue making agents")
 	if not(bAddingCorridors):
 		make_obstacle(outroot, np.array([-20,0,-platform_depth]), np.array([40,0.1,-platform_depth]))
+	if not(bAddingCarriageCorridors):
+		make_obstacle(outroot, np.array([-20,0,train_dims[1]]), np.array([40,args.obstacleHeight,train_dims[1] + 0.1]))
 
 
 	#write xml to file
@@ -402,10 +428,12 @@ def generate_xml_intercity(radius, agents_per_region, agents_in_carriage, platfo
 		make_manual_agents_in_square(outroot, offset2d- 0.3, lengths, agents_per_region, agent_radius, [ goal_door, goal_in_train])
 		leftover = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]) -0.3, lengths, agents_per_region, agent_radius, [ goal_door, goal_in_train])
 
+		# agents in carriage
 		lengths_carriage = np.array([train_dims[0] / 2, 5])
 		make_manual_agents_in_square(outroot, offset2d, lengths_carriage, agents_in_carriage, agent_radius, [goal_door, goal_alight])
-		make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths_carriage, agents_in_carriage, agent_radius, [goal_door, goal_alight])
-
+		carriage_leftover = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths_carriage, agents_in_carriage, agent_radius, [goal_door, goal_alight])
+		print("foo")
+		print(carriage_leftover)
 		if(leftover > 0):
 			bAddingCorridors = True
 			width = 6
@@ -431,6 +459,32 @@ def generate_xml_intercity(radius, agents_per_region, agents_in_carriage, platfo
 				print("corridor too small")
 
 			# raise Exception("issue making agents")
+	
+		if(carriage_leftover > 0 ):
+			print("guu")
+			bAddingCarriageCorridors = True
+			width = 6
+			height = (2 * leftover / math.floor(width / (2*agent_radius)) + 1)* (2*agent_radius)
+			20
+			corridor_origin = offset2d + np.array([(train_dims[0] - width) / 2, train_dims[1]])
+			add_corridor(outroot, corridor_origin, width, height)
+			# print("issue making agents", file=sys.stderr)
+			# add walls opposite carriage
+			make_obstacle_2d( outroot, offset2d + np.array([0,-platform_depth - train_wall_thickness]), corridor_origin)
+			make_obstacle_2d( outroot, corridor_origin + np.array([width,-train_wall_thickness]), offset2d + np.array([ train_dims[0],-platform_depth]))
+
+			# Add remaining agents
+			goal_corridor = {
+				"goal_type": "boxregion",
+				"targetLocation": [0,0],
+				"goal_region": [corridor_origin[0] + 1.5, corridor_origin[0] + width - 1.5, -platform_depth+1.5, -platform_depth + 2]
+			}
+			goals = [ goal_door, goal_in_train]
+
+			corridor_leftover = make_manual_agents_in_square(outroot, corridor_origin, np.array([width, -height]), leftover*2, agent_radius, goals)
+			if corridor_leftover > 0:
+				print("corridor too small")
+
 	if not(bAddingCorridors):
 		make_obstacle(outroot, np.array([-20,0,-platform_depth]), np.array([40,0.1,-platform_depth]))
 
@@ -472,9 +526,4 @@ if __name__ == "__main__":
 	if(args.randomSeed != -1):
 		random.seed(args.randomSeed)
 
-	if args.carriage == 0:
-		generate_xml(agent_radius, agents_per_region, agents_per_carriage, platform_depth, outputName)
-	elif args.carriage == 1:
-		generate_xml_intercity(agent_radius, agents_per_region, agents_per_carriage, platform_depth, outputName)
-	else:
-		print("invalid argument for carriage")
+	generate_xml(agent_radius, agents_per_region, agents_per_carriage, platform_depth, outputName, args.carriage)
