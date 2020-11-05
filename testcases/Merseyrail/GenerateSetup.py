@@ -283,8 +283,8 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 	make_obstacle(outroot, np.array([60,0,-platform_depth]), np.array([60,0.1,0]))
 
 	#block off rails
-	make_obstacle(outroot, np.array([-40,0,0]), np.array([-20,0.1,0]))
-	make_obstacle(outroot, np.array([40,0,0]), np.array([60,0.1,0]))
+	make_obstacle(outroot, np.array([-40,0,0]), np.array([-train_dims[0],0.1,0]))
+	make_obstacle(outroot, np.array([2*train_dims[0],0,0]), np.array([60,0.1,0]))
 
 
 	#tile for multiple trains
@@ -311,7 +311,7 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 		goal_alight = {
 			"goal_type": "boxregion",
 			"targetLocation": [-3,-5],
-			"goal_region": [-18,38, -platform_depth+1.5,-platform_depth]
+			"goal_region": [-train_dims[0],2*train_dims[0], -platform_depth+1.5,-platform_depth]
 		}
 
 

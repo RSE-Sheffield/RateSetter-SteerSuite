@@ -33,7 +33,7 @@ using namespace SteerLib;
 // PTI goal locations hack
 float depth = 0.f;
 
-#define SUBURBAN
+#define INTERCITY
 #ifdef SUBURBAN
 std::vector<Util::Point> PossibleGoals = { Util::Point(-13,0,depth),
 								Util::Point(-7,0,depth),
