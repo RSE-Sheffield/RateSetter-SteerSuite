@@ -250,7 +250,7 @@ void DrawLib::drawCircle(const Point& loc, const Color& color, float scale, int 
 	}
 }
 
-float pedestrian_radius = 0.4f;
+float pedestrian_radius = 0.2f;
 float pedestrian_height = 3.0f;
 
 
