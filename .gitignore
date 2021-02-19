@@ -403,6 +403,7 @@ build/vs2012/DebugUtils.vcxproj
 *.rec
 
 #Everything in bin folder - generated from cmake
+build/
 build/vs2012/*
 build/bin/*
 !*.xml
