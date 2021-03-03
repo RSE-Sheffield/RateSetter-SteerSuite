@@ -303,7 +303,10 @@ project "steerlib"
 			
 	 configuration { "linux" }
 		buildoptions("-std=c++0x -ggdb" )	
-		links { "tinyxml" }
+		links { 
+			"tinyxml",
+			"pthread"
+		}
 
 project "glfw"
 	kind "SharedLib"
