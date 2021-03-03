@@ -9,9 +9,9 @@ Options specified by the command line will override options in this configuratio
     Options related to the simulation engine
     -->
         <!-- can be either "fixed-fast" (fixed simulation frame rate, running as fast as possible), "fixed-real-time" (fixed simulation frame rate, running in real-time), or "variable-real-time" (variable simulation frame rate in real-time). -->
-        <clockMode>fixed-real-time</clockMode>
+        <clockMode>fixed-fast</clockMode>
         <!-- The fixed frames-per-second for the simulation clock.  This value is used when simulationClockMode is "fixed-fast" or "fixed-real-time". -->
-        <fixedFPS>60</fixedFPS>
+        <fixedFPS>20</fixedFPS>
         <!-- The maximum time-step allowed when the clock is in "variable-real-time" mode.  If the proposed time-step is larger, this value will be used instead, at the expense of breaking synchronization between simulation time and real-time. -->
         <maxVariableDt>0.2</maxVariableDt>
         <!-- The minimum time-step allowed when the clock is in "variable-real-time" mode.  If the proposed time-step is smaller, this value will be used instead, effectively limiting the max frame rate. -->
@@ -19,7 +19,7 @@ Options specified by the command line will override options in this configuratio
         <!-- The default directory to search for dynamic plug-in modules at runtime. -->
         <moduleSearchPath>./</moduleSearchPath>
         <!-- The default number of frames to simulate - 0 means run the entire simulation until all agents are disabled. -->
-        <numFrames>500</numFrames>
+        <numFrames>0</numFrames>
         <!-- The default number of threads to run on the simulation -->
         <numThreads>1</numThreads>
         <!-- The default directory to search for test cases at runtime. -->
@@ -85,11 +85,11 @@ Options specified by the command line will override options in this configuratio
     Options related to the openGL visualization and interaction.  Also, make sure to look at the engine driver options for more interface-related options.
     -->
         <!-- The background color of the openGL visualization -->
-        <backgroundColor> <r>0.5</r> <g>0.5</g> <b>0.5</b> </backgroundColor>
+        <backgroundColor> <r>0.5</r> <g>0.5</g> <b>0.28</b> </backgroundColor>
         <!-- The 3-D point the camera will look at -->
-        <cameraLookAt> <x>10</x> <y>0</y> <z>-5</z> </cameraLookAt>
+        <cameraLookAt> <x>0</x> <y>0</y> <z>-5</z> </cameraLookAt>
         <!-- Camera's physical position in the 3-D scene -->
-        <cameraPosition> <x>10</x> <y>37</y> <z>40</z> </cameraPosition>
+        <cameraPosition> <x>0</x> <y>37</y> <z>40</z> </cameraPosition>
         <!-- The vector that represnts the upright orientation for the camera -->
         <cameraUp> <x>0</x> <y>1</y> <z>0</z> </cameraUp>
         <!-- The vertical field of view of the camera, in degrees -->
@@ -123,8 +123,8 @@ Options specified by the command line will override options in this configuratio
     Module-specific options.  Any options specified on the command-line will override the options specified here.  Modules specified here will not necessarily be loaded when started; for that use the startupModules option for the engine.
     -->
         <testCasePlayer>
-            <ai>../bin/rvo2dAI</ai>
-            <testcase>../../testcases/Merseyrail/merseyrail.xml</testcase>
+            <ai>dummyAI</ai>
+            <testcase>simple-1.xml</testcase>
         </testCasePlayer>
     </modules>
     <mouse>
@@ -136,7 +136,7 @@ Options specified by the command line will override options in this configuratio
     <!--
     Options related to the planning domain
     -->
-        <!-- Options selects which planning tool to use during simulation, gridDomain, navmeshDomain, or acclmeshDomain -->
+        <!-- Options selects which planning tool to use during simulation -->
         <planner>gridDomain</planner>
         <domainSettings>
         <!--
@@ -150,8 +150,8 @@ Options specified by the command line will override options in this configuratio
     <!--
     Options related to the spatial database
     -->
-        <!-- Option to select the database type to use , gridDatabase, kdTreeDatabase, or  meshDatabase-->
-        <useDatabase>kdTreeDatabase</useDatabase>
+        <!-- Option to select the database type to use ,  -->
+        <useDatabase>gridDatabase</useDatabase>
         <gridDatabase>
         <!--
         Options related to the grid database

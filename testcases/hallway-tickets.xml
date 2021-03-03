@@ -112,7 +112,7 @@
     <initialConditions>
       <direction> <x>0</x> <y>0</y> <z>0</z> </direction>
       <radius>0.9</radius>
-      <speed>1.2</speed>
+      <speed>0.0</speed>
     </initialConditions>
     <goalSequence>
 		<seekAxisAlignedBoxRegion>
@@ -121,7 +121,7 @@
 			  <y>0</y>
 			  <z>0</z>
 			</targetLocation>
-			<desiredSpeed>1.3</desiredSpeed>
+			<desiredSpeed>0.0</desiredSpeed>
 			<timeDuration>1000.0</timeDuration>
 			<goalRegionBounds>
 			  <xmin>95</xmin>
