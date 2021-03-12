@@ -33,7 +33,7 @@ using namespace SteerLib;
 // PTI goal locations hack
 float depth = 0.f;
 
-#define INTERCITY
+//#define SUBURBAN
 #ifdef SUBURBAN
 std::vector<Util::Point> PossibleGoals = { Util::Point(-13,0,depth),
 								Util::Point(-7,0,depth),
@@ -1005,6 +1005,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		}
 	}
 
+
 	// Hear the 2D solution from RVO is converted into the 3D used by SteerSuite
 	// _velocity = Vector(velocity().x, 0.0f, velocity().z);
 	if ( velocity().length() > 0.0 )
@@ -1050,7 +1051,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	//_radius = interpolation(_max_radius, _min_radius, 3.f, 0.f, abs(_position.z));
 
 	// In case an agent passes the first goal marker but gets stuck on the train outside. Add a door as a goal
-	if (_position.z < -0.2f && _goalQueue.size() == 1 && shortestDist > 0.4 && loading_status == status::agent_boarding) {
+	if (_position.z < -0.2f && _goalQueue.size() == 1 && shortestDist > MIN_RADIUS && loading_status == status::agent_boarding) {
 		// Shortest distance to nearest door goal
 		Util::Point newGoalLoc;
 		float shortestDist = (goalInfo.targetLocation - position()).length();
@@ -1078,7 +1079,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		addGoal(newGoal);
 		addGoal(currentGoal);
 	}
-	/*if (_position.z > 0.2f && _goalQueue.size() == 1 && shortestDist > 0.4 && loading_status == status::agent_alighting) {
+	if (_position.z > 0.1f && _goalQueue.size() == 1 && loading_status == status::agent_alighting) {
 		// Shortest distance to nearest door goal
 		Util::Point newGoalLoc;
 		float shortestDist = (goalInfo.targetLocation - position()).length();
@@ -1106,7 +1107,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		_goalQueue.pop();
 		addGoal(newGoal);
 		addGoal(currentGoal);
-	}*/
+	}
 #endif
 }
 
