@@ -1,8 +1,18 @@
-cmake_minimum_required( VERSION 2.8.11 )
-project( SteerSuite )
+cmake_minimum_required( VERSION 2.8.12 )
+# This file is equivalent to the `solution` in premake4.
+# implemented for out-of-tree builds (i.e. in the `build` directory)
+
+# Total project / solution name + the languages required (C++)
+project(steersuite LANGUAGES C CXX)
+
+# Set the location of output binaries and libraries, into /lib/bin
+# @todo - move this to common?
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+# Set a bunch of compiler settings. @todo - move these to common / 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
 set(CMAKE_DEBUG_POSTFIX "d")
-
 include(CheckCXXCompilerFlag)
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
   if(EMSCRIPTEN)
@@ -68,8 +78,14 @@ add_definitions(-DENABLE_GUI -DENABLE_GLFW -DGLFW_DLL)
 #  add_definitions(-DENABLE_QT)
 #endif()
 
+
+# @todo OSX specific settings... Not sure how I can test this (without public CI..?)
+
+# @todo - make tinyxml/glfw dynamic via cmake (if ditching premake?) 
 add_subdirectory( external/tinyxml )
 add_subdirectory( external/glfw )
+
+# @todo - add all the sub-projects.
 add_subdirectory( util )
 add_subdirectory( steerlib )
 add_subdirectory( steersimlib )
@@ -81,6 +97,10 @@ add_subdirectory( pprAI )
 add_subdirectory( external/recastnavigation )
 add_subdirectory( navmeshBuilder )
 add_subdirectory( steerbench )
+add_subdirectory( kdtree )
 add_subdirectory( documentation )
 
-install(DIRECTORY testcases DESTINATION share)
+
+
+# @todo - install rule. 
+# install(DIRECTORY testcases DESTINATION share)

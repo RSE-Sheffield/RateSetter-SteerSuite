@@ -407,3 +407,6 @@ build/
 build/vs2012/*
 build/bin/*
 !*.xml
+
+# Any top level folder starting with build
+build*/
