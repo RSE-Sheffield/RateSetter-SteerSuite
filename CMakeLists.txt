@@ -1,15 +1,85 @@
-cmake_minimum_required( VERSION 2.8.12 )
+# Enforce vaguley modern cmake. @todo - pick an actual version 
+cmake_minimum_required( VERSION 3.1 )
 # This file is equivalent to the `solution` in premake4.
 # implemented for out-of-tree builds (i.e. in the `build` directory)
 
 # Total project / solution name + the languages required (C++)
 project(steersuite LANGUAGES C CXX)
 
+# Define some CMake options, to be passed via CLI or via the GUI, to control build options.
+
+# Enable the GUI.
+option(ENABLE_GUI "Enable the GUI" ON)
+
+# If using a GUI, enable the GLFW version of the gui
+# @todo - dependent option + mutually exclusive? 
+option(ENABLE_GLFW "Enable GLFW" ON)
+
+# If using a GUI, enable the QT version of the gui.
+# @todo - dependent option + mutually exclusive? 
+option(ENABLE_QT "Enable QT GUI" OFF)
+
+# There are no programatic tests, so no need for this option.
+# option(BUILD_TESTS "Enable building tests" OFF)
+
+
+
+# Find dependencies and set compiler flags based on options.
+
+
+message(STATUS "ENABLE_GUI ${ENABLE_GUI}")
+message(STATUS "ENABLE_GLFW ${ENABLE_GLFW}")
+message(STATUS "ENABLE_QT ${ENABLE_QT}")
+
+if(ENABLE_GUI)
+  message(STATUS "Find GUI dependencies @todo.")
+  # OpenGL etc are required regardless of GLFW/QT.
+  find_package(X11 REQUIRED)
+  set(OpenGL_GL_PREFERENCE "GLVND") # Or set to "LEGACY"?
+  find_package(OpenGL REQUIRED)
+  find_package(GLEW REQUIRED)
+  find_package(GLUT REQUIRED)
+  # @todo - move this include statement.
+  include_directories(${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${GLUT_INCLUDE_DIR})
+  # @todo - move ths definiton statment?
+  add_definitions(-DENABLE_GUI)
+  
+  if(ENABLE_GLFW)
+    message(STATUS "Find GLFW? or download rather than shipping a specific version in external? (If only cmake as build system)")
+    add_definitions(-DENABLE_GLFW -DGLFW_DLL)
+  endif() # Enable GLFW
+  
+  if(ENABLE_QT)
+  message(STATUS "Find QT? @todo")
+    # find_package(Qt5Core)
+    #find_package(Qt5Gui)
+    #find_package(Qt5OpenGL)
+    #if(${Qt5OpenGL_FOUND})
+    #  include_directories(${Qt5OpenGL_INCLUDE_DIRS})
+    #  add_definitions(-DENABLE_QT)
+    #endif()
+  endif()
+endif()
+
+
+# C/C++ threads are required by several compontents. Find it once for earlier failure.
+find_package(Threads REQUIRED)
+
+
+
 # Set the location of output binaries and libraries, into /lib/bin
 # @todo - move this to common?
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+# CMAKE_C_COMPILER_ID
+# CMAKE_CXX_COMPILER_ID
+# AppleClang
+# Clang
+# GNU
+# MSVC
+
 # Set a bunch of compiler settings. @todo - move these to common / 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
 set(CMAKE_DEBUG_POSTFIX "d")
@@ -64,26 +134,18 @@ if((CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX) AND NOT MINGW)
   endif()
 endif()
 
-find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
-find_package(GLUT REQUIRED)
-include_directories(${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${GLUT_INCLUDE_DIR})
-add_definitions(-DENABLE_GUI -DENABLE_GLFW -DGLFW_DLL)
-#set(CMAKE_AUTOMOC ON)
-#find_package(Qt5Core)
-#find_package(Qt5Gui)
-#find_package(Qt5OpenGL)
-#if(${Qt5OpenGL_FOUND})
-#  include_directories(${Qt5OpenGL_INCLUDE_DIRS})
-#  add_definitions(-DENABLE_QT)
-#endif()
-
 
 # @todo OSX specific settings... Not sure how I can test this (without public CI..?)
 
-# @todo - make tinyxml/glfw dynamic via cmake (if ditching premake?) 
+# @todo - make tinyxml/glfw dynamic via cmake (if removing premake?) 
 add_subdirectory( external/tinyxml )
-add_subdirectory( external/glfw )
+add_subdirectory( external/recastnavigation )
+
+# @todo - only enable glfw if enable_GUI is also on?
+if(ENABLE_GUI AND ENABLE_GLFW)
+  add_subdirectory( external/glfw )
+endif()
+
 
 # @todo - add all the sub-projects.
 add_subdirectory( util )
@@ -94,13 +156,17 @@ add_subdirectory( simpleAI )
 add_subdirectory( socialForcesAI )
 add_subdirectory( rvo2AI )
 add_subdirectory( pprAI )
-add_subdirectory( external/recastnavigation )
 add_subdirectory( navmeshBuilder )
 add_subdirectory( steerbench )
 add_subdirectory( kdtree )
+
+# Add the documentaiton?
 add_subdirectory( documentation )
 
 
 
-# @todo - install rule. 
+# @todo - install rule(s) - not sure what premake4 does for this.
 # install(DIRECTORY testcases DESTINATION share)
+
+
+# @todo - replace use of glob in subprojects with explicit lists of sources. Glob is not reccomended by cmake/kitware.
