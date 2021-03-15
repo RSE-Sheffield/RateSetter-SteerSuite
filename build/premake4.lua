@@ -398,10 +398,10 @@ project "simpleAI"
 	}
 	
 		
-	
+	-- This is named wrong?
 	configuration { "macosx" }
 		linkoptions { 
-			"-install_name @rpath/libutil.dylib"
+			"-install_name @rpath/libutil.dylib" 
 		}
 		buildoptions("-std=c++0x -ggdb" )	
 		
@@ -707,3 +707,5 @@ if file_exists("premake4-dev.lua")
 	then
 	dofile("premake4-dev.lua")
 end
+
+

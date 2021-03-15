@@ -1,19 +1,24 @@
-file(GLOB RVO2AI_SRC src/*.cpp)
-file(GLOB RVO2AI_HDR include/*.h)
+set(RVO2AI_INCLUDE
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/API.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/RVO2DAgent.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/RVO2DAIModule.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/RVO2D_Parameters.h")
+set(RVO2AI_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/RVO2DAgent.cpp"
+               "${CMAKE_CURRENT_SOURCE_DIR}/src/RVO2DAIModule.cpp")
+set(RVO2AI_INCLUDE_DIRS
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../external"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../steerlib/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../util/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../kdtree/include")
 
-add_library(rvo2dAI SHARED ${RVO2AI_SRC} ${RVO2AI_HDR})
-target_include_directories(rvo2dAI PRIVATE
-  ./include
-  ../external
-  ../steerlib/include
-  ../util/include
-  ../kdtree/include
-)
+add_library(rvo2dAI SHARED ${RVO2AI_SRC} ${RVO2AI_INCLUDE})
+target_include_directories(rvo2dAI PRIVATE ${RVO2AI_INCLUDE_DIRS})
 target_link_libraries(rvo2dAI steerlib util)
-add_dependencies(rvo2dAI steerlib util)
 
-install(TARGETS rvo2dAI
+install(
+  TARGETS rvo2dAI
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib)
-install(FILES ${RVO2AI_HDR} DESTINATION include/rvo2AI)
+install(FILES ${RVO2AI_INCLUDE} DESTINATION include/rvo2AI)
