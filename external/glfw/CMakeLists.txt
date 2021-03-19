@@ -21,7 +21,7 @@ target_include_directories(glfw PRIVATE
   ./include/GL
 )
 target_compile_definitions(glfw PRIVATE -DGLFW_BUILD_DLL)
-target_link_libraries(glfw OpenGL::GL GLEW::GLEW GLUT::GLUT)
+target_link_libraries(glfw OpenGL::GL OpenGL::GLU GLEW::GLEW GLUT::GLUT)
 
 if(WIN32)
   target_compile_definitions(glfw PRIVATE -D_GLFW_USE_LINUX_JOYSTICKS -D_GLFW_HAS_XRANDR -D_GLFW_HAS_PTHREAD -D_GLFW_HAS_SCHED_YIELD -D_GLFW_HAS_GLXGETPROCADDRESS -DGLFW_BUILD_DLL)
@@ -34,11 +34,9 @@ elseif(APPLE)
   target_link_libraries(glfw ${COCOA_LIBRARY} ${IOKIT_LIBRARY} pthread)
 else()
   find_package(X11 REQUIRED)
-  find_library(XRANDR_LIBRARY Xrandr)
-  mark_as_advanced(XRANDR_LIBRARY)
   target_compile_definitions(glfw PRIVATE -D_GLFW_USE_LINUX_JOYSTICKS -D_GLFW_HAS_XRANDR -D_GLFW_HAS_PTHREAD -D_GLFW_HAS_SCHED_YIELD -D_GLFW_HAS_GLXGETPROCADDRESS)
   target_include_directories(glfw PRIVATE lib/x11 ${X11_INCLUDE_DIR})
-  target_link_libraries(glfw pthread ${X11_LIBRARIES} ${XRANDR_LIBRARY})
+  target_link_libraries(glfw pthread ${X11_LIBRARIES} X11::Xrandr)
 endif()
 
 install(TARGETS glfw

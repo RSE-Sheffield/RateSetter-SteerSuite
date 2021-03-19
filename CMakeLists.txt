@@ -64,7 +64,7 @@ if(ENABLE_GUI)
   find_package(GLUT REQUIRED)
   # X11 is required by GLFW in some cases?
   if(NOT WIN32 AND NOT APPLE)
-    find_package(X11 REQUIRED)
+    find_package(X11 COMPONENTS Xrandr REQUIRED)
   endif()
 
   include_directories(${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIR}
