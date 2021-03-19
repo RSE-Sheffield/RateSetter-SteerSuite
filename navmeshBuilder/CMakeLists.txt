@@ -54,7 +54,7 @@ set(NAVMESH_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/../util/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/../kdtree/include")
 
-add_library(navmesh SHARED ${NAVMESH_SRC} ${NAVMESH_INCLUDE})
+add_library(navmesh MODULE ${NAVMESH_SRC} ${NAVMESH_INCLUDE})
 target_include_directories(navmesh PRIVATE ${NAVMESH_INCLUDE_DIRS})
 target_link_libraries(
   navmesh
@@ -73,3 +73,7 @@ install(
   ARCHIVE DESTINATION lib)
 
 # @todo osx "-install_name @rpath/libnavmesh.dylib"
+
+# Construct source groups for IDEs
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include PREFIX include FILES ${NAVMESH_INCLUDE})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX src FILES ${NAVMESH_SRC})

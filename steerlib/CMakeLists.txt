@@ -128,7 +128,8 @@ set(STEERLIB_INCLUDE_DIRS
 add_library(steerlib SHARED ${STEERLIB_SRC} ${STEERLIB_INCLUDE})
 target_include_directories(steerlib PRIVATE ${STEERLIB_INCLUDE_DIRS})
 target_link_libraries(steerlib tinyxml util)
-# target_link_libraries(steerlib ${GLUT_LIBRARIES}))
+target_link_libraries(steerlib OpenGL::GL GLEW::GLEW GLUT::GLUT)
+
 
 install(
   TARGETS steerlib
@@ -138,3 +139,8 @@ install(
 # @todo - install rules
 install(DIRECTORY include/ DESTINATION include/steerlib)
 install(DIRECTORY ../external/mersenne DESTINATION include/steerlib)
+
+
+# Construct source groups for IDEs
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include PREFIX include FILES ${STEERLIB_INCLUDE})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX src FILES ${STEERLIB_SRC})

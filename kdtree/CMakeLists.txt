@@ -16,7 +16,7 @@ set(KDTREE_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/../steerlib/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/../util/include")
 
-add_library(kdtree SHARED ${KDTREE_SRC} ${KDTREE_INCLUDE})
+add_library(kdtree MODULE ${KDTREE_SRC} ${KDTREE_INCLUDE})
 target_include_directories(kdtree PRIVATE ${KDTREE_INCLUDE_DIRS})
 target_link_libraries(kdtree steerlib util)
 
@@ -27,3 +27,7 @@ install(
   ARCHIVE DESTINATION lib)
 
 # @todo - osx link options "-install_name @rpath/libkdtree.dylib"
+
+# Construct source groups for IDEs
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include PREFIX include FILES ${KDTREE_INCLUDE})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX src FILES ${KDTREE_SRC})

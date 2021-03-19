@@ -25,14 +25,14 @@ set(STEERSIMLIB_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/RecFilePlayerWidget.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/SteerSim.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/TestCasePlayerWidget.cpp")
-set(STEESIMLIB_INCLUDE_DIRS
+set(STEERSIMLIB_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/../external"
     "${CMAKE_CURRENT_SOURCE_DIR}/../steerlib/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/../util/include")
 
 add_library(steersimlib SHARED ${STEERSIMLIB_SRC} ${STEERSIMLIB_INCLUDE})
-target_include_directories(steersimlib PRIVATE ${STEESIMLIB_INCLUDE_DIRS})
+target_include_directories(steersimlib PRIVATE ${STEERSIMLIB_INCLUDE_DIRS})
 target_link_libraries(steersimlib steerlib util tinyxml)
 
 if(ENABLE_GUI AND ENABLE_GLFW)
@@ -63,9 +63,6 @@ install(
 
 install(DIRECTORY include/ DESTINATION include/steersimlib)
 
-# @todo - check if make install works nicely? @todo - rpath. @todo - osx console
-# mode, -install_name @todo - enforce clang on osx? @todo - test on windows /
-# see what msvc changes John has made lately? @todo - config specific
-# directories. Currently they just overwrite each other which I think is
-# intended? This is fine for linux / osx, don't think msvc will do this (I.e.
-# what does msvc currenrlty do)
+# Construct source groups for IDEs
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include PREFIX include FILES ${STEERSIMLIB_INCLUDE})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX src FILES ${STEERSIMLIB_SRC})

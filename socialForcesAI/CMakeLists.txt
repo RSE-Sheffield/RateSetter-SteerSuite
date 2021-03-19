@@ -10,7 +10,7 @@ set(SFAI_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/../steerlib/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/../util/include")
 
-add_library(sfAI SHARED ${SFAI_SRC} ${SFAI_INCLUDE})
+add_library(sfAI MODULE ${SFAI_SRC} ${SFAI_INCLUDE})
 target_include_directories(sfAI PRIVATE ${SFAI_INCLUDE_DIRS})
 target_link_libraries(sfAI steerlib util)
 
@@ -20,3 +20,7 @@ install(
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib)
 install(FILES ${SFAI_INCLUDE} DESTINATION include/sfAI)
+
+# Construct source groups for IDEs
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include PREFIX include FILES ${SFAI_INCLUDE})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX src FILES ${SFAI_SRC})

@@ -12,7 +12,7 @@ set(RVO2AI_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/../util/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/../kdtree/include")
 
-add_library(rvo2dAI SHARED ${RVO2AI_SRC} ${RVO2AI_INCLUDE})
+add_library(rvo2dAI MODULE ${RVO2AI_SRC} ${RVO2AI_INCLUDE})
 target_include_directories(rvo2dAI PRIVATE ${RVO2AI_INCLUDE_DIRS})
 target_link_libraries(rvo2dAI steerlib util)
 
@@ -22,3 +22,7 @@ install(
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib)
 install(FILES ${RVO2AI_INCLUDE} DESTINATION include/rvo2AI)
+
+# Construct source groups for IDEs
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include PREFIX include FILES ${RVO2AI_INCLUDE})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX src FILES ${RVO2AI_SRC})
