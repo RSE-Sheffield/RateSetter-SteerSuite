@@ -60,15 +60,16 @@ if(ENABLE_GUI)
   # OpenGL etc are required regardless of GLFW/QT.
   set(OpenGL_GL_PREFERENCE "GLVND") # Or set to "LEGACY"?
   find_package(OpenGL REQUIRED)
-  find_package(GLEW REQUIRED)
+  # find_package(GLEW REQUIRED)
   find_package(GLUT REQUIRED)
   # X11 is required by GLFW in some cases?
   if(NOT WIN32 AND NOT APPLE)
     find_package(X11 COMPONENTS Xrandr REQUIRED)
   endif()
 
-  include_directories(${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIR}
-                      ${GLUT_INCLUDE_DIR})
+  include_directories(${OPENGL_INCLUDE_DIR})
+  # include_directories(${GLEW_INCLUDE_DIR})
+  include_directories(${GLUT_INCLUDE_DIR})
 
   # Add the compile definition.
   add_compile_definitions(ENABLE_GUI)

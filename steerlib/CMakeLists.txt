@@ -129,7 +129,8 @@ add_library(steerlib SHARED ${STEERLIB_SRC} ${STEERLIB_INCLUDE})
 target_include_directories(steerlib PRIVATE ${STEERLIB_INCLUDE_DIRS})
 target_link_libraries(steerlib tinyxml util)
 if(ENABLE_GUI)
-    target_link_libraries(steerlib OpenGL::GL OpenGL::GLU GLEW::GLEW GLUT::GLUT)
+    target_link_libraries(steerlib OpenGL::GL OpenGL::GLU GLUT::GLUT)
+    # target_link_libraries(steerlib GLEW::GLEW)
 endif()
 
 install(

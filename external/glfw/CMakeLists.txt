@@ -21,7 +21,8 @@ target_include_directories(glfw PRIVATE
   ./include/GL
 )
 target_compile_definitions(glfw PRIVATE -DGLFW_BUILD_DLL)
-target_link_libraries(glfw OpenGL::GL OpenGL::GLU GLEW::GLEW GLUT::GLUT)
+target_link_libraries(glfw OpenGL::GL OpenGL::GL GLUT::GLUT)
+# target_link_libraries(glfw GLEW::GLEW)
 
 if(WIN32)
   target_compile_definitions(glfw PRIVATE -D_GLFW_USE_LINUX_JOYSTICKS -D_GLFW_HAS_XRANDR -D_GLFW_HAS_PTHREAD -D_GLFW_HAS_SCHED_YIELD -D_GLFW_HAS_GLXGETPROCADDRESS -DGLFW_BUILD_DLL)
