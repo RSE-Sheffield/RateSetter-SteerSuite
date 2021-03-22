@@ -88,21 +88,19 @@ Below are quick instructions for compiling with default options. For
 more complete instructions, refer to the
 [SteerSuite User Guide](http://steersuite.eecs.yorku.ca/UserGuide/).
 
-As with any graphics library you will need to make sure you already
-have the OpenGL libraries on your computer. For example on
-Ubuntu 14.04 you will want to install the following:
+Steersuite has several dependencies:
 
-    freeglut3-dev build-essential libx11-dev libxmu-dev libxi-dev libgl1-mesa-glx libglu1-mesa libglu1-mesa-dev libglew1.6-dev mesa-utils libglew-dev premake4
++ [CMake](http://cmake.org/) as a cross platform build system generator
++ C++ compiler for your platform (i.e. gcc/g++, clang/clang++, MSVC) and the platform specific build system (Make, Visual Studio, Xcode).
++ Optionally graphics libraries if interactive visualisations are required, including OpenGL and GLUT/FreeGLUT (and possibly GLEW).
 
-This will install OpenGL and GLEW.
-
-On Windows you will need to download glut32.lib and the opengl header files and put them in your Visual Studio library path.
-
-Alternatively use `vcpkg` to install the required dependencies. The vcpkg toolchain must then be passed to CMake. 
-
-Note: The build system has been updated and now uses
-[CMake](http://cmake.org/). You are going to need to have
-this installed to be able to build the software.
+For example, on Ubuntu 20.04 the following should be sufficient
+```bash
+    apt-get install cmake build-essential libx11-dev libxmu-dev libxi-dev libgl1-mesa-glx libglu1-mesa libglu1-mesa-dev libglew1.6-dev mesa-utils libglew-dev freeglut3-dev  
+```
+On Windows you will need to download and install CMake and an appropriate version of Visual Studio, with the appropriate Graphics drivers installed for yout system.
+If GLUT or FreeGLUT cannot be found by CMake, a copy of FreeGLUT 3 will be downloaded during CMake configuration and it will be compiled at build time, otherwise a system-wide install of glut/freeglut will be used instead. 
+`vcpkg` can be use 
 
 Executable files will be placed within the `build/bin/<config>` directory (where `build` is the chosen out of tree build directory). 
 `.so` and `.lib` will be in `build/lib/<config>`. 
@@ -126,26 +124,38 @@ Executable files will be placed within the `build/bin/<config>` directory (where
 
 #### Linux 
 
-```
+```bash
 mkdir -p build 
 cd build
-cmake .. -DENABLE_GUI=ON -DCMAKE_BUILD_TYPE=Release
+cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build . -j `nproc`
 ```
 
 #### Windows
 
-```
-@todo - Similar to above but with powershell. 
--A x64 to restrict to 64bit only 
--G "Visual Studio 2019 16" or similar to select version.
-Build type is handled within Visual studio.
+```powershell
+mkdir -p build
+cd build
+# Generate 64-bit applications using for Visual Studio 2019 
+cmake .. -A x64 -G "Visual Studio 16 2019"
+# Open Visual Studio
+cmake --open . 
+# Or build from the command line 
+cmake --build . --config Release --target ALL_BUILD
 ```
 
-#### macOs 
+#### macOS
 
-```
-@todo.
+> Note macOS instructions are untested
+
+```bash
+mkdir -p build 
+cd build
+cmake .. 
+# Open Xcode
+cmake --open .
+# Or build from teh command line
+cmake --build . --config Release --target all
 ```
 
 ### CMake Build Options
@@ -154,14 +164,14 @@ Build type is handled within Visual studio.
 
 Makefile-like Cmake generators select the build config at Cmake Configuraiton time, using `CMAKE_BUILD_TYPE`. 
 
-```
+```bash
 cmake .. -DCMAKE_BUILD_TYPE=Debug
 ```
 
 Multi-target generators such as Visual Studio and xcode handle this as usual, however if `cmake --build` is being used in place of the IDE, the `--config` parameter can be used.
 
-```
-cd build && cmake --build . --config Debug 
+```bash
+cmake --build . --config Debug 
 ```
 
 `Release` and `Debug` are the only configurations which are likely to be required, although `RelWithDebInfo` (optimised debug) and `MinSizeRel` (optimised for file size not speed) are also available.
@@ -171,7 +181,7 @@ cd build && cmake --build . --config Debug
 Steersim/Steerbench can be used with GLFW based visualisation, or in batch mode without visualisation via the `-commandline` flag. 
 To use of batch mode in locations where OpenGL dependencies may not be available (such as regular nodes in HPC systems), cmake can be configured without the GUI enabled, by setting `ENABLE_GUI=OFF` either via the command line or gui. I.e.
 
-```
+```bash
 cmake .. -DENABLE_GUI=OFF
 ```
 the `-commmandline` argument must still be passed when running the application in batch mode.
