@@ -102,7 +102,7 @@ endif()
 
 # Set a bunch of compiler settings. @todo - move these to common /
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
-set(CMAKE_DEBUG_POSTFIX "d")
+# set(CMAKE_DEBUG_POSTFIX "d")
 
 # add debug/ndebug definitions for correct assertion behaviour (no asserts in)
 add_compile_definitions($<IF:$<CONFIG:Debug>,DEBUG,NDEBUG>)
