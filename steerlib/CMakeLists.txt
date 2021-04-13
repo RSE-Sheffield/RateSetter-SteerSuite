@@ -135,6 +135,9 @@ if(ENABLE_GUI)
     # target_link_libraries(steerlib GLEW::GLEW)
 endif()
 
+# For portable configuration files, steerlib now needs to know the subdirectory to check in if the config file does not directly point to the dll/so folder.
+target_compile_definitions(steerlib PRIVATE CMAKE_BUILD_TYPE_STR="$<CONFIG>")
+
 install(
   TARGETS steerlib
   RUNTIME DESTINATION bin

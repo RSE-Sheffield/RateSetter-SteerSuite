@@ -904,6 +904,7 @@ SteerLib::ModuleMetaInformation * SimulationEngine::_loadModule(const std::strin
 		std::string libstr = "lib";
 #endif
 
+		// Check in each path provided to this function 
 		std::vector<string> paths = split(searchPath,':');
 		bool foundModule=false;
 		std::string moduleFileName = searchPath + libstr + moduleName + extension;
@@ -913,11 +914,21 @@ SteerLib::ModuleMetaInformation * SimulationEngine::_loadModule(const std::strin
 			std::cout << "checking: " << moduleFileName << " for module" << std::endl;
 			if (isExistingFile(moduleFileName)) {
 				foundModule=true;
-				
 			}
-			
+			#if defined(CMAKE_BUILD_TYPE_STR)
+			else {
+				// If possible, also check in a build config specific directory
+				moduleFileName = paths[p] + CMAKE_BUILD_TYPE_STR + "/" + libstr + moduleName + extension;
+				std::cout << "checking: " << moduleFileName << " for module" << std::endl;
+				if (isExistingFile(moduleFileName)) {
+					foundModule=true;
+				}
+			}
+			#endif
 		}
 
+
+		// Check the engine's module search paths
 		paths = split(_options->engineOptions.moduleSearchPath,':');
 		for (size_t p=0; (!foundModule) && (p < paths.size()); p++)
 		{
@@ -926,18 +937,34 @@ SteerLib::ModuleMetaInformation * SimulationEngine::_loadModule(const std::strin
 			if (isExistingFile(moduleFileName)) {
 				foundModule=true;
 			}
-			
+			#if defined(CMAKE_BUILD_TYPE_STR)
+			else {
+				// If possible, also check in a build config specific directory
+				moduleFileName = paths[p] + CMAKE_BUILD_TYPE_STR + "/" + libstr + moduleName + extension;
+				std::cout << "checking: " << moduleFileName << " for module" << std::endl;
+				if (isExistingFile(moduleFileName)) {
+					foundModule=true;
+				}
+			}
+			#endif
 		}
-
+		// Check the current directory.
 		if ( !foundModule )
 		{
 			moduleFileName = libstr + moduleName + extension;
-			if (!isExistingFile(moduleFileName)) {
-			
-			}
-			else{
+			if (isExistingFile(moduleFileName)) {
 				foundModule=true;
 			}
+			#if defined(CMAKE_BUILD_TYPE_STR)
+			else {
+				// If possible, also check in a build config specific directory
+				moduleFileName = std::string() + CMAKE_BUILD_TYPE_STR + "/" + libstr + moduleName + extension;
+				std::cout << "checking: " << moduleFileName << " for module" << std::endl;
+				if (isExistingFile(moduleFileName)) {
+					foundModule=true;
+				}
+			}
+			#endif
 		}
 
 		if (!foundModule)
@@ -945,19 +972,19 @@ SteerLib::ModuleMetaInformation * SimulationEngine::_loadModule(const std::strin
 			// if it still didn't work, then cause an error.
 			throw GenericException("Could not find the module named \"" + moduleName + "\".\n" +
 				"  tried user-specified search path: " + searchPath + moduleName + extension +"\n" +
+				#if defined(CMAKE_BUILD_TYPE_STR)
+					"  tried user-specified search path: " + searchPath + CMAKE_BUILD_TYPE_STR + "/" + moduleName + extension +"\n" +
+				#endif
 				"  tried engine's search path: " + _options->engineOptions.moduleSearchPath + moduleName + extension +"\n" +
-				"  tried the current directory: " + moduleName + extension +"\n");
+				#if defined(CMAKE_BUILD_TYPE_STR)
+					"  tried engine's search path: " + _options->engineOptions.moduleSearchPath + CMAKE_BUILD_TYPE_STR + "/" + moduleName + extension +"\n" +
+				#endif
+				"  tried the current directory: " + moduleName + extension +"\n"
+				#if defined(CMAKE_BUILD_TYPE_STR)
+					+ "  tried the current build config directory: " + CMAKE_BUILD_TYPE_STR + "/" + moduleName + extension +"\n"
+				#endif
+				);
 		}
-
-		if (!foundModule)
-		{
-			// if it still didn't work, then cause an error.
-			throw GenericException("Could not find the module named \"" + moduleName + "\".\n" +
-				"  tried user-specified search path: " + searchPath + moduleName + extension +"\n" +
-				"  tried engine's search path: " + _options->engineOptions.moduleSearchPath + moduleName + extension +"\n" +
-				"  tried the current directory: " + moduleName + extension +"\n");
-		}
-
 
 		// load the dynamic library
 		newModuleLib = new DynamicLibrary(moduleFileName);
