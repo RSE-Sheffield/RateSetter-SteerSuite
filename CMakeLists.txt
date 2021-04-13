@@ -8,19 +8,20 @@ include(CMakeDependentOption)
 # This file is equivalent to the `solution` in premake4.
 # implemented for out-of-tree builds (i.e. in the `build` directory)
 
+# Set the defualt CMAKE BUILD TYPE to Release (for make-like generators)
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the build type")
+
 project(
   steersuite 
   LANGUAGES C CXX)
 
 # ###########################
 
-# Set the location of output binaries and libraries, into /lib/bin 
-# Multi-configuration generators automaticall append the config to the output directories, unless a genex is used. 
-# This is sensible, but steersuite is not designed to account for this. 
-# Instead, make it a generator expression with the noop genex $<0:> 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/$<0:>)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/$<0:>)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/$<0:>)
+
+# Set the location of output binaries and libraries, into /lib/bin/<config>. This should be standardised for both generator types.
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/$<CONFIG>)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/$<CONFIG>)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/$<CONFIG>)
 
 # Set fpic the modern cmake way. This could be per-target.
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
