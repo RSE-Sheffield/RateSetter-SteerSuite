@@ -130,12 +130,19 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang
   else()
     # Additionaly suppressions currently required to get (almost) warning-free builds with gcc 10.
     # Some of these are valid warnings that should be fixed instead of beind suppressed.
-    add_compile_options(-Wno-sign-compare -Wno-ignored-qualifiers -Wno-unused-but-set-variable -Wno-cast-qual -Wno-deprecated-declarations -Wno-format -Wno-unused-variable -Wno-misleading-indentation)
+    add_compile_options(-Wno-sign-compare -Wno-ignored-qualifiers -Wno-cast-qual -Wno-deprecated-declarations -Wno-format -Wno-unused-variable -Wno-misleading-indentation)
+    # GCC only options
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+      add_compile_options(-Wno-unused-but-set-variable -Wno-unused-but-set-parameter)
+    endif()
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+
+    endif()
   endif()
   if(EMSCRIPTEN)
     add_compile_options(-Wno-warn-absolute-paths)
   elseif(NOT APPLE)
-    add_compile_options(-Wno-unused-but-set-parameter)
+    # add_compile_options()
   endif()
 endif()
 
