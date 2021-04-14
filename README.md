@@ -182,6 +182,61 @@ the `-commmandline` argument must still be passed when running the application i
 The previous premake-based build system justifiably set high warning levels, however this led to thousands of warnings being emitted and so compiler warning levels have been set very low by default.
 A higher level of warnings can be enables by setting `ENABLE_WARNINGS=ON` via the cmake commandline or GUI. This is not currently recommended unless you are intending to fix the warnings.
 
+
+Debuggging Steersim
+-------------------
+
+When built using the `Debug` config (or `RelWithDebInfo` to a certain extent), source level debugging can be achieved through Visual Studio, or `gdb` depending on platform. This support may also be available other IDEs/editors such as visual studio code.
+
+### Visual Studio
+
+@todo - instructions for debugging.
+
+
+### Visual Studio Code (linux)
+
+Under linux (and presumably other OS) Visual Studio Code can be used to graphically debug c++ applications, by creating the file `.vscode/launch.json`, and adjusting it with teh appropraite paths.
+
+For instance, to debug a `Debug` build, in the `build` directory, running the `Merseyrail` config located at `testcases/Merseyrail/myconfig.xml` the following may be a good starting point:
+
+```
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/bin/Debug/steersim",
+            "args": ["-config", "../testcases/Merseyrail/myconfig.xml"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}
+```
+
+
+If you are using the CMake vscode plugin, this may be a little different/simpler.
+
+### GDB
+
+`gdb` can be used for command line debugging, probably by using the `--args` option.
+As steersim loads shard objects at runtime, setting breakpoints in objects loaded at runtime will generate warnings, and may require setting additional options for source files to be successfully located.
+
 Contact information
 -------------------
 

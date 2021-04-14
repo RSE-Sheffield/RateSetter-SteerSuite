@@ -410,3 +410,6 @@ build/bin/*
 
 # Any top level folder starting with build
 build*/
+
+# The vscode directory, which is generally not portable
+.vscode/ 
