@@ -98,6 +98,8 @@ This will install OpenGL and GLEW.
 
 On Windows you will need to download glut32.lib and the opengl header files and put them in your Visual Studio library path.
 
+Alternatively use `vcpkg` to install the required dependencies. The vcpkg toolchain must then be passed to CMake. 
+
 Note: The build system has been updated and now uses
 [CMake](http://cmake.org/). You are going to need to have
 this installed to be able to build the software.
