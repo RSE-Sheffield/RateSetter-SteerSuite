@@ -1,3 +1,0 @@
-min_soc_dist 0.2
-region_far -1
-region_close -5

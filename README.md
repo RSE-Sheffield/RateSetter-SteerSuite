@@ -37,9 +37,6 @@ Directory structure
 
 The directory structure of this package is as follows:
 
-    build           - Unix scripts and Visual Studio 2012 solution file
-                      to compile all components of SteerSuite.
-
     documentation   - raw unprocessed documentation and instructions for
                       building the documentation.
 
@@ -102,35 +99,52 @@ This will install OpenGL and GLEW.
 On Windows you will need to download glut32.lib and the opengl header files and put them in your Visual Studio library path.
 
 Note: The build system has been updated and now uses
-[premake4](http://premake.github.io/). You are going to need to have
+[CMake](http://cmake.org/). You are going to need to have
 this installed to be able to build the software.
 
-### Windows 7/8 with Visual Studio 2012
+Executable files will be placed within the `build/bin/<config>` directory (where `build` is the chosen out of tree build directory). 
+`.so` and `.lib` will be in `build/lib/<config>`. 
 
-Run `premake4 --platform=x64 vs2012` and choose Debug/Release and
-32/64 bit mode. Most components should compile successfully, and all
-compiled components will be in the `build/bin` folder.
 
-### Linux/Unix
+### CMake GUI
 
-First run the following:
++ Open the CMake GUI
++ Select the root of the repository as the source directory
++ Create and select the `build` directory within the source directory to build artifacts into
++ Press `Configure`, choosing the desired Generator for your platform
+  + On Linux select `Unix Makefiles`
+  + On Windows select the appropriate Visual Studio Version
+  + On Macos **@todo**
++ Change any options as required. 
+  + I.e. uncheck `ENABLE_GUI` if you do not want to build with visualiastion enabled
++ Press `Generate`
++ You can then build through your chosen IDE, or navigate to the `build` directory and execute `cmake --build .`
 
-    cd build
-    premake4 gmake
-    cd gmake
+### CMake CLI
 
-Then run `make config=[debug|release]`, depending on your preference
-for the type of build.
+#### Linux 
 
-All components are copied into the `build/bin` and `build/lib`
-directories.
+```
+mkdir -p build 
+cd build
+cmake .. -DENABLE_GUI=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build . -j `nproc`
+```
 
-### Mac OS X
+#### Windows
 
-For now, the process is the same as Linux/Unix.  With OS X version
-10.4 or earlier, you may need to use an `LD_LIBRARY_PATH` environment
-variable for the executable to properly link with shared and dynamic
-libraries.
+```
+@todo - Similar to above but with powershell. 
+-A x64 to restrict to 64bit only 
+-G "Visual Studio 2019 16" or similar to select version.
+Build type is handled within Visual studio.
+```
+
+#### macOs 
+
+```
+@todo.
+```
 
 Contact information
 -------------------
