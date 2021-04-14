@@ -148,6 +148,40 @@ Build type is handled within Visual studio.
 @todo.
 ```
 
+### CMake Build Options
+
+#### Build Configuration
+
+Makefile-like Cmake generators select the build config at Cmake Configuraiton time, using `CMAKE_BUILD_TYPE`. 
+
+```
+cmake .. -DCMAKE_BUILD_TYPE=Debug
+```
+
+Multi-target generators such as Visual Studio and xcode handle this as usual, however if `cmake --build` is being used in place of the IDE, the `--config` parameter can be used.
+
+```
+cd build && cmake --build . --config Debug 
+```
+
+`Release` and `Debug` are the only configurations which are likely to be required, although `RelWithDebInfo` (optimised debug) and `MinSizeRel` (optimised for file size not speed) are also available.
+
+#### GUI
+
+Steersim/Steerbench can be used with GLFW based visualisation, or in batch mode without visualisation via the `-commandline` flag. 
+To use of batch mode in locations where OpenGL dependencies may not be available (such as regular nodes in HPC systems), cmake can be configured without the GUI enabled, by setting `ENABLE_GUI=OFF` either via the command line or gui. I.e.
+
+```
+cmake .. -DENABLE_GUI=OFF
+```
+the `-commmandline` argument must still be passed when running the application in batch mode.
+
+
+#### Compiler Warnings
+
+The previous premake-based build system justifiably set high warning levels, however this led to thousands of warnings being emitted and so compiler warning levels have been set very low by default.
+A higher level of warnings can be enables by setting `ENABLE_WARNINGS=ON` via the cmake commandline or GUI. This is not currently recommended unless you are intending to fix the warnings.
+
 Contact information
 -------------------
 
