@@ -190,6 +190,7 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	_forward = normalize(initialConditions.direction);
 	//_radius = initialConditions.radius + d(gen);
 	_radius = initialConditions.radius;
+	_isBag = initialConditions.isBag;
 	_velocity = initialConditions.speed * _forward;
 
 	neighborDist_ = _RVO2DParams.rvo_neighbor_distance;
@@ -903,10 +904,11 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 				goalDirection = normalize((*it)->position() - position());
 				goalInfo.targetLocation = (*it)->position();
 				_prefVelocity = goalDirection;
-				std::cout << "goal dir: " << goalDirection << 
-					"\tvel: " << velocity() << 
-					"\t_prefVelocity"  << _prefVelocity << std::endl;
-				break;
+
+				//print helpful vals
+				//std::cout << "goal dir: " << goalDirection << 
+				//	"\tvel: " << velocity() << 
+				//	"\t_prefVelocity"  << _prefVelocity << std::endl;
 			}
 		}
 	}

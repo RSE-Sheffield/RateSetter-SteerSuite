@@ -385,6 +385,11 @@ void TestCaseReaderPrivate::_parseAgent(const ticpp::Element * subRoot)
 		else if (childTagName == "goalSequence") {
 			_parseGoalSequence(&(*child), newAgent.goals);
 		}
+		else if (childTagName == "bag") {
+			std::string bag_value;
+			child->GetText(&bag_value);
+			_parseBag(bag_value, newAgent);
+		}
 		else {
 			throw GenericException("Unexpected tag <" + childTagName + "> found on line " + toString(child->Row()) + "\n");
 		}
@@ -785,6 +790,25 @@ void TestCaseReaderPrivate::_parseGoalSequence(const ticpp::Element * subRoot, s
 
 }
 
+void SteerLib::TestCaseReaderPrivate::_parseBag(std::string bag_value, RawAgentInfo & newAgent)
+{
+	//ticpp::Iterator<ticpp::Element> child;
+	//std::string childTagName = child->Value();
+
+	//read the value within the bag tag
+	//std::string bag_value;
+	//child->GetText(&bag_value);
+
+	if (bag_value == "true") {
+		newAgent.isBag = true;
+		newAgent.color = Util::Color(0.5, 0.5, 0.5);
+		newAgent.colorSet = true;
+	}
+	else if (bag_value == "false") {
+		newAgent.isBag = false;
+	}
+}
+
 /*
  * Parses out the Behaviour information of something like
  * 	<Behaviour>
@@ -917,6 +941,7 @@ void TestCaseReaderPrivate::_initAgentInitialConditions( AgentInitialConditions 
 	a.position = agent.position;
 	a.colorSet = agent.colorSet;
 	a.color = agent.color;
+	a.isBag = agent.isBag;
 
 	if (agent.isDirectionRandom) {
 		// choose a random number;

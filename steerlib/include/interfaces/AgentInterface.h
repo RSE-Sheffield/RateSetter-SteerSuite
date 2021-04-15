@@ -78,6 +78,8 @@ namespace SteerLib {
 		virtual Util::Vector velocity() const = 0;
 		/// Returns the radius of the Agent.
 		virtual float radius() const = 0;
+		/// Returns the status of agent as a bag
+		virtual bool isBag() const = 0;
 		// Returns the id number associated with this agent
 		virtual size_t id() const = 0;
 		/// Returns information about the current goal.
@@ -200,6 +202,7 @@ namespace SteerLib {
 		Util::Vector _newVelocity;
 		Util::Color _color;
 		float _radius;
+		bool _isBag;
 		size_t _id;
 				// Used to store Waypoints between goals
 		// A waypoint is choosen every FURTHEST_LOCAL_TARGET_DISTANCE
