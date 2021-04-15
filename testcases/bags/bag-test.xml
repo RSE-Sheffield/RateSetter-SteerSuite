@@ -78,7 +78,7 @@
         <timeDuration>1000.0</timeDuration>
       </seekStaticTarget>
     </goalSequence>
-
+    <bag>false</bag>
   </agent>
   
   <agent>
@@ -96,6 +96,7 @@
         <timeDuration>1000.0</timeDuration>
       </seekDynamicTarget>
     </goalSequence>
+    <bag>true</bag>
   </agent>
   
 
