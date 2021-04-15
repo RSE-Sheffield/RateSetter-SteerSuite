@@ -186,24 +186,27 @@ A higher level of warnings can be enables by setting `ENABLE_WARNINGS=ON` via th
 Debuggging Steersim
 -------------------
 
-When built using the `Debug` config (or `RelWithDebInfo` to a certain extent), source level debugging can be achieved through Visual Studio, or `gdb` depending on platform. This support may also be available other IDEs/editors such as visual studio code.
+When built using the `Debug` config (or `RelWithDebInfo` to a certain extent), source level debugging can be achieved through Visual Studio, or `gdb` depending on platform. This support may also be available other IDEs/editors such as Visual Studio Code.
 
 ### Visual Studio
 
-@todo - instructions for debugging.
-
++ Set the `steersim` or `steerbench` project as the `Startup Project` depending on which you wish to debug
+  + Right click the project 
+  + Select `Set as StartUp Project` 
++ Set the `Command Arguments` for the project:
+  + Right click the project
+  + Select `Properties`
+  + Ensure the correct confiuguration is selected (All or `Debug`)
+  + Select the `Debugging Section`
+  + Populate the `Command Arguments` option
 
 ### Visual Studio Code (linux)
 
-Under linux (and presumably other OS) Visual Studio Code can be used to graphically debug c++ applications, by creating the file `.vscode/launch.json`, and adjusting it with teh appropraite paths.
+Under linux (and presumably other OS) Visual Studio Code can be used to graphically debug c++ applications, by creating the file `.vscode/launch.json`, and adjusting it with the appropraite paths.
+This requires the `ms-vscode.cpptools` plugin and optionally `ms-vscode.cmake` plugin.
 
-For instance, to debug a `Debug` build, in the `build` directory, running the `Merseyrail` config located at `testcases/Merseyrail/myconfig.xml` the following may be a good starting point:
-
-```
+```json
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
@@ -230,12 +233,26 @@ For instance, to debug a `Debug` build, in the `build` directory, running the `M
 ```
 
 
-If you are using the CMake vscode plugin, this may be a little different/simpler.
+If you are using the CMake vscode plugin, then the following values can be used instead for a more flexible confiugration.
 
-### GDB
+```json
+// ...
+{
+  "program": "${command:cmake.launchTargetPath}",
+  "cwd": "${command:cmake.buildDirectory}",
+}
+```
 
-`gdb` can be used for command line debugging, probably by using the `--args` option.
+### GDB (linux)
+
+`gdb` can be used for command line debugging, consider `--args` option.
 As steersim loads shard objects at runtime, setting breakpoints in objects loaded at runtime will generate warnings, and may require setting additional options for source files to be successfully located.
+
+```
+cd build
+
+
+```
 
 Contact information
 -------------------

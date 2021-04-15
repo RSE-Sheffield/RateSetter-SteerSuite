@@ -412,4 +412,6 @@ build/bin/*
 build*/
 
 # The vscode directory, which is generally not portable
-.vscode/ 
+# .vscode/
+.vscode/*
+!.vscode/extensions.json
