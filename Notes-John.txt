@@ -1,0 +1,1 @@
+To build for debug on windows VS, add `_ALLOW_RTCc_IN_STL;` to each project's "Preprocessor Definitions"
