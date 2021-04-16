@@ -1,0 +1,59 @@
+<ns0:SteerBenchTestCase xmlns:ns0="http://www.magix.ucla.edu/steerbench" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.magix.ucla.edu/steerbench                                          TestCaseSchema.xsd">
+
+  <ns0:header>
+    <ns0:version>1.0</ns0:version>
+    <ns0:name>crossing-1</ns0:name>
+    <ns0:worldBounds>
+      <ns0:xmin>-100</ns0:xmin>
+      <ns0:xmax>100</ns0:xmax>
+      <ns0:ymin>0</ns0:ymin>
+      <ns0:ymax>0</ns0:ymax>
+      <ns0:zmin>-100</ns0:zmin>
+      <ns0:zmax>100</ns0:zmax>
+    </ns0:worldBounds>
+  </ns0:header>
+  
+  <ns0:suggestedCameraView>
+    <ns0:position> <ns0:x>0</ns0:x> <ns0:y>24</ns0:y> <ns0:z>-12</ns0:z> </ns0:position>
+    <ns0:lookat> <ns0:x>0</ns0:x> <ns0:y>0</ns0:y> <ns0:z>0</ns0:z> </ns0:lookat>
+    <ns0:up> <ns0:x>0</ns0:x> <ns0:y>1</ns0:y> <ns0:z>0</ns0:z> </ns0:up>
+    <ns0:fovy>45</ns0:fovy>
+  </ns0:suggestedCameraView>
+
+  <ns0:agent>
+    <ns0:name>A</ns0:name>
+    <ns0:initialConditions>
+      <ns0:radius>0.5</ns0:radius>
+      <ns0:position> <ns0:x>9</ns0:x> <ns0:y>0</ns0:y> <ns0:z>1</ns0:z> </ns0:position>
+      <ns0:direction> <ns0:x>-1</ns0:x> <ns0:y>0</ns0:y> <ns0:z>0</ns0:z> </ns0:direction>
+      <ns0:speed>0</ns0:speed>
+    </ns0:initialConditions>
+    <ns0:goalSequence>
+      <ns0:seekStaticTarget>
+        <ns0:targetLocation> <ns0:x>-10</ns0:x> <ns0:y>0</ns0:y> <ns0:z>1</ns0:z> </ns0:targetLocation>
+        <ns0:desiredSpeed>1.3</ns0:desiredSpeed>
+        <ns0:timeDuration>1000.0</ns0:timeDuration>
+      </ns0:seekStaticTarget>
+    </ns0:goalSequence>
+
+  <ns0:bag>false</ns0:bag></ns0:agent>
+
+  <ns0:agent>
+    <ns0:name>B</ns0:name>
+    <ns0:initialConditions>
+      <ns0:radius>0.5</ns0:radius>
+      <ns0:position> <ns0:x>1</ns0:x> <ns0:y>0</ns0:y> <ns0:z>10</ns0:z> </ns0:position>
+      <ns0:direction> <ns0:x>0</ns0:x> <ns0:y>0</ns0:y> <ns0:z>-1</ns0:z> </ns0:direction>
+      <ns0:speed>0</ns0:speed>
+    </ns0:initialConditions>
+    <ns0:goalSequence>
+      <ns0:seekStaticTarget>
+        <ns0:targetLocation> <ns0:x>1</ns0:x> <ns0:y>0</ns0:y> <ns0:z>-10</ns0:z> </ns0:targetLocation>
+        <ns0:desiredSpeed>1.3</ns0:desiredSpeed>
+        <ns0:timeDuration>1000.0</ns0:timeDuration>
+      </ns0:seekStaticTarget>
+    </ns0:goalSequence>
+
+  <ns0:bag>false</ns0:bag></ns0:agent>
+
+<ns0:agent><ns0:name>A_bag</ns0:name><ns0:initialConditions><ns0:position><ns0:x>9</ns0:x><ns0:y>0</ns0:y><ns0:z>1.4</ns0:z></ns0:position><ns0:direction><ns0:x>0</ns0:x><ns0:y>0</ns0:y><ns0:z>0</ns0:z></ns0:direction><ns0:speed>0</ns0:speed></ns0:initialConditions><ns0:radius>0.2</ns0:radius><ns0:goalSequence><ns0:seekDynamicTarget><ns0:targetName>0</ns0:targetName><ns0:desiredSpeed>1.33</ns0:desiredSpeed><ns0:timeDuration>1000.0</ns0:timeDuration></ns0:seekDynamicTarget></ns0:goalSequence><ns0:bag>true</ns0:bag></ns0:agent><ns0:agent><ns0:name>B_bag</ns0:name><ns0:initialConditions><ns0:position><ns0:x>1</ns0:x><ns0:y>0</ns0:y><ns0:z>10.4</ns0:z></ns0:position><ns0:direction><ns0:x>0</ns0:x><ns0:y>0</ns0:y><ns0:z>0</ns0:z></ns0:direction><ns0:speed>0</ns0:speed></ns0:initialConditions><ns0:radius>0.2</ns0:radius><ns0:goalSequence><ns0:seekDynamicTarget><ns0:targetName>1</ns0:targetName><ns0:desiredSpeed>1.33</ns0:desiredSpeed><ns0:timeDuration>1000.0</ns0:timeDuration></ns0:seekDynamicTarget></ns0:goalSequence><ns0:bag>true</ns0:bag></ns0:agent></ns0:SteerBenchTestCase>
