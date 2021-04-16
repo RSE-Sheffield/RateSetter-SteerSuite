@@ -792,13 +792,6 @@ void TestCaseReaderPrivate::_parseGoalSequence(const ticpp::Element * subRoot, s
 
 void SteerLib::TestCaseReaderPrivate::_parseBag(std::string bag_value, RawAgentInfo & newAgent)
 {
-	//ticpp::Iterator<ticpp::Element> child;
-	//std::string childTagName = child->Value();
-
-	//read the value within the bag tag
-	//std::string bag_value;
-	//child->GetText(&bag_value);
-
 	if (bag_value == "true") {
 		newAgent.isBag = true;
 		newAgent.color = Util::Color(0.5, 0.5, 0.5);

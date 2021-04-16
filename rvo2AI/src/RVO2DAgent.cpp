@@ -658,6 +658,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 	const float invTimeHorizon = 1.0f / _RVO2DParams.rvo_time_horizon;
 
+	//set radius of agent-agent interactions to include social distancing
 	_radius = original_radius;
 
 	/* Create agent ORCA lines. */
@@ -668,8 +669,19 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		Util::Vector relativePosition = (other->position()) - position(); // This is fine
 		Util::Vector relativeVelocity = velocity() - other->velocity();
 		const float distSq = absSq(relativePosition);
-		const float combinedRadius = radius() + other->radius();
-		const float combinedRadiusSq = sqr(combinedRadius);
+		float combinedRadius = radius() + other->radius();
+		float combinedRadiusSq = sqr(combinedRadius);
+
+		//Alternative behaviour if other agent is the owner's bag - ignore bag as a constraint
+		if (other->isBag() && std::stoi(other->currentGoal().targetName) == id()) {
+			continue;
+		}
+		//behaviour is agent's bag, and other agent is the owner
+		if (isBag() && std::stoi(currentGoal().targetName) == other->id()) {
+			combinedRadius = radius() + MIN_RADIUS; //other radius is the physical person radius
+			combinedRadiusSq = sqr(combinedRadius);
+		}
+			
 
 		//count SD invalidations
 		if (abs(relativePosition) < SD && !counted_this_frame) {
@@ -731,7 +743,12 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		const RVO2DAgent* otherRVO = dynamic_cast<const RVO2DAgent*>(other);
 		//float combined_reciprocity = _receprocity_factor / (_receprocity_factor + otherRVO->_receprocity_factor);
 
+
+		
 		float reciprocal_fov = 0.5f;
+		
+		
+		
 		// simulate boarding behvaiours- occurs when goalqueue size is set to 2 (one to get on train, one to get within train)
 #ifdef TRAINHACKS
 		if (_goalQueue.size() == 2 && other->_goalQueue.size() == 2) {
