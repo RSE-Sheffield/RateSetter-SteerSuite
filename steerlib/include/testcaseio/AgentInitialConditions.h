@@ -105,7 +105,7 @@ namespace SteerLib {
 		/// The initial speed of the agent (not the same as the desiredSpeed that is part of each goal)
 		float speed;
 		/// Whether the agent is a bag
-		bool isBag;
+		bool isBag = false;
 		/// An ordered list of goals that the agent should try to complete.
 		std::vector<AgentGoalInfo> goals;
 		/// The color of the agent

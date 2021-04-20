@@ -64,7 +64,7 @@ namespace SteerLib {
 		Util::Color color;
 		float radius;
 		float speed;
-		bool isBag;
+		bool isBag = false;
 		std::vector<AgentGoalInfo> goals;
 		#ifdef VARIABLE_SPAWN_TIME
 		float spawn_time, despawn_time;
