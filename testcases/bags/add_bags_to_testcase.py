@@ -95,7 +95,9 @@ def add_bags(root, add_bag_proba):
 		ET.SubElement(initial_conditions_elem, 'speed').text = "0"
 
 		#goal target
-		goal_root = create_dynamic_goal(id)
+		# agent_speed = elem.find('ns0:desiredSpeed', namespaces)
+		# print(agent_speed)
+		goal_root = create_dynamic_goal(id, 1.3)
 		# indent(goal_root)
 		# ET.dump(goal_root)
 		bag_root.append(goal_root)
@@ -116,7 +118,7 @@ def add_bags(root, add_bag_proba):
 
 	return root
 
-def create_dynamic_goal(target_id):
+def create_dynamic_goal(target_id, target_speed):
 	"""
 	generates the xml tree info for a dynamic goal target
 
@@ -126,7 +128,7 @@ def create_dynamic_goal(target_id):
 	goal_root = ET.Element('goalSequence')
 	dynamic_elem = ET.SubElement(goal_root, 'seekDynamicTarget')
 	ET.SubElement(dynamic_elem, 'targetName').text = str(target_id)
-	ET.SubElement(dynamic_elem, 'desiredSpeed').text = '1.33'
+	ET.SubElement(dynamic_elem, 'desiredSpeed').text = str(target_speed + 1)
 	ET.SubElement(dynamic_elem, 'timeDuration').text = '1000.0'
 	return goal_root
 
