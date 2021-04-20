@@ -676,11 +676,15 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		if (other->isBag() && std::stoi(other->currentGoal().targetName) == id()) {
 			continue;
 		}
-		//behaviour is agent's bag, and other agent is the owner
+		//behaviour is agent's bag, and other agent is the owner - ignore social distancing between bag and owner
 		if (isBag() && std::stoi(currentGoal().targetName) == other->id()) {
 			combinedRadius = radius() + MIN_RADIUS; //other radius is the physical person radius
 			combinedRadiusSq = sqr(combinedRadius);
 		}
+		////if bag - ignore other agents
+		//if (isBag() && !other->isBag()) {
+		//	continue;
+		//}
 			
 
 		//count SD invalidations
@@ -920,7 +924,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 				//auto goal_position = (*it)->position();
 				goalDirection = normalize((*it)->position() - position());
 				goalInfo.targetLocation = (*it)->position();
-				_prefVelocity = goalDirection;
+				//_prefVelocity = goalDirection;
 
 				//print helpful vals
 				//std::cout << "goal dir: " << goalDirection << 
@@ -933,6 +937,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	{
 		goalDirection = normalize(goalInfo.targetLocation - position());
 	}
+
 #ifdef TRAINHACKS
 	/*// If agent is in train, ensure goal is within train
 	if (_position.z > 0.4f && _goalQueue.size() == 2 && loading_status == status::agent_boarding ) {
@@ -1002,6 +1007,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 #ifdef _DEBUG_ENTROPY
 	std::cout << "Preferred velocity is: " << prefVelocity_ << std::endl;
 #endif
+	_prefVelocity = goalDirection;
 	(this)->computeNeighbors();
 	(this)->computeNewVelocity(dt);
 	// (this)->computeNewVelocity(dt);
