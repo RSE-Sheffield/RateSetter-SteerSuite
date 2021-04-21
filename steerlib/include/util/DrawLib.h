@@ -125,6 +125,7 @@ namespace Util {
 		static void drawCircle(const Point & loc, const Color& color = Color(0.9f, 0.9f, 0.0f), float scale = 1.0f, int points = 12);
 		// static void drawFlag(const Point & loc, const Color& color = Color(0.9f, 0.0f, 0.0f), float scale = 1.0f);
 		static void drawAgentDisc(const Point & pos, const Vector & dir, float radius, const Color& color = Color(0.9f,0.4f,0.1f));
+		static void drawAgentDisc(const Point & pos, float radius_inner, float radius_outer, const Color& color = Color(0.9f, 0.4f, 0.1f));
 		static void drawAgentDisc(const Point & pos, float radius, const Color& color = Color(0.9f,0.4f,0.1f));
 		static void drawAgentDisc(const Point & pos, const Vector & dir, const Vector & up, float radius, const Color& color);
 		//@}

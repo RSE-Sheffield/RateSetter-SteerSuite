@@ -46,6 +46,7 @@ public:
 	Util::Vector forward() const { return _forward; }
 	Util::Vector velocity() const {return _velocity; }
 	float radius() const { return _radius; }
+	float sdradius() const { return _sdradius; }
 	bool isBag() const { return _isBag;  }
 	const SteerLib::AgentGoalInfo & currentGoal() const { return _goalQueue.front(); }
 	size_t id() const { return _id;}

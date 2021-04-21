@@ -323,16 +323,40 @@ void DrawLib::drawAgentDisc(const Point& pos, float radius, const Color& color)
 
 		// Draws the agent 
 		glPushMatrix();
-		glScalef(pedestrian_radius, pedestrian_height, pedestrian_radius);
+		glScalef(radius, pedestrian_height, radius);
 		_drawDisplayList(_agentDisplayList);
 		glPopMatrix();
-
-		// Draw the interaction radius
-		glScalef(radius, 0.5, radius);
-		_drawDisplayList(_agentDisplayList);
-
 	}
 	glPopMatrix();
+}
+
+void DrawLib::drawAgentDisc(const Point& pos, float radius_inner, float radius_outer, const Color& color)
+{
+	if (radius_inner == radius_outer) {
+		drawAgentDisc(pos, radius_inner, color);
+	}
+	else {
+		glPushMatrix();
+		{
+			glColor(color);
+			glTranslate(pos);
+			// glScalef(radius, radius*4.0f, radius);
+
+			// _drawDisplayList(_agentDotDisplayList);
+
+			// Draws the agent 
+			glPushMatrix();
+			glScalef(radius_inner, pedestrian_height, radius_inner);
+			_drawDisplayList(_agentDisplayList);
+			glPopMatrix();
+
+			// Draw the interaction radius
+			glScalef(radius_outer, 0.5, radius_outer);
+			_drawDisplayList(_agentDisplayList);
+
+		}
+		glPopMatrix();
+	}
 }
 
 //

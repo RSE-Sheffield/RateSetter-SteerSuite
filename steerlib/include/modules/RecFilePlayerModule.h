@@ -31,6 +31,7 @@ namespace SteerLib
 		Util::Vector velocity() const { return _velocity; }
 		size_t id() const { return 0;}
 		float radius() const { return _radius; }
+		float sdradius() const { return _sdradius; }
 		bool isBag() const { return _isBag; }
 		const SteerLib::AgentGoalInfo & currentGoal() const { return _currentGoal; }
 		const std::queue<SteerLib::AgentGoalInfo> & agentGoals() const { throw Util::GenericException("agentGoals() not implemented yet"); }

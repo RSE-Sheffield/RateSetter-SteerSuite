@@ -885,6 +885,9 @@ void TestCaseReaderPrivate::_parseInitialConditions(const ticpp::Element * subRo
 		else if (childTagName == "radius") {
 			child->GetText(&newAgent.radius);
 		}
+		else if (childTagName == "sdradius") {
+			child->GetText(&newAgent.sdradius);
+		}
 		else if (childTagName == "position") {
 			_getXYZOrRandomFromXMLElement(&(*child), newAgent.position, newAgent.isPositionRandom);
 		}
@@ -947,6 +950,7 @@ void TestCaseReaderPrivate::_initAgentInitialConditions( AgentInitialConditions 
 	a.randBox = agent.regionBounds;
 
 	a.radius = agent.radius;
+	a.sdradius = agent.sdradius;
 	a.speed = agent.speed;
 	a.goals = agent.goals;  // note, this is a STL vector being copied into another STL vector.
 }

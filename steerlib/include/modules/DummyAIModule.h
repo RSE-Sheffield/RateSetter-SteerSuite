@@ -22,6 +22,7 @@ namespace SteerLib {
 			_position = initialConditions.position;
 			_forward = initialConditions.direction;
 			_radius = initialConditions.radius;
+			_sdradius = initialConditions.sdradius;
 			_isBag = initialConditions.isBag;
 
 
@@ -55,6 +56,7 @@ namespace SteerLib {
 		Util::Vector velocity() const { throw Util::GenericException("velocity() not implemented yet"); }
 		size_t id() const { return 0;}
 		float radius() const { return _radius; }
+		float sdradius() const { return _sdradius; }
 		bool isBag() const { return _isBag; }
 		const SteerLib::AgentGoalInfo & currentGoal() const { return _currentGoal; }
 		const std::queue<SteerLib::AgentGoalInfo> & agentGoals() const { throw Util::GenericException("agentGoals() not implemented yet"); }

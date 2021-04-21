@@ -63,6 +63,7 @@ namespace SteerLib {
 		Util::Vector direction;
 		Util::Color color;
 		float radius;
+		float sdradius = 0;
 		float speed;
 		bool isBag = false;
 		std::vector<AgentGoalInfo> goals;

@@ -190,6 +190,7 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	_forward = normalize(initialConditions.direction);
 	//_radius = initialConditions.radius + d(gen);
 	_radius = initialConditions.radius;
+	_sdradius = initialConditions.sdradius;
 	_isBag = initialConditions.isBag;
 	_velocity = initialConditions.speed * _forward;
 
@@ -427,8 +428,8 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 	const float invTimeHorizonObst = 1.0f / _RVO2DParams.rvo_time_horizon_obstacles;
 	
-	auto original_radius = _radius;
-	_radius = MIN_RADIUS;
+	//auto original_radius = _radius;
+	//_radius = MIN_RADIUS;
 	/* Create obstacle ORCA lines. */
 	for (size_t i = 0; i < obstacleNeighbors_.size(); ++i) {
 
@@ -659,7 +660,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 	const float invTimeHorizon = 1.0f / _RVO2DParams.rvo_time_horizon;
 
 	//set radius of agent-agent interactions to include social distancing
-	_radius = original_radius;
+	//_radius = original_radius;
 
 	/* Create agent ORCA lines. */
 	for (size_t i = 0; i < agentNeighbors_.size(); ++i)
@@ -669,7 +670,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		Util::Vector relativePosition = (other->position()) - position(); // This is fine
 		Util::Vector relativeVelocity = velocity() - other->velocity();
 		const float distSq = absSq(relativePosition);
-		float combinedRadius = radius() + other->radius();
+		float combinedRadius = radius() + sdradius() + other->radius() + other->sdradius();
 		float combinedRadiusSq = sqr(combinedRadius);
 
 		//Alternative behaviour if other agent is the owner's bag - ignore bag as a constraint
@@ -678,7 +679,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		}
 		//behaviour is agent's bag, and other agent is the owner - ignore social distancing between bag and owner
 		else if (isBag() && std::stoi(currentGoal().targetName) == other->id()) {
-			combinedRadius = radius() + MIN_RADIUS; //other radius is the physical person radius
+			combinedRadius = radius() + other->radius(); //other radius is the physical person radius
 			combinedRadiusSq = sqr(combinedRadius);
 		}
 		//if bag - ignore other agents
