@@ -677,14 +677,14 @@ void RVO2DAgent::computeNewVelocity(float dt)
 			continue;
 		}
 		//behaviour is agent's bag, and other agent is the owner - ignore social distancing between bag and owner
-		if (isBag() && std::stoi(currentGoal().targetName) == other->id()) {
+		else if (isBag() && std::stoi(currentGoal().targetName) == other->id()) {
 			combinedRadius = radius() + MIN_RADIUS; //other radius is the physical person radius
 			combinedRadiusSq = sqr(combinedRadius);
 		}
-		////if bag - ignore other agents
-		//if (isBag() && !other->isBag()) {
-		//	continue;
-		//}
+		//if bag - ignore other agents
+		else if (isBag() && !other->isBag()) {
+			continue;
+		}
 			
 
 		//count SD invalidations
@@ -750,6 +750,11 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 		
 		float reciprocal_fov = 0.5f;
+
+		//if other agent is bag, and this is a person, take full responsibility for avoidance
+		if (!this->isBag() && other->isBag()) {
+			reciprocal_fov = 1.f;
+		}
 		
 		
 		
