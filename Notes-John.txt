@@ -1,1 +1,3 @@
 To build for debug on windows VS, add `_ALLOW_RTCc_IN_STL;` to each project's "Preprocessor Definitions"
+
+Drop the other steering models (pprAI, sfAI, simpleAI). The virtual base class has been extended and these inherited classes have not implemented all the functionality (e.g. is_bag)
