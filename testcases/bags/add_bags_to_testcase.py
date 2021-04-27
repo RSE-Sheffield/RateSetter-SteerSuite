@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import random
 
 import xml.etree.ElementTree as ET
 import numpy as np
@@ -63,55 +64,57 @@ def add_bags(root, add_bag_proba):
 	:return: etree of testcase with additional bags
 	:rtype: etree
 	"""
-	id = 0
 	bag_roots = []
 	
-	for elem in root.findall('ns0:agent', namespaces):
-		#add bag tag to all agents
-		ET.SubElement(elem, 'bag').text = 'false'
+	for (id, elem) in enumerate(root.findall('ns0:agent', namespaces)):
 
-		#bag agent
-		bag_root = ET.Element('agent')
+		if(random.uniform(0, 1) < add_bag_proba):
 
-		#name tag
-		agent_name = elem.find('ns0:name', namespaces).text
-		bag_name = agent_name + '_bag'
-		ET.SubElement(bag_root, 'name').text = bag_name
+			#add bag tag to all agents
+			#ET.SubElement(elem, 'bag').text = 'false'
 
-		#initial conditions
-		location_xyz = elem.find('ns0:initialConditions/ns0:position', namespaces)
-		x, y, z = [location_xyz[i].text for i in range(3)]
-		# print(x, y, z)
-		initial_conditions_elem = ET.SubElement(bag_root, 'initialConditions')
-		ET.SubElement(initial_conditions_elem, 'radius').text ="0.2"
-		position_elem = ET.SubElement(initial_conditions_elem, 'position')
-		ET.SubElement(position_elem, 'x').text = str(x)
-		ET.SubElement(position_elem, 'y').text = str(y)
-		ET.SubElement(position_elem, 'z').text = str(float(z) + 0.4)
-		direction_elem = ET.SubElement(initial_conditions_elem, 'direction')
-		ET.SubElement(direction_elem, 'x').text = "0"
-		ET.SubElement(direction_elem, 'y').text = "0"
-		ET.SubElement(direction_elem, 'z').text = "0"
-		ET.SubElement(initial_conditions_elem, 'speed').text = "0"
+			#bag agent
+			bag_root = ET.Element('agent')
 
-		#goal target
-		# agent_speed = elem.find('ns0:desiredSpeed', namespaces)
-		# print(agent_speed)
-		goal_root = create_dynamic_goal(id, 1.3)
-		# indent(goal_root)
-		# ET.dump(goal_root)
-		bag_root.append(goal_root)
+			#name tag
+			agent_name = elem.find('ns0:name', namespaces).text
+			bag_name = agent_name + '_bag'
+			ET.SubElement(bag_root, 'name').text = bag_name
 
-		#bag tag
-		ET.SubElement(bag_root, 'bag').text = 'true'
+			#initial conditions
+			location_xyz = elem.find('ns0:initialConditions/ns0:position', namespaces)
+			x, y, z = [location_xyz[i].text for i in range(3)]
+			# print(x, y, z)
+			initial_conditions_elem = ET.SubElement(bag_root, 'initialConditions')
+			ET.SubElement(initial_conditions_elem, 'radius').text ="0.2"
+			position_elem = ET.SubElement(initial_conditions_elem, 'position')
+			ET.SubElement(position_elem, 'x').text = str(x)
+			ET.SubElement(position_elem, 'y').text = str(y)
+			ET.SubElement(position_elem, 'z').text = str(float(z) + 0.4)
+			direction_elem = ET.SubElement(initial_conditions_elem, 'direction')
+			ET.SubElement(direction_elem, 'x').text = "0"
+			ET.SubElement(direction_elem, 'y').text = "0"
+			ET.SubElement(direction_elem, 'z').text = "0"
+			ET.SubElement(initial_conditions_elem, 'speed').text = "0"
 
-		# indent(bag_root)
-		# ET.dump(bag_root)
+			#goal target
+			# agent_speed = elem.find('ns0:desiredSpeed', namespaces)
+			# print(agent_speed)
+			goal_root = create_dynamic_goal(id, 1.3)
+			# indent(goal_root)
+			# ET.dump(goal_root)
+			bag_root.append(goal_root)
 
-		bag_roots.append(bag_root)
+			#bag tag
+			ET.SubElement(bag_root, 'bag').text = 'true'
 
-		#increment id counter
-		id = id + 1
+			# indent(bag_root)
+			# ET.dump(bag_root)
+
+			bag_roots.append(bag_root)
+
+			#increment id counter
+			# id = id + 1
 
 	for br in bag_roots:
 		root.append(br)
@@ -132,21 +135,43 @@ def create_dynamic_goal(target_id, target_speed):
 	ET.SubElement(dynamic_elem, 'timeDuration').text = '1000.0'
 	return goal_root
 
+def change_agents(root, radius, sdradius):
+	"""
+	Alter values of already existing agents
+	"""
+	for elem in root.findall('ns0:agent', namespaces):
+		initialConditions_elem = elem.find('ns0:initialConditions', namespaces)
+		# print(initialConditions_elem)
+
+		#change radius
+		# print(initialConditions_elem.find('ns0:radius', namespaces).text)
+		initialConditions_elem.find('ns0:radius', namespaces).text = str(radius)
+		# print(initialConditions_elem.find('ns0:radius', namespaces).text)
+		# print(elem.find('ns0:initialConditions/ns0:radius', namespaces).text)
+
+		#change sdradius
+		if(	initialConditions_elem.find('ns0:sdradius', namespaces)):	
+			initialConditions_elem.find('ns0:sdradius', namespaces).text = str(sdradius)	
+		else:
+			ET.SubElement(initialConditions_elem, 'sdradius').text = str(sdradius)
+
+	return root
 
 
 if __name__ == "__main__":
-	default_agent_radius = 0.9
-	default_agents_per_region = 10
-	default_agents_per_carriage = 10
-	default_platform_depth = 6
-
 	parser = argparse.ArgumentParser(description='Generate new Steersuite xml testcases from originals with bags')
 	parser.add_argument('-i','--inputFile', default="../crossing-1.xml",
 						help='Test case file to add bags to')
 	parser.add_argument('-o','--outputFile', default="",
 						help='Name of the output testcase file. Defaults to name $(inputFile)-bag.xml')
-	parser.add_argument('-r','--bagProb', type = float, default=1,
-						help='Probability of adding a bag to an agent')
+	parser.add_argument('-p','--bagProb', type = float, default=1,
+						help='Probability of adding a bag to an agent. Between 0 and 1')
+	parser.add_argument('-br','--bagRadius', type = float, default=0.2,
+						help='radius of the added bag')
+	parser.add_argument('-ar','--agentRadius', type = float, default=0.2,
+						help='change the radius of the already existing agent')
+	parser.add_argument('-asr','--agentSocialRadius', type = float, default=0.3,
+						help='change (or add) the social distance radius of the already existing agent')
 	args = parser.parse_args()
 
 	#If no specific output file name is specified - apped -bag to name and write to current dir
@@ -160,6 +185,9 @@ if __name__ == "__main__":
 		args.outputFile = outname
 
 	root = read_in_testcase(args.inputFile)
+
+	root = change_agents(root, args.agentRadius, args.agentSocialRadius)
+
 	root = add_bags(root, args.bagProb)
 	# remove_namespace(root)
 
