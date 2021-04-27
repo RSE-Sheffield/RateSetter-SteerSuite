@@ -133,6 +133,8 @@ protected:
 	std::vector<Util::Plane> orcaPlanes_;
 	std::vector<Line> orcaLines_;
 	SteerLib::ModuleInterface * rvoModule;
+	size_t bag_id = -1;
+	const AgentInterface * owned_bag; // Reference to the bag(s) owned by this actor
 
 	SteerLib::EngineInterface * _gEngine;
 

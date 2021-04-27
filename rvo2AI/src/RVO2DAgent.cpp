@@ -21,6 +21,7 @@
 #define MAX_FORCE_MAGNITUDE 3.0f
 // #define MAX_SPEED 1.33f
 #define AGENT_MASS 1.0f
+#define BAG_DISTANCE 1.0f // Beyond this distance an owner and bag will attempt to reunite as the primary goal
 //set this define if using the merseyrail/PTI testcase
 //#define TRAINHACKS
 //#define SLOWREGION
@@ -679,6 +680,12 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 		//Alternative behaviour if other agent is the owner's bag - ignore bag as a constraint
 		if (other->isBag() && std::stoi(other->currentGoal().targetName) == id()) {
+			if (bag_id == -1) {
+				//if bag is unset as bag_id, set it here
+				bag_id == other->id();
+				owned_bag = other;
+			}
+
 			continue;
 		}
 		//reverse of previous - ensure bag takes full responsibility to avoid owner
@@ -1042,6 +1049,27 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	 */
 	Util::AxisAlignedBox newBounds(_position.x - _radius, _position.x + _radius, 0.0f, 0.0f, _position.z - _radius, _position.z + _radius);
 	getSimulationEngine()->getSpatialDatabase()->updateObject( this, oldBounds, newBounds);
+
+
+	// If bag owner and not set to reach bag, check bag is not too far away and create new goal
+	if (!isBag() && owned_bag && !(_goalQueue.front().goalType == GOAL_TYPE_SEEK_DYNAMIC_TARGET))
+	{
+		if ((position() - owned_bag->position()).length() > BAG_DISTANCE)
+		{
+			SteerLib::AgentGoalInfo newGoal;
+			auto currentGoal = _goalQueue.front();
+
+			newGoal.goalType = GOAL_TYPE_SEEK_DYNAMIC_TARGET;
+			newGoal.timeDuration = currentGoal.timeDuration;
+			newGoal.desiredSpeed = currentGoal.desiredSpeed;
+			newGoal.targetName = owned_bag->id();
+
+			// Add the door goal at front of queue
+			_goalQueue.pop();
+			addGoal(newGoal);
+			addGoal(currentGoal);
+		}
+	}
 
 
 	if ( ( !_waypoints.empty() ) && (_waypoints.front() - position()).length() < radius() * REACHED_WAYPOINT_MULTIPLIER)
