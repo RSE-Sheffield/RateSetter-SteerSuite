@@ -279,8 +279,24 @@ void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int fra
 		close_agents_frames /= agents_.size();
 		std::cout << "Average frames less than SD: " << close_agents_frames << " SD frames\n";
 		std::cout << "Max individual time: " << max_individual << " max frames \n";
+
+		printBagsToFile("far_bags.tsv");
 	}
 
+}
+void RVO2DAIModule::printBagsToFile(std::string outfile)
+{
+	std::ofstream BagsFile(outfile);
+	for (auto& agent : agents_) {
+		std::string towrite = std::to_string(agent->id());
+		for (auto& frames : agent->far_bag_count) {
+			towrite += "\t" + std::to_string(frames);
+		}
+		towrite += "\n";
+		BagsFile << towrite;
+	}
+
+	BagsFile.close();
 }
 SteerLib::AgentInterface * RVO2DAIModule::createAgent()
 {
