@@ -93,8 +93,9 @@ SteerLib::EngineInterface * RVO2DAgent::getSimulationEngine()
 void RVO2DAgent::addGoal(const SteerLib::AgentGoalInfo& newGoal)
 {
 	if (newGoal.goalType != SteerLib::GOAL_TYPE_SEEK_STATIC_TARGET &&
-		newGoal.goalType != GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL) {
-		throw Util::GenericException("Currently the RVO agent does not support goal types other than GOAL_TYPE_SEEK_STATIC_TARGET and GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL.");
+		newGoal.goalType != GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL &&
+		newGoal.goalType != GOAL_TYPE_SEEK_DYNAMIC_TARGET) {
+		throw Util::GenericException("Currently the RVO agent does not support goal types other than GOAL_TYPE_SEEK_STATIC_TARGET, GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL and GOAL_TYPE_SEEK_DYNAMIC_TARGET.");
 	}
 	_goalQueue.push(newGoal);
 	if (_goalQueue.size() == 1) {
@@ -680,9 +681,9 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 		//Alternative behaviour if other agent is the owner's bag - ignore bag as a constraint
 		if (other->isBag() && std::stoi(other->currentGoal().targetName) == id()) {
-			if (bag_id == -1) {
+			if (bag_id == -1 && !owned_bag) {
 				//if bag is unset as bag_id, set it here
-				bag_id == other->id();
+				bag_id = other->id();
 				owned_bag = other;
 			}
 
@@ -1062,7 +1063,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 			newGoal.goalType = GOAL_TYPE_SEEK_DYNAMIC_TARGET;
 			newGoal.timeDuration = currentGoal.timeDuration;
 			newGoal.desiredSpeed = currentGoal.desiredSpeed;
-			newGoal.targetName = owned_bag->id();
+			newGoal.targetName = std::to_string(owned_bag->id());
 
 			// Add the door goal at front of queue
 			_goalQueue.pop();
