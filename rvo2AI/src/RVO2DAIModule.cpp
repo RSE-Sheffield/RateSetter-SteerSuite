@@ -236,18 +236,34 @@ void RVO2DAIModule::preprocessFrame(float timeStamp, float dt, unsigned int fram
 }
 
 void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int frameNumber)
-{
-	// do nothing for now
-	int i = 0;
-	i = i + i;
-	
-
+{	
 	//check if quiting this iteration
 	bool quitting = true;
 	for (auto& agent : agents_) {
 		if(!agent->finished()) {
 			quitting = false;
 			break;
+		}
+	}
+
+	//Record people being too far from their bags
+	for (auto& agent : agents_) {
+		//this person has a bag
+		if (!agent->isBag() && agent->bag_id != -1 )
+		{
+			if (agent->tooFarFromBag())
+			{
+				if (agent->far_bag_count_flag) {
+					agent->far_bag_count.back()++;
+				}
+				else {
+					agent->far_bag_count.push_back(1);
+					agent->far_bag_count_flag = true;
+				}
+			}
+			else {
+				agent->far_bag_count_flag = false;
+			}
 		}
 	}
 
@@ -264,20 +280,7 @@ void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int fra
 		std::cout << "Average frames less than SD: " << close_agents_frames << " SD frames\n";
 		std::cout << "Max individual time: " << max_individual << " max frames \n";
 	}
-	//bool earlyQuit = true;
-	//for (auto& agent : agents_) {
-	//	if (agent->agentGoals().size() > 1) {
-	//		earlyQuit = false;
-	//		break;
-	//	}
-	//}
-	/*if (earlyQuit) {
-		std::cout << "Frame post-process: finished simualation early\n";
-			for (auto& agent : agents_) {
-			agent->disable();
-		}
-	}*/
-	
+
 }
 SteerLib::AgentInterface * RVO2DAIModule::createAgent()
 {

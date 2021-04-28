@@ -85,6 +85,11 @@ RVO2DAgent::~RVO2DAgent()
 	// std::cout << "Someone is removing an agent " << std::endl;
 }
 
+bool RVO2DAgent::tooFarFromBag()
+{
+	return ((position() - owned_bag->position()).length() > BAG_DISTANCE);
+}
+
 SteerLib::EngineInterface * RVO2DAgent::getSimulationEngine()
 {
 	return _gEngine;
@@ -1055,7 +1060,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	// If bag owner and not set to reach bag, check bag is not too far away and create new goal
 	if (!isBag() && owned_bag && !(_goalQueue.front().goalType == GOAL_TYPE_SEEK_DYNAMIC_TARGET))
 	{
-		if ((position() - owned_bag->position()).length() > BAG_DISTANCE)
+		if (tooFarFromBag())
 		{
 			SteerLib::AgentGoalInfo newGoal;
 			auto currentGoal = _goalQueue.front();
