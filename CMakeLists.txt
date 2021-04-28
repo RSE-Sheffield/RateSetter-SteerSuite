@@ -264,6 +264,9 @@ if(MSVC)
   else()
     add_compile_options(/W0)
   endif()
+
+  # Disable the macro based min and max on windows?
+  add_compile_definitions(NOMINMAX)
 endif()
 
 
