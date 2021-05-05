@@ -102,12 +102,8 @@ namespace SteerLib {
 		Util::Vector direction;
 		/// The radius of the agent
 		float radius;
-		/// The social distancing radius of the agent, added to the radius of the agent
-		float sdradius = 0;
 		/// The initial speed of the agent (not the same as the desiredSpeed that is part of each goal)
 		float speed;
-		/// Whether the agent is a bag
-		bool isBag = false;
 		/// An ordered list of goals that the agent should try to complete.
 		std::vector<AgentGoalInfo> goals;
 		/// The color of the agent

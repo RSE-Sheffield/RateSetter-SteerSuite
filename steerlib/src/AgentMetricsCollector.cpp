@@ -533,8 +533,8 @@ void AgentMetricsCollector::printFormattedOverallStatistics(std::ostream & out)
 	out << "                     total time active: " << _metrics.totalTimeEnabled << "\n";
 
 	out << "                       collision score: " << _metrics.collisionScore << "\n";
-	out << "             max collision penetration: " << _metrics.maxCollisionPenetration << "\n";
-	out << "           max time in collision state: " << _metrics.maxTimeSpentInCollision << "\n";
+	out << "             max collision penetration: " << _metrics.maxCollisionPenetration << " (not implemented yet)\n";
+	out << "           max time in collision state: " << _metrics.maxTimeSpentInCollision << " (not implemented yet)\n";
 
 	out << "                  total degrees turned: " << _metrics.totalDegreesTurned << "\n";
 	out << "                     max angular speed: " << _metrics.maxAngularSpeed << "\n";

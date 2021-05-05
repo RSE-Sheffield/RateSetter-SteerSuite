@@ -385,11 +385,6 @@ void TestCaseReaderPrivate::_parseAgent(const ticpp::Element * subRoot)
 		else if (childTagName == "goalSequence") {
 			_parseGoalSequence(&(*child), newAgent.goals);
 		}
-		else if (childTagName == "bag") {
-			std::string bag_value;
-			child->GetText(&bag_value);
-			_parseBag(bag_value, newAgent);
-		}
 		else {
 			throw GenericException("Unexpected tag <" + childTagName + "> found on line " + toString(child->Row()) + "\n");
 		}
@@ -790,18 +785,6 @@ void TestCaseReaderPrivate::_parseGoalSequence(const ticpp::Element * subRoot, s
 
 }
 
-void SteerLib::TestCaseReaderPrivate::_parseBag(std::string bag_value, RawAgentInfo & newAgent)
-{
-	if (bag_value == "true") {
-		newAgent.isBag = true;
-		newAgent.color = Util::Color(0.5, 0.5, 0.5);
-		newAgent.colorSet = true;
-	}
-	else if (bag_value == "false") {
-		newAgent.isBag = false;
-	}
-}
-
 /*
  * Parses out the Behaviour information of something like
  * 	<Behaviour>
@@ -885,9 +868,6 @@ void TestCaseReaderPrivate::_parseInitialConditions(const ticpp::Element * subRo
 		else if (childTagName == "radius") {
 			child->GetText(&newAgent.radius);
 		}
-		else if (childTagName == "sdradius") {
-			child->GetText(&newAgent.sdradius);
-		}
 		else if (childTagName == "position") {
 			_getXYZOrRandomFromXMLElement(&(*child), newAgent.position, newAgent.isPositionRandom);
 		}
@@ -937,7 +917,6 @@ void TestCaseReaderPrivate::_initAgentInitialConditions( AgentInitialConditions 
 	a.position = agent.position;
 	a.colorSet = agent.colorSet;
 	a.color = agent.color;
-	a.isBag = agent.isBag;
 
 	if (agent.isDirectionRandom) {
 		// choose a random number;
@@ -950,7 +929,6 @@ void TestCaseReaderPrivate::_initAgentInitialConditions( AgentInitialConditions 
 	a.randBox = agent.regionBounds;
 
 	a.radius = agent.radius;
-	a.sdradius = agent.sdradius;
 	a.speed = agent.speed;
 	a.goals = agent.goals;  // note, this is a STL vector being copied into another STL vector.
 }

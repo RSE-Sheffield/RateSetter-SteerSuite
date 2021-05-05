@@ -130,8 +130,6 @@ target_include_directories(steerlib PRIVATE ${STEERLIB_INCLUDE_DIRS})
 target_link_libraries(steerlib tinyxml util)
 if(ENABLE_GUI)
     target_link_libraries(steerlib OpenGL::GL OpenGL::GLU GLUT::GLUT)
-    target_include_directories(steerlib PUBLIC "${GLUT_INCLUDE_DIR}")
-    # GLEW is not actually required...
     # target_link_libraries(steerlib GLEW::GLEW)
 endif()
 

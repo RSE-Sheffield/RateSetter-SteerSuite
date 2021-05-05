@@ -63,9 +63,7 @@ namespace SteerLib {
 		Util::Vector direction;
 		Util::Color color;
 		float radius;
-		float sdradius = 0;
 		float speed;
-		bool isBag = false;
 		std::vector<AgentGoalInfo> goals;
 		#ifdef VARIABLE_SPAWN_TIME
 		float spawn_time, despawn_time;
@@ -346,8 +344,6 @@ namespace SteerLib {
 		void _parseInitialConditions(const ticpp::Element * subRoot, RawAgentInfo & newAgent);
 		/// Parses the sequence of goals specified in an agent or agent region.
 		void _parseGoalSequence(const ticpp::Element * subRoot, std::vector<AgentGoalInfo> & goals);
-		/// Parses a bag tag.
-		void _parseBag(std::string bag_value, RawAgentInfo & newAgent);
 		/// Reads a bounding-box data type from a SteerSuite test case.
 		Util::AxisAlignedBox _getBoundsFromXMLElement(const ticpp::Element * subRoot);
 		/// Reads a 3 element vector from a SteerSuite test case, or indicates that it should be randomly generated.

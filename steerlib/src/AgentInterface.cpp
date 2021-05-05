@@ -334,7 +334,7 @@ void AgentInterface::draw()
 
 	}
 	else {
-		Util::DrawLib::drawAgentDisc(_position, _radius, _radius + _sdradius, this->_color);
+		Util::DrawLib::drawAgentDisc(_position, _radius, this->_color);
 	}
 	if (_goalQueue.front().goalType == SteerLib::GOAL_TYPE_SEEK_STATIC_TARGET) {
 		Util::DrawLib::drawFlag(_goalQueue.front().targetLocation);

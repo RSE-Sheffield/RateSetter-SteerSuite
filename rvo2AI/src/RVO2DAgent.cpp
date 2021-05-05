@@ -22,7 +22,7 @@
 // #define MAX_SPEED 1.33f
 #define AGENT_MASS 1.0f
 //set this define if using the merseyrail/PTI testcase
-//#define TRAINHACKS
+#define TRAINHACKS
 //#define SLOWREGION
 //#define DRAW_VESTIBULE
 
@@ -30,8 +30,6 @@ using namespace Util;
 using namespace RVO2DGlobals;
 using namespace SteerLib;
 
-
-#ifdef TRAINHACKS
 // PTI goal locations hack
 float depth = 0.f;
 
@@ -52,8 +50,6 @@ std::vector<Util::Point> PossibleGoals = { Util::Point(-22,0,depth),
 								Util::Point(26, 0, depth),
 								Util::Point(46, 0, depth) };
 #endif
-
-#endif //TRAINHACKS
 #ifdef SLOWREGION
 	Util::AxisAlignedBox slowRegion = Util::AxisAlignedBox(-5, 5, 0, 0, -5, 5);
 #endif
@@ -190,8 +186,6 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	_forward = normalize(initialConditions.direction);
 	//_radius = initialConditions.radius + d(gen);
 	_radius = initialConditions.radius;
-	_sdradius = initialConditions.sdradius;
-	_isBag = initialConditions.isBag;
 	_velocity = initialConditions.speed * _forward;
 
 	neighborDist_ = _RVO2DParams.rvo_neighbor_distance;
@@ -245,13 +239,8 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 				_goalQueue.push(_goal);
 			}
 		}
-		// For RVO Model, GOAL_TYPE_SEEK_DYNAMIC_TARGET refers to a bag following a person
-		else if (initialConditions.goals[i].goalType == SteerLib::GOAL_TYPE_SEEK_DYNAMIC_TARGET)
-		{
-			_goalQueue.push(initialConditions.goals[i]);
-		}
 		else {
-			throw Util::GenericException("Unsupported goal type; RVO2DAgent only supports GOAL_TYPE_SEEK_STATIC_TARGET, GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL and GOAL_TYPE_SEEK_DYNAMIC_TARGET.");
+			throw Util::GenericException("Unsupported goal type; RVO2DAgent only supports GOAL_TYPE_SEEK_STATIC_TARGET and GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL.");
 		}
 	}
 
@@ -429,8 +418,8 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 	const float invTimeHorizonObst = 1.0f / _RVO2DParams.rvo_time_horizon_obstacles;
 	
-	//auto original_radius = _radius;
-	//_radius = MIN_RADIUS;
+	auto original_radius = _radius;
+	_radius = MIN_RADIUS;
 	/* Create obstacle ORCA lines. */
 	for (size_t i = 0; i < obstacleNeighbors_.size(); ++i) {
 
@@ -660,8 +649,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 	const float invTimeHorizon = 1.0f / _RVO2DParams.rvo_time_horizon;
 
-	//set radius of agent-agent interactions to include social distancing
-	//_radius = original_radius;
+	_radius = original_radius;
 
 	/* Create agent ORCA lines. */
 	for (size_t i = 0; i < agentNeighbors_.size(); ++i)
@@ -671,37 +659,8 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		Util::Vector relativePosition = (other->position()) - position(); // This is fine
 		Util::Vector relativeVelocity = velocity() - other->velocity();
 		const float distSq = absSq(relativePosition);
-		float combinedRadius = radius() + sdradius() + other->radius() + other->sdradius();
-		float combinedRadiusSq = sqr(combinedRadius);
-
-		//default amount to avoid collision
-		float reciprocal_fov = 0.5f;
-
-
-		//Alternative behaviour if other agent is the owner's bag - ignore bag as a constraint
-		if (other->isBag() && std::stoi(other->currentGoal().targetName) == id()) {
-			continue;
-		}
-		//reverse of previous - ensure bag takes full responsibility to avoid owner
-		else if (isBag() && std::stoi(currentGoal().targetName) == other->id()) {
-			reciprocal_fov = 1.f;
-		}
-		//behaviour is agent's bag, and other agent is the owner - ignore social distancing between bag and owner
-		else if (isBag() && std::stoi(currentGoal().targetName) == other->id()) {
-			combinedRadius = radius() + other->radius(); //other radius is the physical person radius
-			combinedRadiusSq = sqr(combinedRadius);
-		}
-		//if bag - ignore other agents
-		else if (isBag() && !other->isBag()) {
-			continue;
-		}
-		
-		
-		//if other agent is bag, and this is a person, take full responsibility for avoidance
-		if (!this->isBag() && other->isBag()) {
-			reciprocal_fov = 1.f;
-		}
-
+		const float combinedRadius = radius() + other->radius();
+		const float combinedRadiusSq = sqr(combinedRadius);
 
 		//count SD invalidations
 		if (abs(relativePosition) < SD && !counted_this_frame) {
@@ -763,14 +722,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		const RVO2DAgent* otherRVO = dynamic_cast<const RVO2DAgent*>(other);
 		//float combined_reciprocity = _receprocity_factor / (_receprocity_factor + otherRVO->_receprocity_factor);
 
-
-		
-
-		
-		
-		
-		// simulate boarding behvaiours- occurs when goalqueue size is set to 2 (one to get on train, one to get within train)
-#ifdef TRAINHACKS
+		float reciprocal_fov = 0.5f;
 		if (_goalQueue.size() == 2 && other->_goalQueue.size() == 2) {
 			const Util::Vector forwardVec = _goalQueue.front().targetLocation - position();
 			const Util::Vector otherForwardVev = other->_goalQueue.front().targetLocation - other->position();
@@ -798,7 +750,6 @@ void RVO2DAgent::computeNewVelocity(float dt)
 				reciprocal_fov = 0.5f;
 			}
 		}
-#endif //TRAINHACKS
 		line.point = velocity() + reciprocal_fov * u;
 		orcaLines_.push_back(line);
 	}
@@ -923,37 +874,10 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		goalInfo.targetLocation = Util::Point(nearest_x, nearest_y, nearest_z);
 		goalDirection = normalize(goalInfo.targetLocation - position());
 	}
-	else if (goalInfo.goalType == GOAL_TYPE_SEEK_DYNAMIC_TARGET)
-	{
-		// Find the Agent to follow by id/name
-		auto agents = getSimulationEngine()->getAgents();
-		for (auto it = agents.begin(); it != agents.end(); ++it)
-		{
-			if ((*it)->id() == std::stoi(goalInfo.targetName))
-			{
-				//if owner finished, so should the bag
-				if (!(*it)->enabled())
-				{
-					disable();
-				}
-
-				//auto goal_position = (*it)->position();
-				goalDirection = normalize((*it)->position() - position());
-				goalInfo.targetLocation = (*it)->position();
-				//_prefVelocity = goalDirection;
-
-				//print helpful vals
-				//std::cout << "goal dir: " << goalDirection << 
-				//	"\tvel: " << velocity() << 
-				//	"\t_prefVelocity"  << _prefVelocity << std::endl;
-			}
-		}
-	}
 	else
 	{
 		goalDirection = normalize(goalInfo.targetLocation - position());
 	}
-
 #ifdef TRAINHACKS
 	/*// If agent is in train, ensure goal is within train
 	if (_position.z > 0.4f && _goalQueue.size() == 2 && loading_status == status::agent_boarding ) {
@@ -962,6 +886,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	else if (status::agent_alighting && _goalQueue.size() == 2 && _position.z < -0.4f) {
 		_goalQueue.pop();
 	}*/
+#endif
 
 	int agent_to_print = -1;
 	if (id() == agent_to_print) {
@@ -1004,7 +929,6 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	if (id() == agent_to_print) {
 		printf("\n ");
 	}
-#endif
 
 #ifdef SLOWREGION
 	//scale prefered velocity if agent is "on stairs"
@@ -1023,7 +947,6 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 #ifdef _DEBUG_ENTROPY
 	std::cout << "Preferred velocity is: " << prefVelocity_ << std::endl;
 #endif
-	_prefVelocity = goalDirection;
 	(this)->computeNeighbors();
 	(this)->computeNewVelocity(dt);
 	// (this)->computeNewVelocity(dt);
@@ -1055,11 +978,11 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	 */
 	_velocity.y = 0.0f;
 
-	//reached current goal
 	if(((goalInfo.targetLocation - position()).length() < radius()*REACHED_GOAL_MULTIPLIER ) ||
 			(goalInfo.goalType == GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL &&
-			Util::boxOverlapsCircle2D(goalInfo.targetRegion.xmin, goalInfo.targetRegion.xmax,
-			goalInfo.targetRegion.zmin, goalInfo.targetRegion.zmax, this->position(), this->radius())))
+								Util::boxOverlapsCircle2D(goalInfo.targetRegion.xmin, goalInfo.targetRegion.xmax,
+										goalInfo.targetRegion.zmin, goalInfo.targetRegion.zmax, this->position(), this->radius()))
+										)
 	{
 		_goalQueue.pop();
 		// std::cout << "Made it to a goal" << std::endl;
@@ -1079,6 +1002,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 			_enabled = false;
 				*/
 			return;
+
 		}
 	}
 
