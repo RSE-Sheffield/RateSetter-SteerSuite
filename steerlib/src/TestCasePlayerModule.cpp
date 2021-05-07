@@ -71,26 +71,56 @@ void TestCasePlayerModule::init( const SteerLib::OptionDictionary & options, Ste
 #endif
 }
 
+// Utility functions from SimulationEngine.cpp stored in an anonymous namespace to enable linking.
+namespace { 
+void split(const std::string &s, char delim, std::vector<std::string> &elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    // return elems;
+}
+std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    split(s, delim, elems);
+    return elems;
+}
+}  // namespace
+
 void TestCasePlayerModule::initializeSimulation() {
 
 	SteerLib::TestCaseReader * testCaseReader;
 
 	std::string testCasePath;
+	bool foundTestCase = false;
 
-	// try to find the test case in several ways:
-	if (Util::fileCanBeOpened(_testCaseFilename)) {
+	// try to find the test case in several ways,  Extended to support : separated search paths 
+	// Check the file directly, with and without .xml appended
+	if (!foundTestCase && Util::fileCanBeOpened(_testCaseFilename)) {
 		testCasePath = _testCaseFilename;
-	}
-	else if (Util::fileCanBeOpened( _engine->getTestCaseSearchPath() + _testCaseFilename )) {
-		testCasePath = _engine->getTestCaseSearchPath() + _testCaseFilename;
-	}
-	else if (Util::fileCanBeOpened(_testCaseFilename + ".xml")) {
+		foundTestCase = true;
+	} else if (!foundTestCase && Util::fileCanBeOpened(_testCaseFilename + ".xml")) {
 		testCasePath = _testCaseFilename + ".xml";
+		foundTestCase = true;
 	}
-	else if (Util::fileCanBeOpened( _engine->getTestCaseSearchPath() + _testCaseFilename + ".xml" )) {
-		testCasePath = _engine->getTestCaseSearchPath() + _testCaseFilename + ".xml";
+
+	// Check paths from testCaseSearchPath, with and without an extra .xml.
+	if(!foundTestCase) {
+		std::vector<std::string> paths = split(_engine->getTestCaseSearchPath(),':');
+		for (size_t p=0; (!foundTestCase) && (p < paths.size()); p++) {
+			printf("path %s\n", paths[p].c_str());
+			if(Util::fileCanBeOpened( paths[p] + _testCaseFilename )) {
+				testCasePath = paths[p] + _testCaseFilename;
+				foundTestCase = true;
+			} else if (Util::fileCanBeOpened( paths[p] + _testCaseFilename + ".xml" )) {
+				testCasePath = paths[p] + _testCaseFilename + ".xml";
+				foundTestCase = true;
+			}
+		}
 	}
-	else {
+	// If it could still not be found, throw an exception.
+	if (!foundTestCase) {
 		throw Util::GenericException("Could not find test case " + _testCaseFilename + ".");
 	}
 

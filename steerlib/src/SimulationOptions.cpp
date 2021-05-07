@@ -130,13 +130,8 @@ using namespace Util;
 //====================================
 // ENGINE DEFAULTS
 //====================================
-#ifdef _WIN32
-#define DEFAULT_MODULE_SEARCH_PATH "./"
-#define DEFAULT_TEST_CASE_SEARCH_PATH "../../../testcases/"
-#else
-#define DEFAULT_MODULE_SEARCH_PATH "../lib/"
-#define DEFAULT_TEST_CASE_SEARCH_PATH "../../testcases/"
-#endif
+#define DEFAULT_MODULE_SEARCH_PATH "../build/lib/:../../build/lib/:../../../build/lib/"
+#define DEFAULT_TEST_CASE_SEARCH_PATH "../testcases/:../../testcases/:../../../testcases/"
 
 #define DEFAULT_ENGINE_DRIVER "glfw"
 #define DEFAULT_COUT_REDIRECTION_FILENAME ""

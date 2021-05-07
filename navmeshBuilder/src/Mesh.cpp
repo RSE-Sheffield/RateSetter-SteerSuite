@@ -1452,6 +1452,7 @@ bool Mesh::ray_intersect_triangle (const Util::Point &ray_origin, const Util::Po
 
 void Mesh::drawMesh()
 {// Draw mesh triangles
+#ifdef ENABLE_GUI
 
 	// Draw triangles
 	Util::Vector adjust = Util::Vector(0.0f,-0.4f,0.0f);
@@ -1537,6 +1538,7 @@ void Mesh::drawMesh()
 			Util::DrawLib::drawLine(this->get_vertex(he.vert)+adjust, this->get_vertex(next(he).vert)+adjust, Util::gGray20, 0.8);
 		}
 	}
+#endif // ENABLE_GUI
 }
 
 

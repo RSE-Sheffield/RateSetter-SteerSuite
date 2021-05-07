@@ -17,13 +17,14 @@ Options specified by the command line will override options in this configuratio
         <!-- The minimum time-step allowed when the clock is in "variable-real-time" mode.  If the proposed time-step is smaller, this value will be used instead, effectively limiting the max frame rate. -->
         <minVariableDt>0.001</minVariableDt>
         <!-- The default directory to search for dynamic plug-in modules at runtime. -->
-        <moduleSearchPath>./</moduleSearchPath>
-        <!-- The default number of frames to simulate - 0 means run the entire simulation until all agents are disabled. -->
-        <numFrames>5000</numFrames>
+        <!-- : separate list to support running from `build`, or 2 layers deep. -->
+        <moduleSearchPath>lib/:../lib/:../../lib/</moduleSearchPath>
+	<!-- The default number of frames to simulate - 0 means run the entire simulation until all agents are disabled. -->
+        <numFrames>500000</numFrames>
         <!-- The default number of threads to run on the simulation -->
         <numThreads>1</numThreads>
         <!-- The default directory to search for test cases at runtime. -->
-        <testCaseSearchPath>../../../testcases/</testCaseSearchPath>
+        <testCaseSearchPath>../testcases/:../../testcases/:../../../testcases</testCaseSearchPath>
         <startupModules>
         <!--
         The list of modules to use on startup.  Modules specified by the command line will be merged with this list.
@@ -74,11 +75,11 @@ Options specified by the command line will override options in this configuratio
         <!-- The name of the engine driver to use, if not specified from command line -->
         <engineDriver>glfw</engineDriver>
         <!-- If a filename is specified, std::cerr will be redirected to that filename.  NOTE: Only std::cerr will be redirected; low-level and C-style output will not be redirected.  Exceptions will be caught and redirected to both the new and the original std::cerr output. -->
-        <redirectCerrToFile></redirectCerrToFile>
+        <redirectCerrToFile/>
         <!-- If a filename is specified, std::clog will be redirected to that filename.  NOTE: Only std::clog will be redirected; low-level and C-style output will not be redirected. -->
-        <redirectClogToFile></redirectClogToFile>
+        <redirectClogToFile/>
         <!-- If a filename is specified, std::cout will be redirected to that filename.  NOTE: Only std::cout will be redirected; low-level and C-style output will not be redirected. -->
-        <redirectCoutToFile></redirectCoutToFile>
+        <redirectCoutToFile/>
     </global>
     <gui>
     <!--
@@ -123,8 +124,11 @@ Options specified by the command line will override options in this configuratio
     Module-specific options.  Any options specified on the command-line will override the options specified here.  Modules specified here will not necessarily be loaded when started; for that use the startupModules option for the engine.
     -->
         <testCasePlayer>
-            <ai>../bin/rvo2dAI</ai>
-            <testcase>../../testcases/bags/bag-two.xml</testcase>
+            <ai>rvo2dAI</ai>
+            <testcase>../testcases/Merseyrail/merseyrail.xml</testcase>
+            <!--<testcase>../../testcases/hallway-two-way.xml</testcase>-->
+            <!--<testcase>../../testcases/hallway-tickets.xml</testcase>-->
+            <!--<testcase>../../testcases/hallway-barrier.xml</testcase>-->
         </testCasePlayer>
     </modules>
     <mouse>

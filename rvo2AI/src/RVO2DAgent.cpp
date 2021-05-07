@@ -289,7 +289,8 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 
 
 	// _gEngine->addAgent(this, rvoModule);
-	assert(_forward.length()!=0.0f);
+	// Disabled assertion due to initialConditions.direction being unused, leading to this firing.
+	// assert(_forward.length() != 0.0f && !isnan(_forward.length()));
 	assert(_goalQueue.size() != 0);
 	assert(_radius != 0.0f);
 

@@ -30,6 +30,7 @@ std::pair<std::vector<Util::Point>,std::vector<size_t> > BoxObstacle::getStaticG
 	std::vector<size_t> triVerts;
 
 	std::vector<Util::Point> verts;
+#ifdef ENABLE_GUI
 	Point topLeft(_bounds.xmin, _bounds.ymin-0.01f, _bounds.zmin);
 	verts.push_back(topLeft); //0
 	Point topRight(_bounds.xmax, _bounds.ymin-0.01f, _bounds.zmin);
@@ -105,6 +106,7 @@ std::pair<std::vector<Util::Point>,std::vector<size_t> > BoxObstacle::getStaticG
 	triVerts.push_back(1);
 	triVerts.push_back(7);
 	triVerts.push_back(3);
+#endif // ifdef ENABLE_GUI
 
 	return std::make_pair(verts, triVerts);
 

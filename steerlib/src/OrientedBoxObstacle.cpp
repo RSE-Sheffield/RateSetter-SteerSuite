@@ -13,14 +13,14 @@
 using namespace SteerLib;
 using namespace Util;
 
-#ifndef _WIN32
+//#ifndef _WIN32
 // win32 does not define "std::max", instead they define "max" as a macro.
 // because of this, on unix we use "using std::max" so that the code only
 // needs to use "max()" instead of "std::max()".  This way, the code
 // works on both win32 and unix.
 using std::max;
 using std::min;
-#endif
+//#endif
 
 
 OrientedBoxObstacle::OrientedBoxObstacle ( Util::Point centerPosition, float lengthX, float lengthZ, 
