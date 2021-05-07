@@ -14,7 +14,9 @@
 #include "SteerLib.h"
 // #include "navmeshdatabase/NavMeshEngine.h"
 
+#ifdef ENABLE_GLFW
 #include "core/GLFWEngineDriver.h"
+#endif // ENABLE_GLFW
 #include "SimulationPlugin.h"
 #include "core/SteerSim.h"
 
@@ -103,10 +105,12 @@ int main(int argc, char** argv)
 
 
 		// Run this stuff
+#ifdef ENABLE_GLFW
 		GLFWEngineDriver * driver = GLFWEngineDriver::getInstance();
 		driver->init(&simulationOptions);
 		driver->run();
 		driver->finish();
+#endif
 
 	}
 	catch (std::exception &e) {

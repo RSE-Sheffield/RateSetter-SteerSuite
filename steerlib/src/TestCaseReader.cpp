@@ -184,5 +184,7 @@ void TestCaseReader::readTestCaseFromFile( const std::string & testCaseFilename 
 
 	// initial conditions are established, so the local instance of the spatial database is no longer needed after this function returns.
 	delete testCaseDB;
+
+	printf("Loaded testcase %s\n", testCaseFilename.c_str());
 }
 
