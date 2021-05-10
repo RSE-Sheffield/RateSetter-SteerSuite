@@ -116,6 +116,8 @@ protected:
 	std::vector<LogObject *> _logData;
 
 	SteerLib::EngineInterface * _gEngine;
+
+	void printBagsToFile(std::string outfile);
 };
 
 

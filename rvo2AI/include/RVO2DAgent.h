@@ -87,6 +87,8 @@ public:
 #endif
 	//int chosen_door;
 
+	bool tooFarFromBag();
+
 protected:
 	/// Updates position, velocity, and orientation of the agent, given the force and dt time step.
 	// void _doEulerStep(const Util::Vector & steeringDecisionForce, float dt);
@@ -133,6 +135,10 @@ protected:
 	std::vector<Util::Plane> orcaPlanes_;
 	std::vector<Line> orcaLines_;
 	SteerLib::ModuleInterface * rvoModule;
+	size_t bag_id = -1;
+	const AgentInterface * owned_bag = NULL; // Reference to the bag(s) owned by this actor
+	bool far_bag_count_flag = false; 
+	std::vector<int> far_bag_count; //vector of frames duration for each time owner and bag are separated
 
 	SteerLib::EngineInterface * _gEngine;
 
