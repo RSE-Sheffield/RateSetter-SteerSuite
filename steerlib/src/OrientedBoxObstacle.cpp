@@ -9,19 +9,10 @@
 
 #include "obstacles/OrientedBoxObstacle.h"
 #include "util/DrawLib.h"
+#include <algorithm>  // for std::min and std::max
 
 using namespace SteerLib;
 using namespace Util;
-
-//#ifndef _WIN32
-// win32 does not define "std::max", instead they define "max" as a macro.
-// because of this, on unix we use "using std::max" so that the code only
-// needs to use "max()" instead of "std::max()".  This way, the code
-// works on both win32 and unix.
-using std::max;
-using std::min;
-//#endif
-
 
 OrientedBoxObstacle::OrientedBoxObstacle ( Util::Point centerPosition, float lengthX, float lengthZ, 
 										  float ymin, float ymax, float thetaY, float traversalCost )
@@ -76,10 +67,10 @@ OrientedBoxObstacle::OrientedBoxObstacle ( Util::Point centerPosition, float len
 	_bounds.ymax = ymax;
 	_bounds.ymin = ymin;
 
-	_bounds.xmax = max ( max (_a.x, _b.x), max(_c.x, _d.x) );
-	_bounds.xmin = min ( min (_a.x, _b.x), min(_c.x, _d.x) );
-	_bounds.zmax = max ( max (_a.z, _b.z), max(_c.z, _d.z) );
-	_bounds.zmin = min ( min (_a.z, _b.z), min(_c.z, _d.z) );
+	_bounds.xmax = std::max ( std::max (_a.x, _b.x), std::max(_c.x, _d.x) );
+	_bounds.xmin = std::min ( std::min (_a.x, _b.x), std::min(_c.x, _d.x) );
+	_bounds.zmax = std::max ( std::max (_a.z, _b.z), std::max(_c.z, _d.z) );
+	_bounds.zmin = std::min ( std::min (_a.z, _b.z), std::min(_c.z, _d.z) );
 
 
 	// calculating _blocksLineOfSight
