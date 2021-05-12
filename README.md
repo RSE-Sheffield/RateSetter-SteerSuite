@@ -1,28 +1,14 @@
 SteerSuite
 ==========
 
-Welcome!  SteerSuite is a set of test cases, tools, and a C++ library
-for developing and evaluating agent steering AI behaviors.
-
-The SteerSuite web page is
-[steersuite.eecs.yorku.ca](http://steersuite.eecs.yorku.ca/)
-
-On the web page you can find a description of SteerSuite, download the
-latest version of SteerSuite, read the latest documentation, and join
-the discussion group.
-
-Please send us any comments and feedback about how to make SteerSuite
-easier to use.  Your input is greatly appreciated.
+Welcome!  SteerSuite is a set of test cases, tools, and a C++ library for developing and evaluating agent steering AI behaviors. This is the RateSetter implementation of SteerSuite, tailored to Platform-Train-Interactions (PTI), bags, and group pedestrian behaviour.
 
 Enjoy!
 
 Documentation
 -------------
 
-If you want to build your own documentation from this package, read
-the file `documentation/readme.txt` for more information.  Otherwise,
-the latest documentation can be found at the
-[SteerSuite web page](http://steersuite.eecs.yorku.ca/).
+If you want to build your own documentation from this package, read the file `documentation/readme.txt` for more information.  Otherwise, the latest documentation for the original/Upstream version of SteerSuite can be found at the [SteerSuite web page](http://steersuite.eecs.yorku.ca/).
 
 The documentation includes:
 
@@ -49,22 +35,8 @@ The directory structure of this package is as follows:
     navmeshBuilder  - Module to build navigation meshes during runtime.
                       Uses Recast.
 
-    pprAI           - source directory for the PPR steering module, a
-                      demo steering algorithm for SteerSim.
-
     rvo2AI          - source directory for the ORCA steering module,
                       based on the RVO2 steering algorithm library.
-
-    reactiveAI      - source directory for the reactive steering module,
-                      a demo steering algorithm for SteerSim (just the
-                      reactive appraoch of PPR).
-
-    socialForcesAI  - source directory for the social foces steering
-                      module, an implementation of the social forces
-                      steering algorithm.
-
-    simpleAI        - source directory for the simpleAI module, a basic
-                      demo plugin for SteerSim.
 
     steerbench      - source directory for SteerBench, a tool used to
                       score and analyze steering AI.
@@ -84,9 +56,7 @@ The directory structure of this package is as follows:
 Compiling SteerSuite
 --------------------
 
-Below are quick instructions for compiling with default options. For
-more complete instructions, refer to the
-[SteerSuite User Guide](http://steersuite.eecs.yorku.ca/UserGuide/).
+Below are instructions for compiling with default options. The compiling process has changed drastically from the original Steersuite, and more information on the original implementation can be found at [SteerSuite User Guide](http://steersuite.eecs.yorku.ca/UserGuide/).
 
 Steersuite has several dependencies:
 
@@ -269,25 +239,28 @@ Contact information
 
 Contact Information:
 
-- Glen Berseth      `glenpb@cse.yorku.ca`
-- Mubbasir Kapadia  `mubbasir@cs.ucla.edu`
-- Petros Faloutsos  `pfal@cse.yorku.ca`
-- Glenn Reinman     `reinman@cs.ucla.edu`
-
-SteerSuite web page:
-[steersuite.eecs.yorku.ca](http://steersuite.eecs.yorku.ca/)
-
-Forum (Google Group):
-[groups.google.com/forum/#!forum/steersuite](https://groups.google.com/forum/#!forum/steersuite)
+- John Charlton     `j.a.charlton@sheffield.ac.uk`
+- Peter Heywood     `p.heywood@sheffield.ac.uk`
+- Paul Richmond     `p.richmond@sheffield.ac.uk `
 
 Please report bugs by opening an issue on
-[github](https://github.com/SteerSuite/Release/issues). For any other
-queries please use the forum.
+[github](https://github.com/RSE-Sheffield/RateSetter-SteerSuite/issues).
+
+Original SteerSuite
+---------------------
+
+The original SteerSuite implementation web page is [steersuite.eecs.yorku.ca](http://steersuite.eecs.yorku.ca/), and the repository is on [github.com/SteerSuite/Release](https://github.com/SteerSuite/Release)
+
+Original SteerSuite web page:
+[steersuite.eecs.yorku.ca](http://steersuite.eecs.yorku.ca/)
+
+Original SteerSuite Forum (Google Group):
+[groups.google.com/forum/#!forum/steersuite](https://groups.google.com/forum/#!forum/steersuite)
 
 Copyright and license
 ---------------------
 
-SteerSuite, SteerBench, SteerBug, SteerSim, and SteerLib are Copyright
+Original SteerSuite, SteerBench, SteerBug, SteerSim, and SteerLib are Copyright
 (c) 2008-2014 Shawn Singh, Glen Berseth, Mubbasir Kapadia, Petros
 Faloutos, and Glenn Reinman.
 
@@ -301,5 +274,4 @@ convenience.
 Credits
 -------
 
-Refer to the [SteerSuite web page](http://steersuite.eecs.yorku.ca/)
-for credits and acknowledgements.
+Refer to the [SteerSuite web page](http://steersuite.eecs.yorku.ca/) for credits and acknowledgements.
