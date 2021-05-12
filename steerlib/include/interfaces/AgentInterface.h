@@ -120,8 +120,8 @@ namespace SteerLib {
 		// So AgentInterface can get Simulation members
 		virtual SteerLib::EngineInterface * getSimulationEngine() = 0;
 		std::queue<SteerLib::AgentGoalInfo> _goalQueue;
-		int chosen_door;
-		status loading_status;
+		//int chosen_door;
+		//status loading_status;
 
 #define AGENT_NEIGHBOURS 10
 		virtual void insertAgentNeighbor(const SteerLib::AgentInterface * agent, float &rangeSq);
