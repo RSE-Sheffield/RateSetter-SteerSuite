@@ -257,8 +257,13 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 		{
 			_goalQueue.push(initialConditions.goals[i]);
 		}
+		else if (initialConditions.goals[i].goalType == SteerLib::GOAL_TYPE_SEEK_STATIC_TARGET_SET)
+		{
+			_goalQueue.push(initialConditions.goals[i]);
+		}
 		else {
-			throw Util::GenericException("Unsupported goal type; RVO2DAgent only supports GOAL_TYPE_SEEK_STATIC_TARGET, GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL and GOAL_TYPE_SEEK_DYNAMIC_TARGET.");
+			throw Util::GenericException("Unsupported goal type; RVO2DAgent only supports GOAL_TYPE_SEEK_STATIC_TARGET,\
+										 GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL, GOAL_TYPE_SEEK_DYNAMIC_TARGET and GOAL_TYPE_SEEK_STATIC_TARGET_SET.");
 		}
 	}
 
@@ -961,6 +966,21 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 				//	"\t_prefVelocity"  << _prefVelocity << std::endl;
 			}
 		}
+	}
+	// Set front goal as the nearest of the GOAL_TYPE_SEEK_STATIC_TARGET_SET goals
+	else if (goalInfo.goalType == GOAL_TYPE_SEEK_STATIC_TARGET_SET)
+	{
+		// Shortest distance to nearest goal in the set
+		float shortestDist = INFINITY;
+		for (auto it = goalInfo.targetLocationsSet.begin(); it != goalInfo.targetLocationsSet.end(); it++) {
+			if ((*it - position()).length() < shortestDist) {
+				shortestDist = (*it - position()).length();
+				chosen_door = it - goalInfo.targetLocationsSet.begin();
+
+				goalInfo.targetLocation = *it;
+			}
+		}
+		goalDirection = normalize(goalInfo.targetLocation - position());
 	}
 	else
 	{

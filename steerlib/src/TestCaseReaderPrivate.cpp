@@ -724,6 +724,9 @@ void TestCaseReaderPrivate::_parseGoalSequence(const ticpp::Element * subRoot, s
 		{
 			newGoal.goalType = GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL;
 		}
+		else if (childTagName == "seekStaticTargetSet") {
+			newGoal.goalType = GOAL_TYPE_SEEK_STATIC_TARGET_SET;
+		}
 		else {
 			throw GenericException("Unexpected tag <" + childTagName + "> found on line " + toString(child->Row()) + " while parsing goal sequence.\n");
 		}
@@ -781,6 +784,20 @@ void TestCaseReaderPrivate::_parseGoalSequence(const ticpp::Element * subRoot, s
 							<< " value " << behave->getParameters().at(q).value << std::endl;
 				}
 				*/
+			}
+			else if (specName == "targetLocationsSet")
+			{
+				ticpp::Iterator<ticpp::Element> targetSpecs;
+				for (targetSpecs = targetSpecs.begin(&(*goalSpecs)); targetSpecs != targetSpecs.end(); targetSpecs++) {
+					std::string targetSpecName = targetSpecs->Value();
+
+					if (targetSpecName == "targetLocation")
+					{
+						Util::Point targetLocation;
+						_getXYZOrRandomFromXMLElement(&(*targetSpecs), targetLocation, newGoal.targetIsRandom);
+						newGoal.targetLocationsSet.push_back(targetLocation);
+					}
+				}
 			}
 		}
 

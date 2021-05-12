@@ -42,7 +42,10 @@ namespace SteerLib {
 	    /// Group goal that defines a target rectangular region.
 		GOAL_TYPE_GROUP_TARGET,
 		/// Axis Aligned region for goal.    Anyway in box counts as reached goal
-		GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL
+		GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL,
+		/// Seek the nearest of a set of fixed target locations.
+		GOAL_TYPE_SEEK_STATIC_TARGET_SET
+
 	};
 
 
@@ -83,6 +86,8 @@ namespace SteerLib {
 		Util::AxisAlignedBox targetRegion;
 		/// holds the discription of the desired beavior to use to get to this goal
 		Behaviour targetBehaviour;
+		/// The set of possible locations, which when any one is reached will complete this goal
+		std::vector<Util::Point> targetLocationsSet;
 		//@}
 	};
 
