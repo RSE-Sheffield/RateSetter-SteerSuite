@@ -115,6 +115,13 @@ protected:
 	 */
 	void computeNewVelocity(float dt);
 
+
+	/**
+	* \brief check if this agent, for this current goal, has a specified behaviour "key"
+	*/
+	bool hasGoalBehaviour(std::string key, std::string value) const;
+	bool hasGoalBehaviour(std::string key) const;
+
 	/**
 		 * \brief   Updates the three-dimensional position and three-dimensional velocity of this agent.
 		 */

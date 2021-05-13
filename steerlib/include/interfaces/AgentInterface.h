@@ -89,6 +89,9 @@ namespace SteerLib {
 		// Get the list of all the goals
 		// I don't know how you can give someone a queue and not have them need to modify it?
 		virtual const std::queue<SteerLib::AgentGoalInfo> & agentGoals() const = 0;
+		// Returns whether the passed key (&value) is part of the current goal behaviour
+		virtual bool hasGoalBehaviour(std::string key, std::string value) const = 0;
+		virtual bool hasGoalBehaviour(std::string key) const = 0;
 		//@}
 
 		/// @name Some convenience functions so users can manipulate agents more explicitly

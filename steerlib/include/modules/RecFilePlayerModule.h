@@ -37,6 +37,8 @@ namespace SteerLib
 		const std::queue<SteerLib::AgentGoalInfo> & agentGoals() const { throw Util::GenericException("agentGoals() not implemented yet"); }
 		void addGoal(const SteerLib::AgentGoalInfo & newGoal) { throw Util::GenericException("addGoals() not implemented yet for ReplayAgent"); }
 		void clearGoals() { throw Util::GenericException("clearGoals() not implemented yet for ReplayAgent"); }
+		bool hasGoalBehaviour(std::string key, std::string value) const { return false; }
+		bool hasGoalBehaviour(std::string key) const { return false; }
 
 		bool intersects(const Util::Ray &r, float &t) { return Util::rayIntersectsCircle2D(_position, _radius, r, t); }
 		bool overlaps(const Util::Point & p, float radius) { return Util::circleOverlapsCircle2D( _position, _radius, p, radius); }

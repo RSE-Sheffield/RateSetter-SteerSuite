@@ -58,6 +58,9 @@ namespace SteerLib {
 		float radius() const { return _radius; }
 		float sdradius() const { return _sdradius; }
 		bool isBag() const { return _isBag; }
+		bool hasGoalBehaviour(std::string key, std::string value) const { return false; }
+		bool hasGoalBehaviour(std::string key) const { return false; }
+
 		const SteerLib::AgentGoalInfo & currentGoal() const { return _currentGoal; }
 		const std::queue<SteerLib::AgentGoalInfo> & agentGoals() const { throw Util::GenericException("agentGoals() not implemented yet"); }
 		void addGoal(const SteerLib::AgentGoalInfo & newGoal) { throw Util::GenericException("addGoals() not implemented yet for DummyAgent"); }

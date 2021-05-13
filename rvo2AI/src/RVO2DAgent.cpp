@@ -782,7 +782,11 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		//float combined_reciprocity = _receprocity_factor / (_receprocity_factor + otherRVO->_receprocity_factor);
 
 
-		
+		////If thes goal has the "boarding" hebariour tag - add computation as if it were boarding
+		//BehaviourParameter lowp(std::string("boarding"), std::string("1"));
+		//auto paramvec = goalInfo.targetBehaviour.getParameters();
+		//if (std::find(paramvec.begin(), paramvec.end(), lowp) != paramvec.end())
+
 
 		
 		
@@ -830,6 +834,28 @@ void RVO2DAgent::computeNewVelocity(float dt)
 	}
 
 }
+
+bool RVO2DAgent::hasGoalBehaviour(std::string key, std::string value) const
+{
+	BehaviourParameter tofind(key, value);
+	auto paramvec = _goalQueue.front().targetBehaviour.getParameters();
+	return (std::find(paramvec.begin(), paramvec.end(), tofind) != paramvec.end());
+}
+
+bool RVO2DAgent::hasGoalBehaviour(std::string key) const
+{
+	bool found = false;
+	auto paramvec = _goalQueue.front().targetBehaviour.getParameters();
+	for (auto it = paramvec.begin(); it != paramvec.end(); it++)
+	{
+		if (it->key == key) {
+			found = true;
+			break;
+		}
+	}
+	return found;
+}
+
 
 void RVO2DAgent::insertAgentNeighbor(const SteerLib::AgentInterface *agent, float &rangeSq)
 {
@@ -988,9 +1014,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	}
 
 	//If the next goal is "low priority", let other agents move first
-	BehaviourParameter lowp(std::string("low priority"), std::string("1"));
-	auto paramvec = goalInfo.targetBehaviour.getParameters();
-	if (std::find(paramvec.begin(), paramvec.end(), lowp) != paramvec.end())
+	if (hasGoalBehaviour("low priority"))
 	{
 		//see if other nearby agents want to get to this goal - if so dont make any progress
 		for (std::vector<std::pair<float, const SteerLib::AgentInterface*> >::const_iterator it = agentNeighbors_.begin(); it != agentNeighbors_.end(); it++)
@@ -1000,7 +1024,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 			if (other->_goalQueue.size() != 0)
 			{
 				auto otherparamvec = other->_goalQueue.front().targetBehaviour.getParameters();
-				if (other->_goalQueue.front().targetLocation == goalInfo.targetLocation && (std::find(otherparamvec.begin(), otherparamvec.end(), lowp) == otherparamvec.end()))
+				if (other->_goalQueue.front().targetLocation == goalInfo.targetLocation && !(other->hasGoalBehaviour("low priority")))
 				{
 					goalDirection = Util::Vector(0, 0, 0);
 				}
