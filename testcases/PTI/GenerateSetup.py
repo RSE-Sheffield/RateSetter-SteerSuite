@@ -187,7 +187,7 @@ def make_hollow_square_obstacle(xmlroot, origin, length_x, length_z, wall_thickn
 	make_obstacle(xmlroot, wall_3[0], wall_3[1])
 
 #create a singlular xml steersuite agent	
-def make_agent(xmlparent, radius, location, goals_arr):
+def make_agent(xmlparent, radius, sdradius, location, goals_arr):
 	agent= ET.SubElement(xmlparent, 'agent')
 
 	#initial conditions
@@ -200,7 +200,8 @@ def make_agent(xmlparent, radius, location, goals_arr):
 	ET.SubElement(position, 'x').text = str(location[0])
 	ET.SubElement(position, 'y').text = "0"
 	ET.SubElement(position, 'z').text = str(location[1])
-	radius = ET.SubElement(initialConditions, 'radius').text= str(radius)
+	ET.SubElement(initialConditions, 'radius').text= str(radius)
+	ET.SubElement(initialConditions, 'sdradius').text= str(sdradius)
 	ET.SubElement(initialConditions, 'speed').text= "0"
 
 	#goal sequence
@@ -211,11 +212,11 @@ def make_agent(xmlparent, radius, location, goals_arr):
 # each agent is given a "box" within the larger box, where it can spawn at some point within.
 # This helps maintain randomness each run
 # returns number of agents that couldnt fit
-def make_manual_agents_in_square(xmlroot, origin, lengths, num_agents, radius, goals):
+def make_manual_agents_in_square(xmlroot, origin, lengths, num_agents, radius, sdradius, goals):
 	# Rows in x dir, columns across z
 	
 	# Can we fit all the agents?
-	nums_per_side = [math.floor(abs(lengths[0]/(radius*2))), math.floor(abs(lengths[1]/(radius*2)))]
+	nums_per_side = [math.floor(abs(lengths[0]/((radius+sdradius)*2))), math.floor(abs(lengths[1]/((radius+sdradius)*2)))]
 	total_num = int(nums_per_side[0] * nums_per_side[1])
 	leftover = num_agents - total_num
 	num_agents = total_num if leftover > 0 else num_agents
@@ -225,7 +226,7 @@ def make_manual_agents_in_square(xmlroot, origin, lengths, num_agents, radius, g
 	box_occupancy = list(range(0,total_num))
 	box_size = box_lengths
 	box_center = box_size / 2
-	extra_space = np.abs(box_size - (2*radius)) / 2
+	extra_space = np.abs(box_size - (2*(radius+sdradius))) / 2
 
 	for i in range(num_agents):
 		# select a free box
@@ -241,7 +242,7 @@ def make_manual_agents_in_square(xmlroot, origin, lengths, num_agents, radius, g
 		colum_id = boxId % nums_per_side[0]
 		col_loc = origin[0] + (colum_id * box_size[0]) + box_center[0] + x_off#+ (-extra_space[1] + random.uniform(0,2) * extra_space[1])
 		row_loc = origin[1] + (row_id   * box_size[1]) + box_center[1] + y_off#+ (-extra_space[0] + random.uniform(0,2) * extra_space[0])
-		make_agent(xmlroot, radius, [col_loc, row_loc], goals)
+		make_agent(xmlroot, radius, sdradius, [col_loc, row_loc], goals)
 
 		# Set id as occupied
 		box_occupancy.remove(boxId)
@@ -271,7 +272,7 @@ def add_corridor(xmlparent, origin, width, height):
 	make_obstacle_2d(xmlparent, origin + np.array([0,-height]), origin + np.array([width,-height+0.1]))
 
 
-def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, outputName, carriage_type):
+def generate_xml(radius, sdradius, agents_per_region, agents_in_carriage, platform_depth, outputName, carriage_type):
 	door_width =  1.5
 	train_wall_thickness = 0.1 
 	plat_dims = ([100,platform_depth]) #x,z
@@ -284,6 +285,7 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 		train_dims = (24,5)
 		doors_pos = (2, 22)
 		door_width = 0.95
+		door_goals = [[-22,0,0],[-2,0,0],[2,0,0],[22,0,0],[26, 0, 0],[46, 0, 0]]
 	else:
 		print("invalid argument for carriage")
 
@@ -341,17 +343,17 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 
 		lengths = np.array([train_dims[0] / 2, -platform_depth])
 		leftover = 0
-		make_manual_agents_in_square(outroot, offset2d, lengths, agents_per_region, agent_radius, [ goal_door_lowp, goal_in_train])
-		leftover = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths, agents_per_region, agent_radius, [ goal_door_lowp, goal_in_train])
+		make_manual_agents_in_square(outroot, offset2d, lengths, agents_per_region, radius, sdradius, [ goal_door_lowp, goal_in_train])
+		leftover = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths, agents_per_region, radius, sdradius, [ goal_door_lowp, goal_in_train])
 
 		lengths_carriage = np.array([train_dims[0] / 2, 5])
-		make_manual_agents_in_square(outroot, offset2d, lengths_carriage, agents_in_carriage, agent_radius, [goal_door, goal_alight])
-		leftover_carriage = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths_carriage, agents_in_carriage, agent_radius, [goal_door, goal_alight])
+		make_manual_agents_in_square(outroot, offset2d, lengths_carriage, agents_in_carriage, radius, sdradius, [goal_door, goal_alight])
+		leftover_carriage = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths_carriage, agents_in_carriage, radius, sdradius, [goal_door, goal_alight])
 
 		if(leftover > 0):
 			bAddingCorridors = True
 			width = 6
-			height = (2 * leftover / math.floor(width / (2*agent_radius)) + 1)* (2*agent_radius)
+			height = (2 * leftover / math.floor(width / (2*radius)) + 1)* (2*radius)
 			20
 			corridor_origin = offset2d + np.array([(train_dims[0] - width) / 2, -platform_depth])
 			add_corridor(outroot, corridor_origin, width, height)
@@ -363,7 +365,7 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 			# Add remaining agents
 			goals = [ goal_door_lowp, goal_in_train]
 
-			corridor_leftover = make_manual_agents_in_square(outroot, corridor_origin, np.array([width, -height]), leftover*2, agent_radius, goals)
+			corridor_leftover = make_manual_agents_in_square(outroot, corridor_origin, np.array([width, -height]), leftover*2, radius, sdradius, goals)
 			if corridor_leftover > 0:
 				print("corridor too small")
 
@@ -371,7 +373,7 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 		if(leftover_carriage > 0):
 			bAddingCarriageCorridors = True
 			width = 6
-			height = (2 * leftover_carriage / math.floor(width / (2*agent_radius)) + 1)* (2*agent_radius)
+			height = (2 * leftover_carriage / math.floor(width / (2*radius)) + 1)* (2*radius)
 			20
 			carriage_corridor_origin = offset2d + np.array([(train_dims[0] - width) / 2, train_dims[1]])
 			add_corridor(outroot, carriage_corridor_origin, width, -height)
@@ -379,7 +381,7 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 			# Add remaining agents
 			goals = [ goal_door, goal_alight]
 
-			corridor_leftover = make_manual_agents_in_square(outroot, carriage_corridor_origin, np.array([width, height]), leftover_carriage*2, agent_radius, goals)
+			corridor_leftover = make_manual_agents_in_square(outroot, carriage_corridor_origin, np.array([width, height]), leftover_carriage*2, radius, sdradius, goals)
 			# if corridor_leftover > 0:
 			# 	print("corridor too small")
 
@@ -409,7 +411,9 @@ if __name__ == "__main__":
 	parser.add_argument('-nc','--numPerCarriage', type=int, default=default_agents_per_region,
                 		help='number of people per door to spawn starting within the carriage (default: 10')
 	parser.add_argument('-r','--radius', type=float, default=default_agent_radius,
-                    	help='radius of agents social distance in meters (default: 0.9m)')
+                    	help='radius of agents physical size in m (default: 0.9m)')
+	parser.add_argument('-sd','--sdradius', type=float, default=0,
+                    	help='additional radius of agents social distance to their physical radius, in meters (default: 0m)')
 	parser.add_argument("-oh", "--obstacleHeight", default = 1, help="visual height of obstacles")
 	parser.add_argument("-o", "--outputName", default = "merseyrail.xml", help="name of generated file ")
 	parser.add_argument("-d", "--depthPlatform", type = float, default = default_platform_depth, help="depth of the platform (z)")
@@ -418,7 +422,6 @@ if __name__ == "__main__":
 
 	args = parser.parse_args()
 
-	agent_radius = args.radius
 	agents_per_region= args.numPerDoor
 	agents_per_carriage= args.numPerCarriage
 	outputName = args.outputName
@@ -427,4 +430,4 @@ if __name__ == "__main__":
 	if(args.randomSeed != -1):
 		random.seed(args.randomSeed)
 
-	generate_xml(agent_radius, agents_per_region, agents_per_carriage, platform_depth, outputName, args.carriage)
+	generate_xml(args.radius, args.sdradius, agents_per_region, agents_per_carriage, platform_depth, outputName, args.carriage)
