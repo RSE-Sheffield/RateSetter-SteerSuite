@@ -155,12 +155,13 @@ def add_goal(goal_sequence_xml, goal_dict ):
 
 		ET.SubElement(seekTargetSet, 'timeDuration').text = "1000.0"
 		ET.SubElement(seekTargetSet, 'desiredSpeed').text = "1.3"
-		if("low_priority" in goal_dict):
+		if("parameters" in goal_dict):
 			Behaviour = ET.SubElement(seekTargetSet, 'Behaviour')
 			Parameters = ET.SubElement(Behaviour, 'Parameters')
-			lowPriority = ET.SubElement(Parameters, 'lowPriority')
-			ET.SubElement(lowPriority, 'key').text = "low priority"
-			ET.SubElement(lowPriority, 'value').text = "1"
+			for spec in goal_dict["parameters"]:
+				lp = ET.SubElement(Parameters, spec.replace(" ", ""))
+				ET.SubElement(lp, 'key').text = spec
+				ET.SubElement(lp, 'value').text = "1"
 
 	else:
 		print("unknown goal type attempting to be added")
@@ -323,12 +324,13 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 		}
 		goal_door = {
 			"goal_type": "targetSet",
-			"goal_locations": door_goals
+			"goal_locations": door_goals,
+			"parameters": {"boarding"}
 		}
 		goal_door_lowp = {
 			"goal_type": "targetSet",
 			"goal_locations": door_goals,
-			"low_priority": 1
+			"parameters": {"low priority", "boarding"}
 		}
 		goal_alight = {
 			"goal_type": "boxregion",
