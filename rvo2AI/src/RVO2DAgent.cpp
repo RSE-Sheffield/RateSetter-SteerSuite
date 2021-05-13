@@ -977,7 +977,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 				shortestDist = (*it - position()).length();
 				//chosen_door = it - goalInfo.targetLocationsSet.begin();
 
-				goalInfo.targetLocation = *it;
+				_goalQueue.front().targetLocation = *it;
 			}
 		}
 		goalDirection = normalize(goalInfo.targetLocation - position());
@@ -985,6 +985,27 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	else
 	{
 		goalDirection = normalize(goalInfo.targetLocation - position());
+	}
+
+	//If the next goal is "low priority", let other agents move first
+	BehaviourParameter lowp(std::string("low priority"), std::string("1"));
+	auto paramvec = goalInfo.targetBehaviour.getParameters();
+	if (std::find(paramvec.begin(), paramvec.end(), lowp) != paramvec.end())
+	{
+		//see if other nearby agents want to get to this goal - if so dont make any progress
+		for (std::vector<std::pair<float, const SteerLib::AgentInterface*> >::const_iterator it = agentNeighbors_.begin(); it != agentNeighbors_.end(); it++)
+		{
+			const SteerLib::AgentInterface* other = it->second;
+			//if other agent has a goal
+			if (other->_goalQueue.size() != 0)
+			{
+				auto otherparamvec = other->_goalQueue.front().targetBehaviour.getParameters();
+				if (other->_goalQueue.front().targetLocation == goalInfo.targetLocation && (std::find(otherparamvec.begin(), otherparamvec.end(), lowp) == otherparamvec.end()))
+				{
+					goalDirection = Util::Vector(0, 0, 0);
+				}
+			}
+		}
 	}
 
 #ifdef TRAINHACKS

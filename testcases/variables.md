@@ -46,3 +46,8 @@ An example is provided below for 2 possible goals
       ...(other goals)...
     </goalSequence>
 ```
+
+# `lowPriority`
+
+A goal behaviour parameter. Active if set the key to `lowPriority` (value unimportant). If another nearby agent has the same goal, but does not have the `lowPriority` this agent will stand still (minus the steering) until no other agents without `lowPriority` are navigating to the same goal. 
+
