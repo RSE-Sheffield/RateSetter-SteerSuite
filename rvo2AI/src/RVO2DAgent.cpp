@@ -783,9 +783,34 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 
 		////If thes goal has the "boarding" hebariour tag - add computation as if it were boarding
-		//BehaviourParameter lowp(std::string("boarding"), std::string("1"));
-		//auto paramvec = goalInfo.targetBehaviour.getParameters();
-		//if (std::find(paramvec.begin(), paramvec.end(), lowp) != paramvec.end())
+		if (hasGoalBehaviour("boarding") && other->hasGoalBehaviour("boarding"))
+		{
+			const Util::Vector forwardVec = _goalQueue.front().targetLocation - position();
+			const Util::Vector otherForwardVev = other->_goalQueue.front().targetLocation - other->position();
+			//const Util::Vector upVec = Util::Vector(1, 0, 0);
+			//const Util::Vector rightVec = Util::Vector(0, 0, 1);
+			const float angle_to_other = abs(atan2(det(forwardVec, relativePosition), dot(forwardVec, relativePosition)));
+			//angle_to_other = abs(atan2(det(upVec, rightVec), dot(upVec, rightVec)));
+			const float angle_of_other = abs(atan2(det(otherForwardVev, -relativePosition), dot(otherForwardVev, -relativePosition)));
+			const float visible_angle = M_PI / 5;
+			//case 1: this cannot see the other. Other sees this
+			if (abs(angle_to_other) > visible_angle && abs(angle_of_other) < visible_angle) {
+				reciprocal_fov = 0.f;
+				continue;
+			}
+			//case 2: this can see other. other cannot see this
+			else if (abs(angle_to_other) < visible_angle && abs(angle_of_other) > visible_angle) {
+				reciprocal_fov = 1.f;
+			}
+			//case 3: This cannot see other. Other cannot see this
+			else if (abs(angle_to_other) > visible_angle && abs(angle_of_other) > visible_angle) {
+				reciprocal_fov = 0.5f;
+			}
+			//case 4: this can see other. Other can see this
+			else if (abs(angle_to_other) < visible_angle && abs(angle_of_other) < visible_angle) {
+				reciprocal_fov = 0.5f;
+			}
+		}
 
 
 		
