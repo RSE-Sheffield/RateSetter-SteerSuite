@@ -155,9 +155,17 @@ def add_goal(goal_sequence_xml, goal_dict ):
 
 		ET.SubElement(seekTargetSet, 'timeDuration').text = "1000.0"
 		ET.SubElement(seekTargetSet, 'desiredSpeed').text = "1.3"
+		if("low_priority" in goal_dict):
+			Behaviour = ET.SubElement(seekTargetSet, 'Behaviour')
+			Parameters = ET.SubElement(Behaviour, 'Parameters')
+			lowPriority = ET.SubElement(Parameters, 'lowPriority')
+			ET.SubElement(lowPriority, 'key').text = "low priority"
+			ET.SubElement(lowPriority, 'value').text = "1"
 
 	else:
 		print("unknown goal type attempting to be added")
+
+		
 
 
 def make_hollow_square_obstacle(xmlroot, origin, length_x, length_z, wall_thickness=0.1, obstacle_height=0.3):
@@ -243,8 +251,8 @@ def make_manual_agents_in_square(xmlroot, origin, lengths, num_agents, radius, g
 def initialize_xml():
 	outroot = ET.Element('SteerBenchTestCase')
 	header = ET.SubElement(outroot, 'header')
-	version = ET.SubElement(header, 'version').text = "1.0"
-	name = ET.SubElement(header, 'name').text = "Merseyrail-test"
+	ET.SubElement(header, 'version').text = "1.0"
+	ET.SubElement(header, 'name').text = "Merseyrail-test"
 	worldBounds = ET.SubElement(header, 'worldBounds')
 	ET.SubElement(worldBounds, 'xmin').text= "-100"
 	ET.SubElement(worldBounds, 'xmax').text= "100"
@@ -317,6 +325,11 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 			"goal_type": "targetSet",
 			"goal_locations": door_goals
 		}
+		goal_door_lowp = {
+			"goal_type": "targetSet",
+			"goal_locations": door_goals,
+			"low_priority": 1
+		}
 		goal_alight = {
 			"goal_type": "boxregion",
 			"targetLocation": [-3,-5],
@@ -326,8 +339,8 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 
 		lengths = np.array([train_dims[0] / 2, -platform_depth])
 		leftover = 0
-		make_manual_agents_in_square(outroot, offset2d, lengths, agents_per_region, agent_radius, [ goal_door, goal_in_train])
-		leftover = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths, agents_per_region, agent_radius, [ goal_door, goal_in_train])
+		make_manual_agents_in_square(outroot, offset2d, lengths, agents_per_region, agent_radius, [ goal_door_lowp, goal_in_train])
+		leftover = make_manual_agents_in_square(outroot, offset2d + np.array([train_dims[0]/2,0]), lengths, agents_per_region, agent_radius, [ goal_door_lowp, goal_in_train])
 
 		lengths_carriage = np.array([train_dims[0] / 2, 5])
 		make_manual_agents_in_square(outroot, offset2d, lengths_carriage, agents_in_carriage, agent_radius, [goal_door, goal_alight])
@@ -346,7 +359,7 @@ def generate_xml(radius, agents_per_region, agents_in_carriage, platform_depth, 
 			make_obstacle_2d( outroot, corridor_origin + np.array([width,-train_wall_thickness]), offset2d + np.array([ train_dims[0],-platform_depth]))
 
 			# Add remaining agents
-			goals = [ goal_door, goal_in_train]
+			goals = [ goal_door_lowp, goal_in_train]
 
 			corridor_leftover = make_manual_agents_in_square(outroot, corridor_origin, np.array([width, -height]), leftover*2, agent_radius, goals)
 			if corridor_leftover > 0:
