@@ -52,6 +52,10 @@ std::vector<BehaviourParameter> Behaviour::getParameters() const
 	return this->parameters;
 }
 
+std::string Behaviour::getName() const
+{
+	return this->name;
+}
 
 Behaviour::~Behaviour()
 {

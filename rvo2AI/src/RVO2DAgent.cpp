@@ -38,6 +38,27 @@ using namespace SteerLib;
 
 // #define _DEBUG_ENTROPY 1
 
+/// <summary>
+/// Get the linear value between 2 points, clamped if above or below it
+/// </summary>
+/// <typeparam name="T"></typeparam>
+/// <param name="x">Value to find the corresponding output value.</param>
+/// <param name="lowerlimit">smaller (left) of the two points</param>
+/// <param name="upperlimit">larger (right) of the two points</param>
+/// <returns>corresponding map that x becomes between lowerlimit and upperlimit</returns>
+template<typename T>
+T clamp(T x, T x1, T x2, T y1, T y2) {
+	T y;
+	if (x < x1)
+		y = y1;
+	else if (x > x2)
+		y = y2;
+	else {
+		y = (x - x1) / (x2 - x1) * (y2 - y1) + y1;
+	}
+	return y;
+}
+
 RVO2DAgent::RVO2DAgent()
 {
 	_RVO2DParams.rvo_max_neighbors  = rvo_max_neighbors ;
@@ -818,13 +839,22 @@ bool RVO2DAgent::hasGoalBehaviour(std::string key) const
 	for (auto it = paramvec.begin(); it != paramvec.end(); it++)
 	{
 		if (it->key == key) {
-			found = true;
-			break;
+			return true;
 		}
 	}
-	return found;
+	return false;
 }
 
+bool RVO2DAgent::hasAgentBehaviour(std::string name) const
+{
+	for (auto it = behaviours.begin(); it != behaviours.end(); it++)
+	{
+		if (it->getName() == name) {
+			return true;
+		}
+	}
+	return false;
+}
 
 void RVO2DAgent::insertAgentNeighbor(const SteerLib::AgentInterface *agent, float &rangeSq)
 {
@@ -999,6 +1029,31 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 				}
 			}
 		}
+	}
+
+	//Agent behaviours
+	if (hasAgentBehaviour("sdradius_z"))
+	{
+		float z0 = 0;
+		float z1 = 0;
+		float sd0 = 0;
+		float sd1 = 0;
+
+		for (auto it = behaviours.begin(); it != behaviours.end(); it++)
+		{
+			if (it->getName() == "sdradius_z") {
+				auto params = it->getParameters();
+				for (auto pit = params.begin(); pit != params.end(); pit++)
+				{
+					if (pit->key == "z0") z0 = stof(pit->value);
+					else if (pit->key == "z1") z1 = stof(pit->value);
+					else if (pit->key == "sd0") sd0 = stof(pit->value);
+					else if (pit->key == "sd1") sd1 = stof(pit->value);
+				}
+			}
+		}
+
+		_sdradius = clamp<float>(position().z, z0, z1, sd0, sd1);
 	}
 
 #ifdef SLOWREGION

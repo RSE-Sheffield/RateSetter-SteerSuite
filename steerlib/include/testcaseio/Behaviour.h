@@ -37,6 +37,7 @@ namespace SteerLib
 		void setName(std::string name);
 		std::string getSteeringAlg() const;
 		std::vector<BehaviourParameter> getParameters() const;
+		std::string getName() const;
 
 
 	private:

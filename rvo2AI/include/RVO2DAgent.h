@@ -122,6 +122,8 @@ protected:
 	bool hasGoalBehaviour(std::string key, std::string value) const;
 	bool hasGoalBehaviour(std::string key) const;
 
+	bool hasAgentBehaviour(std::string name) const;
+
 	/**
 		 * \brief   Updates the three-dimensional position and three-dimensional velocity of this agent.
 		 */
