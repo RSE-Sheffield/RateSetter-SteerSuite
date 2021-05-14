@@ -37,6 +37,11 @@ void Behaviour::setSteeringAlg(std::string algName)
 	this->steeringAlg = algName;
 }
 
+void SteerLib::Behaviour::setName(std::string name)
+{
+	this->name = name;
+}
+
 std::string Behaviour::getSteeringAlg() const
 {
 	return this->steeringAlg;

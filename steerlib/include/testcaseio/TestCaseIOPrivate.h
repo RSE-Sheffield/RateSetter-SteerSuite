@@ -67,6 +67,7 @@ namespace SteerLib {
 		float speed;
 		bool isBag = false;
 		std::vector<AgentGoalInfo> goals;
+		std::vector<Behaviour> behaviours;
 		#ifdef VARIABLE_SPAWN_TIME
 		float spawn_time, despawn_time;
 		#endif
@@ -348,6 +349,8 @@ namespace SteerLib {
 		void _parseGoalSequence(const ticpp::Element * subRoot, std::vector<AgentGoalInfo> & goals);
 		/// Parses a bag tag.
 		void _parseBag(std::string bag_value, RawAgentInfo & newAgent);
+		/// Parses the sequence of agent behaviour
+		void _parseBehaviourSequence(const ticpp::Element* subRoot, std::vector<Behaviour>& behaviours);
 		/// Reads a bounding-box data type from a SteerSuite test case.
 		Util::AxisAlignedBox _getBoundsFromXMLElement(const ticpp::Element * subRoot);
 		/// Reads a 3 element vector from a SteerSuite test case, or indicates that it should be randomly generated.

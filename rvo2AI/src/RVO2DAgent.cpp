@@ -184,6 +184,8 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	timeHorizonObst_ = _RVO2DParams.rvo_time_horizon_obstacles;
 	next_waypoint_distance_ = _RVO2DParams.next_waypoint_distance;
 
+	behaviours = initialConditions.behaviours;
+
 	// compute the "new" bounding box of the agent
 	Util::AxisAlignedBox newBounds(_position.x-_radius, _position.x+_radius, 0.0f, 0.5f, _position.z-_radius, _position.z+_radius);
 

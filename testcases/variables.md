@@ -47,7 +47,7 @@ An example is provided below for 2 possible goals
     </goalSequence>
 ```
 
-# Behaviour -> Parameters
+# goalSequence -> Behaviour -> Parameters
 
 behaviour and parameter tags are already implemented in steersuite. Behaviour for some of these tags have been implemented, and are explained below.
 
@@ -88,3 +88,24 @@ Include these tags within a particular goal within the `goalSequence` tag.
 A goal behaviour parameter. Active if set the key to `lowPriority` (value unimportant). It will adjust the amount of avoidance between other nearby agents (regardless of the value of other agents). It does so by creating rules as if people are always facing the direction of the current goal. People will not avoid those they cannot see (e.g. behind them), while people behind others will take full responsibility since they know the people in front cannot see those behind.
 
 Include these tags within a particular goal within the `goalSequence` tag.
+
+
+# agent-> behaviour
+
+Behaviour specification for agents. Comparing to the above use of `behaviour`, this tag is used for specifying optional behaviour that is goal independent. For example, certain environmental factors, like social distancing radius changing depending on the location of the agent, regardless of goal.
+
+## sdradius_z
+
+Specifies that the `sdradius` (social distancing radius) of the person should change as a function of the agent's `z` position. It is a linear change between `z0` and `z1` with values of `sd0` and `sd1` at those z values respectively. `z` values beyond this range will be clamped to the appropriate `sdx`. It should be specified as a child of the `agent` tag. Note the lack of capitalisation of `behaviour`.
+
+An example agent tag will look like: 
+```xml
+<behaviour>
+  <sdradius_z>
+    <z0>-3</z0>
+    <z1>0</z1>
+    <sd0>0.2</sd0>
+    <sd1>0</sd1>
+  </sdradius_z>
+</behaviour>
+```

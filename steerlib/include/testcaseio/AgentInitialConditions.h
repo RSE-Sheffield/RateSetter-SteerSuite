@@ -115,6 +115,7 @@ namespace SteerLib {
 		bool isBag = false;
 		/// An ordered list of goals that the agent should try to complete.
 		std::vector<AgentGoalInfo> goals;
+		std::vector<Behaviour> behaviours;
 		/// The color of the agent
 		Util::Color color;
 		/// false by default set to true if testcase specifies a color for the agent

@@ -209,6 +209,8 @@ namespace SteerLib {
 		float _radius;
 		float _sdradius;
 		bool _isBag;
+		std::vector<Behaviour> behaviours;
+
 		size_t _id;
 				// Used to store Waypoints between goals
 		// A waypoint is choosen every FURTHEST_LOCAL_TARGET_DISTANCE
