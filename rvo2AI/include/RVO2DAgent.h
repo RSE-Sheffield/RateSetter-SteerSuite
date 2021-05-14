@@ -156,15 +156,15 @@ protected:
 	friend class KdTree;
 	friend class RVO2DAIModule;
 
-	//Agent PTI radius
-	float _max_radius;
-	float _min_radius;
-	float _near_dist;
-	float _far_dist;
+	////Agent PTI radius
+	//float _max_radius;
+	//float _min_radius;
+	//float _near_dist;
+	//float _far_dist;
 	// how many frames spent less than SD.
 	int close_frames = 0;
 	bool counted_this_frame = false;
-	float _receprocity_factor;
+	//float _receprocity_factor;
 	//status loading_status;
 
 

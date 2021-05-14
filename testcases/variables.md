@@ -47,9 +47,44 @@ An example is provided below for 2 possible goals
     </goalSequence>
 ```
 
+# Behaviour -> Parameters
+
+behaviour and parameter tags are already implemented in steersuite. Behaviour for some of these tags have been implemented, and are explained below.
+
+A way to implement
+
+``` xml
+<goalSequence>
+  <seekStaticTargetSet>
+    <targetLocationsSet>
+      ...
+    </targetLocationsSet>
+    ...
+    <Behaviour>
+      <Parameters>
+        <lowPriority>
+          <key>low priority</key>
+          <value>1</value>
+        </lowPriority>
+        <boarding>
+          <key>boarding</key>
+          <value>1</value>
+        </boarding>
+      </Parameters>
+    </Behaviour>
+  </seekStaticTargetSet>
+</goalSequence>
+
+```
+
 # `lowPriority`
 
 A goal behaviour parameter. Active if set the key to `lowPriority` (value unimportant). If another nearby agent has the same goal, but does not have the `lowPriority` this agent will stand still (minus the steering) until no other agents without `lowPriority` are navigating to the same goal. 
 
 Include these tags within a particular goal within the `goalSequence` tag.
 
+# `boarding`
+
+A goal behaviour parameter. Active if set the key to `lowPriority` (value unimportant). It will adjust the amount of avoidance between other nearby agents (regardless of the value of other agents). It does so by creating rules as if people are always facing the direction of the current goal. People will not avoid those they cannot see (e.g. behind them), while people behind others will take full responsibility since they know the people in front cannot see those behind.
+
+Include these tags within a particular goal within the `goalSequence` tag.
