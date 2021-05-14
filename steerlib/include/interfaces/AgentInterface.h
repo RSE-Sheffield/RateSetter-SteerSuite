@@ -89,6 +89,9 @@ namespace SteerLib {
 		// Get the list of all the goals
 		// I don't know how you can give someone a queue and not have them need to modify it?
 		virtual const std::queue<SteerLib::AgentGoalInfo> & agentGoals() const = 0;
+		// Returns whether the passed key (&value) is part of the current goal behaviour
+		virtual bool hasGoalBehaviour(std::string key, std::string value) const = 0;
+		virtual bool hasGoalBehaviour(std::string key) const = 0;
 		//@}
 
 		/// @name Some convenience functions so users can manipulate agents more explicitly
@@ -120,8 +123,8 @@ namespace SteerLib {
 		// So AgentInterface can get Simulation members
 		virtual SteerLib::EngineInterface * getSimulationEngine() = 0;
 		std::queue<SteerLib::AgentGoalInfo> _goalQueue;
-		int chosen_door;
-		status loading_status;
+		//int chosen_door;
+		//status loading_status;
 
 #define AGENT_NEIGHBOURS 10
 		virtual void insertAgentNeighbor(const SteerLib::AgentInterface * agent, float &rangeSq);
@@ -206,6 +209,8 @@ namespace SteerLib {
 		float _radius;
 		float _sdradius;
 		bool _isBag;
+		std::vector<Behaviour> behaviours;
+
 		size_t _id;
 				// Used to store Waypoints between goals
 		// A waypoint is choosen every FURTHEST_LOCAL_TARGET_DISTANCE

@@ -115,6 +115,15 @@ protected:
 	 */
 	void computeNewVelocity(float dt);
 
+
+	/**
+	* \brief check if this agent, for this current goal, has a specified behaviour "key"
+	*/
+	bool hasGoalBehaviour(std::string key, std::string value) const;
+	bool hasGoalBehaviour(std::string key) const;
+
+	bool hasAgentBehaviour(std::string name) const;
+
 	/**
 		 * \brief   Updates the three-dimensional position and three-dimensional velocity of this agent.
 		 */
@@ -149,15 +158,15 @@ protected:
 	friend class KdTree;
 	friend class RVO2DAIModule;
 
-	//Agent PTI radius
-	float _max_radius;
-	float _min_radius;
-	float _near_dist;
-	float _far_dist;
+	////Agent PTI radius
+	//float _max_radius;
+	//float _min_radius;
+	//float _near_dist;
+	//float _far_dist;
 	// how many frames spent less than SD.
 	int close_frames = 0;
 	bool counted_this_frame = false;
-	float _receprocity_factor;
+	//float _receprocity_factor;
 	//status loading_status;
 
 

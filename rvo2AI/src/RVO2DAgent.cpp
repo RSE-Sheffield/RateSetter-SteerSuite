@@ -23,7 +23,6 @@
 #define AGENT_MASS 1.0f
 #define BAG_DISTANCE 1.0f // Beyond this distance an owner and bag will attempt to reunite as the primary goal
 //set this define if using the merseyrail/PTI testcase
-//#define TRAINHACKS
 //#define SLOWREGION
 //#define DRAW_VESTIBULE
 
@@ -32,35 +31,33 @@ using namespace RVO2DGlobals;
 using namespace SteerLib;
 
 
-#ifdef TRAINHACKS
-// PTI goal locations hack
-float depth = 0.f;
-
-//#define SUBURBAN
-#ifdef SUBURBAN
-std::vector<Util::Point> PossibleGoals = { Util::Point(-13,0,depth),
-								Util::Point(-7,0,depth),
-								Util::Point(7,0,depth),
-								Util::Point(13,0,depth),
-								Util::Point(27, 0, depth),
-								Util::Point(33, 0, depth) };
-#endif
-#ifdef INTERCITY
-std::vector<Util::Point> PossibleGoals = { Util::Point(-22,0,depth),
-								Util::Point(-2,0,depth),
-								Util::Point(2,0,depth),
-								Util::Point(22,0,depth),
-								Util::Point(26, 0, depth),
-								Util::Point(46, 0, depth) };
-#endif
-
-#endif //TRAINHACKS
 #ifdef SLOWREGION
 	Util::AxisAlignedBox slowRegion = Util::AxisAlignedBox(-5, 5, 0, 0, -5, 5);
 #endif
 
 
 // #define _DEBUG_ENTROPY 1
+
+/// <summary>
+/// Get the linear value between 2 points, clamped if above or below it
+/// </summary>
+/// <typeparam name="T"></typeparam>
+/// <param name="x">Value to find the corresponding output value.</param>
+/// <param name="lowerlimit">smaller (left) of the two points</param>
+/// <param name="upperlimit">larger (right) of the two points</param>
+/// <returns>corresponding map that x becomes between lowerlimit and upperlimit</returns>
+template<typename T>
+T clamp(T x, T x1, T x2, T y1, T y2) {
+	T y;
+	if (x < x1)
+		y = y1;
+	else if (x > x2)
+		y = y2;
+	else {
+		y = (x - x1) / (x2 - x1) * (y2 - y1) + y1;
+	}
+	return y;
+}
 
 RVO2DAgent::RVO2DAgent()
 {
@@ -208,6 +205,8 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	timeHorizonObst_ = _RVO2DParams.rvo_time_horizon_obstacles;
 	next_waypoint_distance_ = _RVO2DParams.next_waypoint_distance;
 
+	behaviours = initialConditions.behaviours;
+
 	// compute the "new" bounding box of the agent
 	Util::AxisAlignedBox newBounds(_position.x-_radius, _position.x+_radius, 0.0f, 0.5f, _position.z-_radius, _position.z+_radius);
 
@@ -257,8 +256,13 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 		{
 			_goalQueue.push(initialConditions.goals[i]);
 		}
+		else if (initialConditions.goals[i].goalType == SteerLib::GOAL_TYPE_SEEK_STATIC_TARGET_SET)
+		{
+			_goalQueue.push(initialConditions.goals[i]);
+		}
 		else {
-			throw Util::GenericException("Unsupported goal type; RVO2DAgent only supports GOAL_TYPE_SEEK_STATIC_TARGET, GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL and GOAL_TYPE_SEEK_DYNAMIC_TARGET.");
+			throw Util::GenericException("Unsupported goal type; RVO2DAgent only supports GOAL_TYPE_SEEK_STATIC_TARGET,\
+										 GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL, GOAL_TYPE_SEEK_DYNAMIC_TARGET and GOAL_TYPE_SEEK_STATIC_TARGET_SET.");
 		}
 	}
 
@@ -301,8 +305,8 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	assert(_goalQueue.size() != 0);
 	assert(_radius != 0.0f);
 
-	_max_radius = _radius;
-	_receprocity_factor = 1;//d(gen);
+	//_max_radius = _radius;
+	//_receprocity_factor = 1;//d(gen);
 	//SteerLib::AgentGoalInfo insidetrainGoal;
 	//insidetrainGoal.goalType = GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL;
 	//insidetrainGoal.targetIsRandom = false;
@@ -312,25 +316,25 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	//addGoal(insidetrainGoal);
 
 
-	// read params from file
-	std::string param_name;
-	float param_value;
-	std::ifstream paramsFile("params.txt");
-	if (paramsFile.is_open()) {
-		while (paramsFile >> param_name >> param_value)
-		{
-			if (param_name == "region_close") {
-				_near_dist = param_value;
-			}
-			else if (param_name == "region_far") {
-				_far_dist = param_value;
-			}
-			else if (param_name == "min_soc_dist") {
-				_min_radius = param_value;
-			}
-		}
-		paramsFile.close();
-	}
+	//// read params from file
+	//std::string param_name;
+	//float param_value;
+	//std::ifstream paramsFile("params.txt");
+	//if (paramsFile.is_open()) {
+	//	while (paramsFile >> param_name >> param_value)
+	//	{
+	//		if (param_name == "region_close") {
+	//			_near_dist = param_value;
+	//		}
+	//		else if (param_name == "region_far") {
+	//			_far_dist = param_value;
+	//		}
+	//		else if (param_name == "min_soc_dist") {
+	//			_min_radius = param_value;
+	//		}
+	//	}
+	//	paramsFile.close();
+	//}
 
 #ifdef TRAINHACKS
 	//set boarding status depending on position of agent. Those in the train must alight, those outside must board
@@ -777,14 +781,9 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		//float combined_reciprocity = _receprocity_factor / (_receprocity_factor + otherRVO->_receprocity_factor);
 
 
-		
-
-		
-		
-		
-		// simulate boarding behvaiours- occurs when goalqueue size is set to 2 (one to get on train, one to get within train)
-#ifdef TRAINHACKS
-		if (_goalQueue.size() == 2 && other->_goalQueue.size() == 2) {
+		////If thes goal has the "boarding" hebariour tag - add computation as if it were boarding
+		if (hasGoalBehaviour("boarding") && other->hasGoalBehaviour("boarding"))
+		{
 			const Util::Vector forwardVec = _goalQueue.front().targetLocation - position();
 			const Util::Vector otherForwardVev = other->_goalQueue.front().targetLocation - other->position();
 			//const Util::Vector upVec = Util::Vector(1, 0, 0);
@@ -799,19 +798,19 @@ void RVO2DAgent::computeNewVelocity(float dt)
 				continue;
 			}
 			//case 2: this can see other. other cannot see this
-			if (abs(angle_to_other) < visible_angle && abs(angle_of_other) > visible_angle) {
+			else if (abs(angle_to_other) < visible_angle && abs(angle_of_other) > visible_angle) {
 				reciprocal_fov = 1.f;
 			}
 			//case 3: This cannot see other. Other cannot see this
-			if (abs(angle_to_other) > visible_angle && abs(angle_of_other) > visible_angle) {
+			else if (abs(angle_to_other) > visible_angle && abs(angle_of_other) > visible_angle) {
 				reciprocal_fov = 0.5f;
 			}
 			//case 4: this can see other. Other can see this
-			if (abs(angle_to_other) < visible_angle && abs(angle_of_other) < visible_angle) {
+			else if (abs(angle_to_other) < visible_angle && abs(angle_of_other) < visible_angle) {
 				reciprocal_fov = 0.5f;
 			}
 		}
-#endif //TRAINHACKS
+
 		line.point = velocity() + reciprocal_fov * u;
 		orcaLines_.push_back(line);
 	}
@@ -824,6 +823,37 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		linearProgram3(orcaLines_, numObstLines, lineFail, _RVO2DParams.rvo_max_speed, _newVelocity);
 	}
 
+}
+
+bool RVO2DAgent::hasGoalBehaviour(std::string key, std::string value) const
+{
+	BehaviourParameter tofind(key, value);
+	auto paramvec = _goalQueue.front().targetBehaviour.getParameters();
+	return (std::find(paramvec.begin(), paramvec.end(), tofind) != paramvec.end());
+}
+
+bool RVO2DAgent::hasGoalBehaviour(std::string key) const
+{
+	bool found = false;
+	auto paramvec = _goalQueue.front().targetBehaviour.getParameters();
+	for (auto it = paramvec.begin(); it != paramvec.end(); it++)
+	{
+		if (it->key == key) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool RVO2DAgent::hasAgentBehaviour(std::string name) const
+{
+	for (auto it = behaviours.begin(); it != behaviours.end(); it++)
+	{
+		if (it->getName() == name) {
+			return true;
+		}
+	}
+	return false;
 }
 
 void RVO2DAgent::insertAgentNeighbor(const SteerLib::AgentInterface *agent, float &rangeSq)
@@ -962,62 +992,69 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 			}
 		}
 	}
+	// Set front goal as the nearest of the GOAL_TYPE_SEEK_STATIC_TARGET_SET goals
+	else if (goalInfo.goalType == GOAL_TYPE_SEEK_STATIC_TARGET_SET)
+	{
+		// Shortest distance to nearest goal in the set
+		float shortestDist = INFINITY;
+		for (auto it = goalInfo.targetLocationsSet.begin(); it != goalInfo.targetLocationsSet.end(); it++) {
+			if ((*it - position()).length() < shortestDist) {
+				shortestDist = (*it - position()).length();
+				//chosen_door = it - goalInfo.targetLocationsSet.begin();
+
+				_goalQueue.front().targetLocation = *it;
+			}
+		}
+		goalDirection = normalize(goalInfo.targetLocation - position());
+	}
 	else
 	{
 		goalDirection = normalize(goalInfo.targetLocation - position());
 	}
 
-#ifdef TRAINHACKS
-	/*// If agent is in train, ensure goal is within train
-	if (_position.z > 0.4f && _goalQueue.size() == 2 && loading_status == status::agent_boarding ) {
-		_goalQueue.pop();
-	}
-	else if (status::agent_alighting && _goalQueue.size() == 2 && _position.z < -0.4f) {
-		_goalQueue.pop();
-	}*/
-
-	int agent_to_print = -1;
-	if (id() == agent_to_print) {
-		printf("chosen door: %d %d \t goals: %d \t gz: %f\n", chosen_door, loading_status, _goalQueue.size(), goalInfo.targetLocation.z);
-	}
-
-	//Boarding/alighting affects whether to want to move
-	switch(loading_status){
-		case status::agent_boarding:
+	//If the next goal is "low priority", let other agents move first
+	if (hasGoalBehaviour("low priority"))
+	{
+		//see if other nearby agents want to get to this goal - if so dont make any progress
+		for (std::vector<std::pair<float, const SteerLib::AgentInterface*> >::const_iterator it = agentNeighbors_.begin(); it != agentNeighbors_.end(); it++)
 		{
-			//see if anyone nearby is alighting and using the same door
-			bool can_board = true;
-
-			for (size_t i = 0; i < agentNeighbors_.size(); ++i)
+			const SteerLib::AgentInterface* other = it->second;
+			//if other agent has a goal
+			if (other->_goalQueue.size() != 0)
 			{
-				const SteerLib::AgentInterface* other = agentNeighbors_[i].second;
-				if (id() == agent_to_print) {
-					printf("%d: %d %d \t", other->id(),  other->chosen_door, other->loading_status);
+				auto otherparamvec = other->_goalQueue.front().targetBehaviour.getParameters();
+				if (other->_goalQueue.front().targetLocation == goalInfo.targetLocation && !(other->hasGoalBehaviour("low priority")))
+				{
+					goalDirection = Util::Vector(0, 0, 0);
 				}
-				if (other->chosen_door == chosen_door && other->loading_status == status::agent_alighting && other->position().z > -1.5f) {
-					can_board = false;
-				}
-			}
-
-			if (can_board) {
-				_prefVelocity = goalDirection * _RVO2DParams.rvo_max_speed;
-			}
-			else {
-				_prefVelocity = Util::Vector(0, 0, 0);
 			}
 		}
-			break;
+	}
 
-		case status::agent_alighting:
-			_prefVelocity = goalDirection * _RVO2DParams.rvo_max_speed;
-			break;
-		default:
-			_prefVelocity = goalDirection * _RVO2DParams.rvo_max_speed;
+	//Agent behaviours
+	if (hasAgentBehaviour("sdradius_z"))
+	{
+		float z0 = 0;
+		float z1 = 0;
+		float sd0 = 0;
+		float sd1 = 0;
+
+		for (auto it = behaviours.begin(); it != behaviours.end(); it++)
+		{
+			if (it->getName() == "sdradius_z") {
+				auto params = it->getParameters();
+				for (auto pit = params.begin(); pit != params.end(); pit++)
+				{
+					if (pit->key == "z0") z0 = stof(pit->value);
+					else if (pit->key == "z1") z1 = stof(pit->value);
+					else if (pit->key == "sd0") sd0 = stof(pit->value);
+					else if (pit->key == "sd1") sd1 = stof(pit->value);
+				}
+			}
+		}
+
+		_sdradius = clamp<float>(position().z, z0, z1, sd0, sd1);
 	}
-	if (id() == agent_to_print) {
-		printf("\n ");
-	}
-#endif
 
 #ifdef SLOWREGION
 	//scale prefered velocity if agent is "on stairs"
@@ -1136,31 +1173,6 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 
 	 // Update goal door 
 #ifdef TRAINHACKS
-	 // Shortest distance to nearest door goal
-	float shortestDist = INFINITY;
-	if (_goalQueue.front().goalType == GOAL_TYPE_SEEK_STATIC_TARGET) {
-		int index = -1;
-		for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
-			index++;
-			if ((*it - position()).length() < shortestDist) {
-				shortestDist = (*it - position()).length();
-				chosen_door = index;
-
-				//update goal if doors are the current goal
-				_goalQueue.front().targetLocation = *it;
-				goalInfo.targetLocation = *it;
-
-				//alighting people have door target outside of the train
-				if (loading_status == status::agent_alighting) {
-					goalInfo.targetLocation.z = 0.f;
-				}
-			}
-		}
-	}
-	// Adjust agent radius depending on distance to goal
-	_radius = interpolation(_min_radius, _max_radius, _far_dist, _near_dist, _position.z);
-	//_radius = interpolation(_max_radius, _min_radius, 3.f, 0.f, abs(_position.z));
-
 	// In case an agent passes the first goal marker but gets stuck on the train outside. Add a door as a goal
 	if (_position.z < -0.2f && _goalQueue.size() == 1 && shortestDist > MIN_RADIUS && loading_status == status::agent_boarding) {
 		// Shortest distance to nearest door goal

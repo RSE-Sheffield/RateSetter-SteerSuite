@@ -34,13 +34,16 @@ namespace SteerLib
 
 		void addParameter(BehaviourParameter param);
 		void setSteeringAlg(std::string algName);
+		void setName(std::string name);
 		std::string getSteeringAlg() const;
 		std::vector<BehaviourParameter> getParameters() const;
+		std::string getName() const;
 
 
 	private:
 		std::vector<BehaviourParameter > parameters;
 		std::string steeringAlg;
+		std::string name;
 	};
 }
 

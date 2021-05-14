@@ -31,6 +31,9 @@ namespace SteerLib
 		//TODO for now this is float but sometime these are only INTEGERS
 		std::string value;
 
+		bool operator==(const BehaviourParameter b) {
+			return (key == b.key && value == b.value);
+		}
 	};
 }
 

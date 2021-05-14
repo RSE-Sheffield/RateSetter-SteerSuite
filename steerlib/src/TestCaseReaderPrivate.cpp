@@ -390,6 +390,10 @@ void TestCaseReaderPrivate::_parseAgent(const ticpp::Element * subRoot)
 			child->GetText(&bag_value);
 			_parseBag(bag_value, newAgent);
 		}
+		else if (childTagName == "behaviour")
+		{
+			_parseBehaviourSequence(&(*child), newAgent.behaviours);
+		}
 		else {
 			throw GenericException("Unexpected tag <" + childTagName + "> found on line " + toString(child->Row()) + "\n");
 		}
@@ -724,6 +728,9 @@ void TestCaseReaderPrivate::_parseGoalSequence(const ticpp::Element * subRoot, s
 		{
 			newGoal.goalType = GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL;
 		}
+		else if (childTagName == "seekStaticTargetSet") {
+			newGoal.goalType = GOAL_TYPE_SEEK_STATIC_TARGET_SET;
+		}
 		else {
 			throw GenericException("Unexpected tag <" + childTagName + "> found on line " + toString(child->Row()) + " while parsing goal sequence.\n");
 		}
@@ -782,6 +789,20 @@ void TestCaseReaderPrivate::_parseGoalSequence(const ticpp::Element * subRoot, s
 				}
 				*/
 			}
+			else if (specName == "targetLocationsSet")
+			{
+				ticpp::Iterator<ticpp::Element> targetSpecs;
+				for (targetSpecs = targetSpecs.begin(&(*goalSpecs)); targetSpecs != targetSpecs.end(); targetSpecs++) {
+					std::string targetSpecName = targetSpecs->Value();
+
+					if (targetSpecName == "targetLocation")
+					{
+						Util::Point targetLocation;
+						_getXYZOrRandomFromXMLElement(&(*targetSpecs), targetLocation, newGoal.targetIsRandom);
+						newGoal.targetLocationsSet.push_back(targetLocation);
+					}
+				}
+			}
 		}
 
 		goals.push_back(newGoal);
@@ -800,6 +821,48 @@ void SteerLib::TestCaseReaderPrivate::_parseBag(std::string bag_value, RawAgentI
 	else if (bag_value == "false") {
 		newAgent.isBag = false;
 	}
+}
+
+void SteerLib::TestCaseReaderPrivate::_parseBehaviourSequence(const ticpp::Element* subRoot, std::vector<Behaviour>& behaviours)
+{
+	ticpp::Iterator<ticpp::Element> child;
+	for (child = child.begin(subRoot); child != child.end(); child++) {
+
+		Behaviour newBehaviour;
+		std::string childTagName = child->Value();
+		newBehaviour.setName(childTagName);
+
+		ticpp::Iterator<ticpp::Element> param;
+		for (param = param.begin(&(*child));
+			param != param.end(); param++)
+		{
+			BehaviourParameter behaviourParam;
+			behaviourParam.key = param->Value();
+			param->GetText(&behaviourParam.value);
+
+			//ticpp::Iterator<ticpp::Element> paramSpecs;
+			//for (paramSpecs = paramSpecs.begin(&(*param));
+			//	paramSpecs != paramSpecs.end(); paramSpecs++)
+			//{
+			//	std::string paramEl = paramSpecs->Value();
+			//	// std::cout << "\t" << paramEl << std::endl;
+			//	behaviourParam.key = paramEl;
+			//	//if (paramEl == "key")
+			//	//{
+			//	//	paramSpecs->GetText(&behaviourParam.key);
+			//	//}
+			//	//else if (paramEl == "value")
+			//	//{
+			//	//	paramSpecs->GetText(&behaviourParam.value);
+			//	//}
+
+			//}
+			newBehaviour.addParameter(behaviourParam);
+
+		}
+		behaviours.push_back(newBehaviour);
+	}
+
 }
 
 /*
@@ -953,6 +1016,7 @@ void TestCaseReaderPrivate::_initAgentInitialConditions( AgentInitialConditions 
 	a.sdradius = agent.sdradius;
 	a.speed = agent.speed;
 	a.goals = agent.goals;  // note, this is a STL vector being copied into another STL vector.
+	a.behaviours = agent.behaviours;
 }
 
 void TestCaseReaderPrivate::_initAgentEmitterInitialConditions( AgentInitialConditions & a, const RawAgentInfo & agent )
