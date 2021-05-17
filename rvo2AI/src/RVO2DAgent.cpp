@@ -995,7 +995,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 			if ((*it - position()).length() < shortestDist) {
 				shortestDist = (*it - position()).length();
 				//chosen_door = it - goalInfo.targetLocationsSet.begin();
-
+				goalInfo.targetLocation = *it;
 				_goalQueue.front().targetLocation = *it;
 			}
 		}
