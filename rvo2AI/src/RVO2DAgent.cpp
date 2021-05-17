@@ -22,18 +22,12 @@
 // #define MAX_SPEED 1.33f
 #define AGENT_MASS 1.0f
 #define BAG_DISTANCE 1.0f // Beyond this distance an owner and bag will attempt to reunite as the primary goal
-//set this define if using the merseyrail/PTI testcase
-//#define SLOWREGION
-//#define DRAW_VESTIBULE
 
 using namespace Util;
 using namespace RVO2DGlobals;
 using namespace SteerLib;
 
 
-#ifdef SLOWREGION
-	Util::AxisAlignedBox slowRegion = Util::AxisAlignedBox(-5, 5, 0, 0, -5, 5);
-#endif
 
 
 // #define _DEBUG_ENTROPY 1
@@ -1170,68 +1164,6 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 
 	_position.y = getSimulationEngine()->getSpatialDatabase()->getLocation(this).y;
 
-
-	 // Update goal door 
-#ifdef TRAINHACKS
-	// In case an agent passes the first goal marker but gets stuck on the train outside. Add a door as a goal
-	if (_position.z < -0.2f && _goalQueue.size() == 1 && shortestDist > MIN_RADIUS && loading_status == status::agent_boarding) {
-		// Shortest distance to nearest door goal
-		Util::Point newGoalLoc;
-		float shortestDist = (goalInfo.targetLocation - position()).length();
-		int index = -1;
-		for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
-			index++;
-			if ((*it - position()).length() < shortestDist) {
-				shortestDist = (*it - position()).length();
-				newGoalLoc = *it;
-				chosen_door = index;
-			}
-		}
-
-
-		SteerLib::AgentGoalInfo newGoal;
-		newGoal.goalType = GOAL_TYPE_SEEK_STATIC_TARGET;
-		newGoal.targetIsRandom = false;
-		newGoal.timeDuration = 1000;
-		newGoal.desiredSpeed = 1.3f;
-		newGoal.targetLocation = newGoalLoc;
-
-		// Add the door goal at front of queue
-		auto currentGoal = _goalQueue.front();
-		_goalQueue.pop();
-		addGoal(newGoal);
-		addGoal(currentGoal);
-	}
-	if (_position.z > 0.1f && _goalQueue.size() == 1 && loading_status == status::agent_alighting) {
-		// Shortest distance to nearest door goal
-		Util::Point newGoalLoc;
-		float shortestDist = (goalInfo.targetLocation - position()).length();
-		int index = -1;
-		for (auto it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
-			index++;
-			if ((*it - position()).length() < shortestDist) {
-				shortestDist = (*it - position()).length();
-				newGoalLoc = *it;
-				newGoalLoc.z = 0.f;
-				chosen_door = index;
-			}
-		}
-
-
-		SteerLib::AgentGoalInfo newGoal;
-		newGoal.goalType = GOAL_TYPE_SEEK_STATIC_TARGET;
-		newGoal.targetIsRandom = false;
-		newGoal.timeDuration = 1000;
-		newGoal.desiredSpeed = 1.3f;
-		newGoal.targetLocation = newGoalLoc;
-
-		// Add the door goal at front of queue
-		auto currentGoal = _goalQueue.front();
-		_goalQueue.pop();
-		addGoal(newGoal);
-		addGoal(currentGoal);
-	}
-#endif
 }
 
 
