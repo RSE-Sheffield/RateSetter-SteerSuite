@@ -21,7 +21,7 @@
 #define MAX_FORCE_MAGNITUDE 3.0f
 // #define MAX_SPEED 1.33f
 #define AGENT_MASS 1.0f
-#define BAG_DISTANCE 1.0f // Beyond this distance an owner and bag will attempt to reunite as the primary goal
+#define BAG_DISTANCE 2.0f // Beyond this distance an owner and bag will attempt to reunite as the primary goal
 
 using namespace Util;
 using namespace RVO2DGlobals;
@@ -78,7 +78,7 @@ RVO2DAgent::~RVO2DAgent()
 
 bool RVO2DAgent::tooFarFromBag()
 {
-	return ((position() - owned_bag->position()).length() > BAG_DISTANCE);
+	return ((position() - owned_bag->position()).length() >= (BAG_DISTANCE + radius() + owned_bag->radius()));
 }
 
 SteerLib::EngineInterface * RVO2DAgent::getSimulationEngine()
