@@ -208,7 +208,7 @@ namespace SteerLib {
 		Util::Color _color;
 		float _radius;
 		float _sdradius;
-		bool _isBag;
+		bool _isBag = false;
 		std::vector<Behaviour> behaviours;
 
 		size_t _id;

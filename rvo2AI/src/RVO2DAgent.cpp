@@ -90,22 +90,27 @@ void RVO2DAgent::addGoal(const SteerLib::AgentGoalInfo& newGoal)
 {
 	if (newGoal.goalType != SteerLib::GOAL_TYPE_SEEK_STATIC_TARGET &&
 		newGoal.goalType != GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL &&
-		newGoal.goalType != GOAL_TYPE_SEEK_DYNAMIC_TARGET) {
+		newGoal.goalType != GOAL_TYPE_SEEK_DYNAMIC_TARGET &&
+		newGoal.goalType != GOAL_TYPE_SEEK_STATIC_TARGET_SET) {
 		throw Util::GenericException("Currently the RVO agent does not support goal types other than GOAL_TYPE_SEEK_STATIC_TARGET, GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL and GOAL_TYPE_SEEK_DYNAMIC_TARGET.");
+	}
+	if (!isBag() && owned_bag) {
+		_color = Util::Color(0, 0, 0);
 	}
 	_goalQueue.push(newGoal);
 	if (_goalQueue.size() == 1) {
 		_currentGoal = newGoal;
-		if (_currentGoal.targetIsRandom) {
+		//if (_currentGoal.targetIsRandom) {
 
-			SteerLib::AgentGoalInfo _goal;
-			_goal.targetLocation = getSimulationEngine()->getSpatialDatabase()->randomPositionWithoutCollisions(1.0f, true);
-			_goalQueue.push(_goal);
-			_currentGoal.targetLocation = _goal.targetLocation;
-		}
+		//	SteerLib::AgentGoalInfo _goal;
+		//	_goal.targetLocation = getSimulationEngine()->getSpatialDatabase()->randomPositionWithoutCollisions(1.0f, true);
+		//	_goalQueue.push(_goal);
+		//	_currentGoal.targetLocation = _goal.targetLocation;
+		//}
 	}
 
 }
+
 void RVO2DAgent::setParameters(Behaviour behave)
 {
 	this->_RVO2DParams.setParameters(behave);
@@ -693,7 +698,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 			continue;
 		}
-		//reverse of previous - ensure bag takes full responsibility to avoid owner
+		//reverse of previous - ensure bag takes full responsibility to avoid owner when no attempting to re-join
 		else if (isBag() && std::stoi(currentGoal().targetName) == other->id()) {
 			reciprocal_fov = 1.f;
 		}
@@ -969,9 +974,9 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 			if ((*it)->id() == std::stoi(goalInfo.targetName))
 			{
 				//if owner finished, so should the bag
-				if (!(*it)->enabled())
+				if (!(*it)->enabled() && isBag())
 				{
-					disable();
+ 					disable();
 				}
 
 				//auto goal_position = (*it)->position();
@@ -983,6 +988,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 				//std::cout << "goal dir: " << goalDirection << 
 				//	"\tvel: " << velocity() << 
 				//	"\t_prefVelocity"  << _prefVelocity << std::endl;
+				break;
 			}
 		}
 	}
@@ -1103,9 +1109,15 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 			newGoal.targetName = std::to_string(owned_bag->id());
 
 			// Add the door goal at front of queue
-			_goalQueue.pop();
+			auto tempQueue = _goalQueue;
+			_goalQueue = std::queue<SteerLib::AgentGoalInfo>();
 			addGoal(newGoal);
-			addGoal(currentGoal);
+			int size = tempQueue.size();
+			for (int i = 0; i < size; i++)
+			{
+				addGoal(tempQueue.front());
+				tempQueue.pop();
+			}
 		}
 	}
 
@@ -1120,11 +1132,12 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	 */
 	_velocity.y = 0.0f;
 
-	//reached current goal
-	if(((goalInfo.targetLocation - position()).length() < radius()*REACHED_GOAL_MULTIPLIER ) ||
+	//reached current goal - either 1: reach target waypoint, 2: within target box. Must not be a bag - which will only complete when the owner does
+	if((((goalInfo.targetLocation - position()).length() < radius()*REACHED_GOAL_MULTIPLIER ) ||
 			(goalInfo.goalType == GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL &&
-			Util::boxOverlapsCircle2D(goalInfo.targetRegion.xmin, goalInfo.targetRegion.xmax,
-			goalInfo.targetRegion.zmin, goalInfo.targetRegion.zmax, this->position(), this->radius())))
+				Util::boxOverlapsCircle2D(goalInfo.targetRegion.xmin, goalInfo.targetRegion.xmax,
+				goalInfo.targetRegion.zmin, goalInfo.targetRegion.zmax, this->position(), this->radius()))) && 
+		!isBag())
 	{
 		_goalQueue.pop();
 		// std::cout << "Made it to a goal" << std::endl;
