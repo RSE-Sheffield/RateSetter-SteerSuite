@@ -72,8 +72,6 @@ install(
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib)
 
-# @todo osx "-install_name @rpath/libnavmesh.dylib"
-
 # Construct source groups for IDEs
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include PREFIX include FILES ${NAVMESH_INCLUDE})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX src FILES ${NAVMESH_SRC})

@@ -26,8 +26,6 @@ install(
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib)
 
-# @todo - osx link options "-install_name @rpath/libkdtree.dylib"
-
 # Construct source groups for IDEs
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include PREFIX include FILES ${KDTREE_INCLUDE})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX src FILES ${KDTREE_SRC})
