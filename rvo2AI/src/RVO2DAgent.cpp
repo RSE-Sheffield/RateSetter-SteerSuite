@@ -345,6 +345,14 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 		loading_status = status::agent_boarding;
 	}
 #endif
+	//color dependent on loading_status
+	if (behaviours.find("PTI") != behaviours.end())
+	{
+		if (behaviours["PTI"]["loading_status"] == "alighting")
+		{
+			_color = Util::gDarkOrange;
+		}
+	}
 }
 
 /*
