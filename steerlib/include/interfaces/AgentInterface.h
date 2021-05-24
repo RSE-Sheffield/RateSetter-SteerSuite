@@ -18,6 +18,8 @@
 #include "interfaces/ObstacleInterface.h"
 #include "util/GenericException.h"
 #include <sstream>
+#include <list>
+#include <map>
 
 #define FURTHEST_LOCAL_TARGET_DISTANCE 40
 // #define DONT_PLAN 1
@@ -209,7 +211,7 @@ namespace SteerLib {
 		float _radius;
 		float _sdradius;
 		bool _isBag = false;
-		std::vector<Behaviour> behaviours;
+		std::map<std::string, std::map<std::string, std::string>> behaviours; // named behaviours which key to {key, value} pairs
 
 		size_t _id;
 				// Used to store Waypoints between goals

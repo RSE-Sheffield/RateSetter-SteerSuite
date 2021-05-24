@@ -846,13 +846,8 @@ bool RVO2DAgent::hasGoalBehaviour(std::string key) const
 
 bool RVO2DAgent::hasAgentBehaviour(std::string name) const
 {
-	for (auto it = behaviours.begin(); it != behaviours.end(); it++)
-	{
-		if (it->getName() == name) {
-			return true;
-		}
-	}
-	return false;
+	//auto it = behaviours.find(name);
+	return (behaviours.find(name) != behaviours.end());
 }
 
 void RVO2DAgent::insertAgentNeighbor(const SteerLib::AgentInterface *agent, float &rangeSq)
@@ -1039,19 +1034,24 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		float sd0 = 0;
 		float sd1 = 0;
 
-		for (auto it = behaviours.begin(); it != behaviours.end(); it++)
-		{
-			if (it->getName() == "sdradius_z") {
-				auto params = it->getParameters();
-				for (auto pit = params.begin(); pit != params.end(); pit++)
-				{
-					if (pit->key == "z0") z0 = stof(pit->value);
-					else if (pit->key == "z1") z1 = stof(pit->value);
-					else if (pit->key == "sd0") sd0 = stof(pit->value);
-					else if (pit->key == "sd1") sd1 = stof(pit->value);
-				}
-			}
-		}
+		z0 = stof(behaviours["sdradius_z"]["z0"]);
+		z1 = stof(behaviours["sdradius_z"]["z1"]);
+		sd0 = stof(behaviours["sdradius_z"]["sd0"]);
+		sd1 = stof(behaviours["sdradius_z"]["sd1"]);
+
+		//for (auto it = behaviours.begin(); it != behaviours.end(); it++)
+		//{
+		//	if (it->getName() == "sdradius_z") {
+		//		auto params = it->getParameters();
+		//		for (auto pit = params.begin(); pit != params.end(); pit++)
+		//		{
+		//			if (pit->key == "z0") z0 = stof(pit->value);
+		//			else if (pit->key == "z1") z1 = stof(pit->value);
+		//			else if (pit->key == "sd0") sd0 = stof(pit->value);
+		//			else if (pit->key == "sd1") sd1 = stof(pit->value);
+		//		}
+		//	}
+		//}
 
 		_sdradius = clamp<float>(position().z, z0, z1, sd0, sd1);
 	}

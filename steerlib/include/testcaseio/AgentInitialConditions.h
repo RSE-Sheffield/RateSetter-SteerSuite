@@ -14,6 +14,7 @@
 #include "util/Geometry.h"
 #include "util/Color.h"
 #include "testcaseio/Behaviour.h"
+#include <map>
 
 
 namespace SteerLib {
@@ -115,7 +116,7 @@ namespace SteerLib {
 		bool isBag = false;
 		/// An ordered list of goals that the agent should try to complete.
 		std::vector<AgentGoalInfo> goals;
-		std::vector<Behaviour> behaviours;
+		std::map<std::string, std::map<std::string, std::string>> behaviours;
 		/// The color of the agent
 		Util::Color color;
 		/// false by default set to true if testcase specifies a color for the agent

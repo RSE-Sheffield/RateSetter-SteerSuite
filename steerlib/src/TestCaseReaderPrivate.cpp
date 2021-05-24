@@ -823,45 +823,65 @@ void SteerLib::TestCaseReaderPrivate::_parseBag(std::string bag_value, RawAgentI
 	}
 }
 
-void SteerLib::TestCaseReaderPrivate::_parseBehaviourSequence(const ticpp::Element* subRoot, std::vector<Behaviour>& behaviours)
+void SteerLib::TestCaseReaderPrivate::_parseBehaviourSequence(const ticpp::Element* subRoot, std::map<std::string, std::map<std::string, std::string>>& behaviours)
 {
 	ticpp::Iterator<ticpp::Element> child;
 	for (child = child.begin(subRoot); child != child.end(); child++) {
-
-		Behaviour newBehaviour;
 		std::string childTagName = child->Value();
-		newBehaviour.setName(childTagName);
+		std::map<std::string, std::string> newParameters;
 
 		ticpp::Iterator<ticpp::Element> param;
 		for (param = param.begin(&(*child));
 			param != param.end(); param++)
 		{
-			BehaviourParameter behaviourParam;
-			behaviourParam.key = param->Value();
-			param->GetText(&behaviourParam.value);
-
-			//ticpp::Iterator<ticpp::Element> paramSpecs;
-			//for (paramSpecs = paramSpecs.begin(&(*param));
-			//	paramSpecs != paramSpecs.end(); paramSpecs++)
-			//{
-			//	std::string paramEl = paramSpecs->Value();
-			//	// std::cout << "\t" << paramEl << std::endl;
-			//	behaviourParam.key = paramEl;
-			//	//if (paramEl == "key")
-			//	//{
-			//	//	paramSpecs->GetText(&behaviourParam.key);
-			//	//}
-			//	//else if (paramEl == "value")
-			//	//{
-			//	//	paramSpecs->GetText(&behaviourParam.value);
-			//	//}
-
-			//}
-			newBehaviour.addParameter(behaviourParam);
-
+			auto key = param->Value();
+			std::string value;
+			param->GetText(&value);
+			newParameters[key] = value;
 		}
-		behaviours.push_back(newBehaviour);
+		behaviours[childTagName] = newParameters;
 	}
+
+
+
+
+	//	std::string childTagName = child->Value();
+	//	newBehaviour.setName(childTagName);
+
+	//	ticpp::Iterator<ticpp::Element> param;
+	//	for (param = param.begin(&(*child));
+	//		param != param.end(); param++)
+	//	{
+	//		BehaviourParameter behaviourParam;
+	//		behaviourParam.key = param->Value();
+	//		param->GetText(&behaviourParam.value);
+
+	//		std::map<std::string, std::string> newParam;
+	//		newParam[param->Value()] =
+
+
+	//		//ticpp::Iterator<ticpp::Element> paramSpecs;
+	//		//for (paramSpecs = paramSpecs.begin(&(*param));
+	//		//	paramSpecs != paramSpecs.end(); paramSpecs++)
+	//		//{
+	//		//	std::string paramEl = paramSpecs->Value();
+	//		//	// std::cout << "\t" << paramEl << std::endl;
+	//		//	behaviourParam.key = paramEl;
+	//		//	//if (paramEl == "key")
+	//		//	//{
+	//		//	//	paramSpecs->GetText(&behaviourParam.key);
+	//		//	//}
+	//		//	//else if (paramEl == "value")
+	//		//	//{
+	//		//	//	paramSpecs->GetText(&behaviourParam.value);
+	//		//	//}
+
+	//		//}
+	//		newBehaviour.addParameter(behaviourParam);
+
+	//	}
+	//	behaviours.push_back(newBehaviour);
+	//}
 
 }
 
