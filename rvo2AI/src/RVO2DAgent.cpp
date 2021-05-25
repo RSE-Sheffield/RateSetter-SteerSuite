@@ -151,8 +151,8 @@ bool RVO2DAgent::collidesAtTimeWith(const Util::Point & p1, const Util::Vector &
 
 void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialConditions, SteerLib::EngineInterface * engineInfo)
 {
-	counted_this_frame = false;
-	close_frames = 0;
+	//counted_this_frame = false;
+	//close_frames = 0;
 	//random amount of variation in initial conditions
 	std::normal_distribution<> d{ 10, 5 };
 	std::random_device rd;
@@ -727,11 +727,11 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		}
 
 
-		//count SD invalidations
-		if (abs(relativePosition) < SD && !counted_this_frame) {
-			counted_this_frame = true;
-			close_frames++;
-		}
+		////count SD invalidations
+		//if (abs(relativePosition) < SD && !counted_this_frame) {
+		//	counted_this_frame = true;
+		//	close_frames++;
+		//}
 
 
 		Line line;
@@ -822,7 +822,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		orcaLines_.push_back(line);
 	}
 
-	counted_this_frame = false;
+	//counted_this_frame = false;
 
 	size_t lineFail = linearProgram2(orcaLines_, _RVO2DParams.rvo_max_speed, _prefVelocity, false, _newVelocity);
 

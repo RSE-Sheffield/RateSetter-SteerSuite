@@ -128,6 +128,9 @@ namespace SteerLib {
 		//int chosen_door;
 		//status loading_status;
 
+		auto behaviour() const { return behaviours; }
+
+
 #define AGENT_NEIGHBOURS 10
 		virtual void insertAgentNeighbor(const SteerLib::AgentInterface * agent, float &rangeSq);
 		virtual void insertObstacleNeighbor(const ObstacleInterface *obstacle, float rangeSq);
