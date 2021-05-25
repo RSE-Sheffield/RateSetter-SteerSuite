@@ -23,13 +23,13 @@
 
 #define REACHED_WAYPOINT_MULTIPLIER 0.5
 #define REACHED_GOAL_MULTIPLIER 1.5
-#define MIN_RADIUS 0.2f
+//#define MIN_RADIUS 0.2f
 
 #define USE_PLANNING 0
 #define DRAW_ANNOTATIONS 1
 
 // social distancing + 2*person radius
-#define SD 2.8f
+//#define SD 1.8f
 
 class RVO2DParameters
 {

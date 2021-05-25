@@ -59,23 +59,23 @@ namespace RVO2DGlobals
 	int next_waypoint_distance;
 
 
-	PhaseProfilers * gPhaseProfilers;
+	PhaseProfilers* gPhaseProfilers;
 }
 
 using namespace RVO2DGlobals;
 
-PLUGIN_API SteerLib::ModuleInterface * createModule()
+PLUGIN_API SteerLib::ModuleInterface* createModule()
 {
 	return new RVO2DAIModule;
 }
 
-PLUGIN_API void destroyModule( SteerLib::ModuleInterface*  module )
+PLUGIN_API void destroyModule(SteerLib::ModuleInterface* module)
 {
 	delete module;
 }
 
 
-void RVO2DAIModule::init( const SteerLib::OptionDictionary & options, SteerLib::EngineInterface * engineInfo )
+void RVO2DAIModule::init(const SteerLib::OptionDictionary& options, SteerLib::EngineInterface* engineInfo)
 {
 	_gEngine = engineInfo;
 	// gSpatialDatabase = engineInfo->getSpatialDatabase();
@@ -154,24 +154,24 @@ void RVO2DAIModule::init( const SteerLib::OptionDictionary & options, SteerLib::
 		}
 	}
 
-	_rvoLogger = LogManager::getInstance()->createLogger(logFilename,LoggerType::BASIC_WRITE);
+	_rvoLogger = LogManager::getInstance()->createLogger(logFilename, LoggerType::BASIC_WRITE);
 
-	_rvoLogger->addDataField("number_of_times_executed",DataType::LongLong );
-	_rvoLogger->addDataField("total_ticks_accumulated",DataType::LongLong );
-	_rvoLogger->addDataField("shortest_execution",DataType::LongLong );
-	_rvoLogger->addDataField("longest_execution",DataType::LongLong );
+	_rvoLogger->addDataField("number_of_times_executed", DataType::LongLong);
+	_rvoLogger->addDataField("total_ticks_accumulated", DataType::LongLong);
+	_rvoLogger->addDataField("shortest_execution", DataType::LongLong);
+	_rvoLogger->addDataField("longest_execution", DataType::LongLong);
 	_rvoLogger->addDataField("fastest_execution", DataType::Float);
 	_rvoLogger->addDataField("slowest_execution", DataType::Float);
 	_rvoLogger->addDataField("average_time_per_call", DataType::Float);
 	_rvoLogger->addDataField("total_time_of_all_calls", DataType::Float);
 	_rvoLogger->addDataField("tick_frequency", DataType::Float);
 
-	if( logStats )
-		{
+	if (logStats)
+	{
 		// LETS TRY TO WRITE THE LABELS OF EACH FIELD
 		std::stringstream labelStream;
 		unsigned int i;
-		for (i=0; i < _rvoLogger->getNumberOfFields() - 1; i++)
+		for (i = 0; i < _rvoLogger->getNumberOfFields() - 1; i++)
 			labelStream << _rvoLogger->getFieldName(i) << " ";
 		labelStream << _rvoLogger->getFieldName(i);
 		// _data = labelStream.str() + "\n";
@@ -182,7 +182,7 @@ void RVO2DAIModule::init( const SteerLib::OptionDictionary & options, SteerLib::
 
 	tds.clear();
 	for (auto& goal : traindoors) {
-		train_door td = train_door(goal);	
+		train_door td = train_door(goal);
 		tds.push_back(td);
 	}
 }
@@ -216,12 +216,12 @@ void RVO2DAIModule::preprocessSimulation()
 
 void RVO2DAIModule::preprocessFrame(float timeStamp, float dt, unsigned int frameNumber)
 {
-	if ( frameNumber == 1)
+	if (frameNumber == 1)
 	{
 		// Adding in this extra one because it seemed sometimes agents would forget about obstacles.
 		// kdTree_->buildObstacleTree();
 	}
-	if ( !agents_.empty() )
+	if (!agents_.empty())
 	{
 		// kdTree_->buildAgentTree();
 	}
@@ -236,11 +236,125 @@ void RVO2DAIModule::preprocessFrame(float timeStamp, float dt, unsigned int fram
 }
 
 void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int frameNumber)
-{	
-	//check if quiting this iteration
+{
+	//SDproximity metrics
+	float TotalMetric = 0;
+	int TotalFrames = 0;
+	float AgentMetric = 0;
+	float deltaMetric;
+	float distSq;
+	Util::Vector relativePosition;
+	SteerLib::AgentInterface* other;
+	float Agentmean;
+	int NeighbourCount;
+	float Agentmin;
+	float Agentmax;
+	float SDplanned;
+
+	// For testing - dump all agent positions whether with compromised distancing or not
+	//FILE *fptr4;
+	//fptr4 = fopen("data-all-paths.txt","a");
+
+	// Conduct time-proximity evaluation at the end of the frame to ensure constant state across all agents
+	// Outcomes are stored with the agents
+	for (RVO2DAgent* agent : agents_) {
+
+		// If either the agent or its potential neighbour have finished (reached last goal) then don't keep counting them
+		// even though in reality they might end up standing next to someone - that stage of their journey is out of scope  
+		if (agent->finished())
+			continue;
+
+		agent->computeNeighbors();
+
+		//SDplanned taken as a centre to centre distance. Don't use SD as it's just defined, not linked to the simulation underway
+		//_max_raduis = _min_radius + (sd / 2)
+		SDplanned = 2 * (stof(agent->behaviours["sdradius_z"]["sd0"]) - stof(agent->behaviours["sdradius_z"]["sd1"]) + agent->radius());
+
+		//fprintf(fptr4, "%i, %zu, %f, %f\n", frameNumber, agent->id(), agent->position().x, agent->position().z);
+
+		for (size_t i = 0; i < agent->agentNeighbors_.size(); ++i) {
+			other = (SteerLib::AgentInterface*)agent->agentNeighbors_[i].second;
+
+			if (other->finished())
+				continue;
+
+			// Here we can reject cases which are not relevant to metrics,
+			// e.g. avoid adding to the metrics of boarding passengers once they are inside the train
+			// but they CAN still be SD violating 'others' interacting with alighting agents (they are not excluded as 'other' in the loop below).
+			if (agent->behaviours["PTI"]["loading_status"] == "boarding" && agent->position().z > 0)
+				continue;
+
+			// For alighting passengers once they are outside the train stop adding to their metrics
+			// But the CAN still violate the SD of people still trying to board (they are not excluded as 'other' in the loop below).
+			if (agent->behaviours["PTI"]["loading_status"] == "alighting" && agent->position().z < 0)
+				continue;
+			relativePosition = (other->position()) - agent->position();
+			distSq = absSq(relativePosition);
+
+			if (abs(relativePosition) < SDplanned) {
+				//If the storage is insufficient double it up
+				if (agent->SDviolation >= agent->arraymax) {
+					agent->arraymax = agent->arraymax * 2; // double the previous size
+					int* temp1 = new int[agent->arraymax]; // create new bigger arrays
+					float* temp2 = new float[agent->arraymax];
+					float* temp3 = new float[agent->arraymax];
+					float* temp4 = new float[agent->arraymax];
+					int* temp5 = new int[agent->arraymax];
+					float* temp6 = new float[agent->arraymax];
+					float* temp7 = new float[agent->arraymax];
+					status* temp8 = new status[agent->arraymax];
+
+					for (int k = 0; k < agent->SDviolation; k++) {
+						temp1[k] = agent->SDframes[k];       // copy values to new arrays.
+						temp2[k] = agent->SDDistance[k];
+						temp3[k] = agent->SDPositionX[k];
+						temp4[k] = agent->SDPositionZ[k];
+						temp5[k] = agent->SDNeighbour[k];
+						temp6[k] = agent->SDPosXNeighbour[k];
+						temp7[k] = agent->SDPosZNeighbour[k];
+						temp8[k] = agent->SDStatus[k];
+
+					}
+					delete[] agent->SDframes;              // free old array memory.
+					delete[] agent->SDDistance;
+					delete[] agent->SDPositionX;
+					delete[] agent->SDPositionZ;
+					delete[] agent->SDNeighbour;
+					delete[] agent->SDPosXNeighbour;
+					delete[] agent->SDPosZNeighbour;
+					delete[] agent->SDStatus;
+
+					agent->SDframes = temp1;                 // now points to new array.
+					agent->SDDistance = temp2;
+					agent->SDPositionX = temp3;
+					agent->SDPositionZ = temp4;
+					agent->SDNeighbour = temp5;
+					agent->SDPosXNeighbour = temp6;
+					agent->SDPosZNeighbour = temp7;
+					agent->SDStatus = temp8;
+
+
+
+				}
+
+				agent->SDframes[agent->SDviolation] = frameNumber;                // When this violation occurs
+				agent->SDDistance[agent->SDviolation] = std::sqrt(distSq);        // Severity of the violation
+				agent->SDPositionX[agent->SDviolation] = agent->position().x;     // x position of agent experiencing violation (for heat map of 'bad areas')
+				agent->SDPositionZ[agent->SDviolation] = agent->position().z;     // z position of agent experiencing violation (for heat map of 'bad areas')
+				agent->SDNeighbour[agent->SDviolation] = other->id();             // ID of the neighbour causing the violation
+				agent->SDPosXNeighbour[agent->SDviolation] = other->position().x; // x position of agent experiencing violation (for heat map of 'bad areas')
+				agent->SDPosZNeighbour[agent->SDviolation] = other->position().z; // z position of agent experiencing violation (for heat map of 'bad areas')
+				agent->SDStatus[agent->SDviolation] = (other->behaviour()["PTI"]["loading_status"] == "boarding") ? status::agent_boarding : status::agent_alighting;      // boarding or alighting status of the agent causing SD violation
+				agent->SDviolation++;
+			}
+		}
+	}
+	//fclose(fptr4);
+
+//check if quiting this iteration
 	bool quitting = true;
 	for (auto& agent : agents_) {
-		if(!agent->finished()) {
+		if (!agent->finished()) {
 			quitting = false;
 			break;
 		}
@@ -249,7 +363,7 @@ void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int fra
 	//Record people being too far from their bags
 	for (auto& agent : agents_) {
 		//this person has a bag
-		if (!agent->isBag() && agent->bag_id != -1 )
+		if (!agent->isBag() && agent->bag_id != -1)
 		{
 			if (agent->tooFarFromBag())
 			{
@@ -268,17 +382,92 @@ void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int fra
 	}
 
 	if (quitting) {
-		//count average how many frames people were less than SD
-		float close_agents_frames = 0.0f;
-		int max_individual = 0;
+
+		int j; 
+
+		////count average how many frames people were less than SD
+		//float close_agents_frames = 0.0f;
+		//int max_individual = 0;
+		//for (RVO2DAgent* agent : agents_) {
+		//	//std::cout << "Agnet " << *agent << "\tcf " << agent->close_frames << "\n";
+		//	close_agents_frames = agent->close_frames;
+		//	max_individual = agent->close_frames > max_individual ? agent->close_frames : max_individual;
+		//}
+		//close_agents_frames /= agents_.size();
+		//std::cout << "Average frames less than SD: " << close_agents_frames << " SD frames\n";
+		//std::cout << "Max individual time: " << max_individual << " max frames \n";
+
+
+		//For summing accumulated time between agents
+		float* SDAccumulateAgent = new float[agents_.size()]();
+		int* SDAccumulateFrames = new int[agents_.size()]();
+
+		//Config file option for file names needed. 
+		//Use the python calling routine to move these files to more meaningful names per simulation.
+		FILE* fptr1;
+		FILE* fptr2;
+		FILE* fptr3;
+		fptr1 = fopen("data-full.txt", "w");
+		fptr2 = fopen("data-summary.txt", "w");
+		fptr3 = fopen("data-temp.txt", "w");
+
+		fprintf(fptr1, "Frame, AgentID, Board/Alight, PositionX, PositionZ, Conflicting AgentID, Board/Alight status of neighbour, PositionX, PositionZ, Distance\n");
+		fprintf(fptr2, "Agent, Board/Alight, SD Violating neighbour, Board/Alight status of neighbour, Accumulated metric (s/m), Accumulated frames\n");
+		fprintf(fptr3, "\nAgent, Board/Alight, Total accumulated metric (s/m), Total accumulated frames, Neighbour interactions, Agent mean metric (s/m), Agent max metric (s/m), Agent min metric (s/m)\n");
 		for (RVO2DAgent* agent : agents_) {
-			//std::cout << "Agnet " << *agent << "\tcf " << agent->close_frames << "\n";
-			close_agents_frames += agent->close_frames;
-			max_individual = agent->close_frames > max_individual ? agent->close_frames : max_individual;
+			AgentMetric = 0;
+			for (j = 0; j < agent->SDviolation; j++) {
+				status loading_status = (agent->behaviours["PTI"]["loading_status"] == "boarding") ? status::agent_boarding : status::agent_alighting;
+				fprintf(fptr1, "%i, %zu, %d, %f, %f, %i, %d, %f, %f, %f\n", agent->SDframes[j], agent->id(), loading_status, agent->SDPositionX[j],
+					agent->SDPositionZ[j], agent->SDNeighbour[j], agent->SDStatus[j], agent->SDPosXNeighbour[j], agent->SDPosZNeighbour[j], agent->SDDistance[j]);
+				//Time-distance metric for this interaction
+				deltaMetric = dt / agent->SDDistance[j];
+				//Assignment to this particular neighbour
+				SDAccumulateAgent[agent->SDNeighbour[j]] += deltaMetric;
+				SDAccumulateFrames[agent->SDNeighbour[j]]++;
+
+				// Metric for this agent summed across all their interactions
+				AgentMetric += deltaMetric;
+				// Metric for all agents in the simulation (normalise by number of agents?)
+				TotalMetric += deltaMetric;
+
+			}
+			TotalFrames += agent->SDviolation;
+
+			Agentmin = 1e99;
+			Agentmax = -1e99;
+			NeighbourCount = 0;
+			for (j = 0; j < (int)agents_.size(); j++) {
+				if (SDAccumulateFrames[j] > 0) {
+					NeighbourCount++;
+					status loading_status = (agent->behaviours["PTI"]["loading_status"] == "boarding") ? status::agent_boarding : status::agent_alighting;
+					fprintf(fptr2, "%zu, %d, %i, %d, %f, %i\n", agent->id(), loading_status, j, agent->SDStatus[j], SDAccumulateAgent[j], SDAccumulateFrames[j]);
+					if (SDAccumulateAgent[j] < Agentmin)
+						Agentmin = SDAccumulateAgent[j];
+					if (SDAccumulateAgent[j] > Agentmax)
+						Agentmax = SDAccumulateAgent[j];
+					//Zero out the accumulation arrays ready for next use
+					SDAccumulateAgent[j] = 0;
+					SDAccumulateFrames[j] = 0;
+
+				}
+
+			}
+			//Mean, max and min time-distance metric spent with each agent they interact with
+			if (agent->SDviolation > 0) {
+				Agentmean = AgentMetric / NeighbourCount;
+				status loading_status = (agent->behaviours["PTI"]["loading_status"] == "boarding") ? status::agent_boarding : status::agent_alighting;
+				fprintf(fptr3, "%zu, %d, %f, %i, %i, %f, %f, %f\n", agent->id(), loading_status, AgentMetric, agent->SDviolation, NeighbourCount, Agentmean, Agentmax, Agentmin);
+
+			}
+
 		}
-		close_agents_frames /= agents_.size();
-		std::cout << "Average frames less than SD: " << close_agents_frames << " SD frames\n";
-		std::cout << "Max individual time: " << max_individual << " max frames \n";
+		// Totals for the simulation
+		fprintf(fptr3, "\nTotal Metric (s/m), %f, Total frames, %i, Normalised Metric (s/m/agent), %f\n", TotalMetric, TotalFrames, TotalMetric / agents_.size());
+
+		fclose(fptr1);
+		fclose(fptr2);
+		fclose(fptr3);
 
 		printBagsToFile("far_bags.tsv");
 	}
@@ -298,9 +487,9 @@ void RVO2DAIModule::printBagsToFile(std::string outfile)
 
 	BagsFile.close();
 }
-SteerLib::AgentInterface * RVO2DAIModule::createAgent()
+SteerLib::AgentInterface* RVO2DAIModule::createAgent()
 {
-	RVO2DAgent * agent = new RVO2DAgent;
+	RVO2DAgent* agent = new RVO2DAgent;
 	agent->rvoModule = this;
 	agent->_id = agents_.size();
 	agents_.push_back(agent);
@@ -308,36 +497,36 @@ SteerLib::AgentInterface * RVO2DAIModule::createAgent()
 	return agent;
 }
 
-void RVO2DAIModule::destroyAgent( SteerLib::AgentInterface * agent )
+void RVO2DAIModule::destroyAgent(SteerLib::AgentInterface* agent)
 {
 	/*
 	 * This is going to cause issues soon.
 	 */
-	// agents_.erase(agents_.begin()+(agent)->id());
-	// int i;
+	 // agents_.erase(agents_.begin()+(agent)->id());
+	 // int i;
 
-	// Not as fast but seems to work properly
-	// std::cout << "number of ORCA agents " << agents_.size() << std::endl;
-	// RVO2DAgent * rvoagent = dynamic_cast<RVO2DAgent *>(agent);
-	/*
-	std::cout << "ORCA agent id " << (agent)->id() << std::endl;
-	std::vector<SteerLib::AgentInterface * > tmpAgents;
-	for (i = 0; i< agents_.size(); i++)
-	{
-		std::cout << " agent " << i << " " << agents_.at(i) << std::endl;
-		if ( (agents_.at(i) != NULL) && (agents_.at(i)->id() != (agent)->id()) )
-		{
-			tmpAgents.push_back(agents_.at(i));
-		}
-	}
-	agents_.clear();
-	for (i = 0; i< tmpAgents.size(); i++)
-	{
-		agents_.push_back(tmpAgents.at(i));
-	}*/
+	 // Not as fast but seems to work properly
+	 // std::cout << "number of ORCA agents " << agents_.size() << std::endl;
+	 // RVO2DAgent * rvoagent = dynamic_cast<RVO2DAgent *>(agent);
+	 /*
+	 std::cout << "ORCA agent id " << (agent)->id() << std::endl;
+	 std::vector<SteerLib::AgentInterface * > tmpAgents;
+	 for (i = 0; i< agents_.size(); i++)
+	 {
+		 std::cout << " agent " << i << " " << agents_.at(i) << std::endl;
+		 if ( (agents_.at(i) != NULL) && (agents_.at(i)->id() != (agent)->id()) )
+		 {
+			 tmpAgents.push_back(agents_.at(i));
+		 }
+	 }
+	 agents_.clear();
+	 for (i = 0; i< tmpAgents.size(); i++)
+	 {
+		 agents_.push_back(tmpAgents.at(i));
+	 }*/
 
 
-	// TODO this is going to be a memory leak for now.
+	 // TODO this is going to be a memory leak for now.
 	delete agent;
 	/*
 	if (agent && &agents_ && (agents_.size() > 1))
@@ -361,20 +550,20 @@ void RVO2DAIModule::cleanupSimulation()
 	// kdTree_->deleteObstacleTree(kdTree_->obstacleTree_);
 	// kdTree_->agents_.clear();
 
-		LogObject rvoLogObject;
+	LogObject rvoLogObject;
 
-		rvoLogObject.addLogData(gPhaseProfilers->aiProfiler.getNumTimesExecuted());
-		rvoLogObject.addLogData(gPhaseProfilers->aiProfiler.getTotalTicksAccumulated());
-		rvoLogObject.addLogData(gPhaseProfilers->aiProfiler.getMinTicks());
-		rvoLogObject.addLogData(gPhaseProfilers->aiProfiler.getMaxTicks());
-		rvoLogObject.addLogData(gPhaseProfilers->aiProfiler.getMinExecutionTimeMills());
-		rvoLogObject.addLogData(gPhaseProfilers->aiProfiler.getMaxExecutionTimeMills());
-		rvoLogObject.addLogData(gPhaseProfilers->aiProfiler.getAverageExecutionTimeMills());
-		rvoLogObject.addLogData(gPhaseProfilers->aiProfiler.getTotalTime());
-		rvoLogObject.addLogData(gPhaseProfilers->aiProfiler.getTickFrequency());
+	rvoLogObject.addLogData(gPhaseProfilers->aiProfiler.getNumTimesExecuted());
+	rvoLogObject.addLogData(gPhaseProfilers->aiProfiler.getTotalTicksAccumulated());
+	rvoLogObject.addLogData(gPhaseProfilers->aiProfiler.getMinTicks());
+	rvoLogObject.addLogData(gPhaseProfilers->aiProfiler.getMaxTicks());
+	rvoLogObject.addLogData(gPhaseProfilers->aiProfiler.getMinExecutionTimeMills());
+	rvoLogObject.addLogData(gPhaseProfilers->aiProfiler.getMaxExecutionTimeMills());
+	rvoLogObject.addLogData(gPhaseProfilers->aiProfiler.getAverageExecutionTimeMills());
+	rvoLogObject.addLogData(gPhaseProfilers->aiProfiler.getTotalTime());
+	rvoLogObject.addLogData(gPhaseProfilers->aiProfiler.getTickFrequency());
 
-		_logData.push_back(rvoLogObject.copy());
-	if ( logStats )
+	_logData.push_back(rvoLogObject.copy());
+	if (logStats)
 	{
 		_rvoLogger->writeLogObject(rvoLogObject);
 
@@ -391,7 +580,7 @@ void RVO2DAIModule::cleanupSimulation()
 	gPhaseProfilers->steeringPhaseProfiler.reset();
 	// kdTree_->deleteObstacleTree(kdTree_->obstacleTree_);
 }
- 
+
 
 RVO2DAIModule::train_door::train_door(Util::Point location)
 {
@@ -400,7 +589,7 @@ RVO2DAIModule::train_door::train_door(Util::Point location)
 	this->status = boarding_status::alighting;
 }
 
-boarding_status RVO2DAIModule::train_door::check_boarding_status(RVO2DAIModule *RVOModule)
+boarding_status RVO2DAIModule::train_door::check_boarding_status(RVO2DAIModule* RVOModule)
 {
 	//doors that are boarding will always allow boarding
 	if (status == boarding_status::boarding) {

@@ -109,3 +109,7 @@ An example agent tag will look like:
   </sdradius_z>
 </behaviour>
 ```
+
+## PTI
+
+Platform train interface varibles. So far `boarding_status` is the only variable of interest. It must be either `boarding` or `alighting`
