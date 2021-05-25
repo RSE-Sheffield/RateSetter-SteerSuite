@@ -468,8 +468,6 @@ void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int fra
 		fclose(fptr1);
 		fclose(fptr2);
 		fclose(fptr3);
-
-		printBagsToFile("far_bags.tsv");
 	}
 
 }
