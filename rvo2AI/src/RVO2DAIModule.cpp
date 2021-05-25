@@ -261,7 +261,7 @@ void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int fra
 
 		// If either the agent or its potential neighbour have finished (reached last goal) then don't keep counting them
 		// even though in reality they might end up standing next to someone - that stage of their journey is out of scope  
-		if (agent->finished())
+		if (agent->finished() || agent->isBag())
 			continue;
 
 		agent->computeNeighbors();
@@ -415,6 +415,10 @@ void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int fra
 		fprintf(fptr2, "Agent, Board/Alight, SD Violating neighbour, Board/Alight status of neighbour, Accumulated metric (s/m), Accumulated frames\n");
 		fprintf(fptr3, "\nAgent, Board/Alight, Total accumulated metric (s/m), Total accumulated frames, Neighbour interactions, Agent mean metric (s/m), Agent max metric (s/m), Agent min metric (s/m)\n");
 		for (RVO2DAgent* agent : agents_) {
+			if (agent->isBag()) {
+				continue;
+			}
+
 			AgentMetric = 0;
 			for (j = 0; j < agent->SDviolation; j++) {
 				status loading_status = (agent->behaviours["PTI"]["loading_status"] == "boarding") ? status::agent_boarding : status::agent_alighting;
