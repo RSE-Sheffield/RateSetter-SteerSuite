@@ -335,16 +335,16 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	//	paramsFile.close();
 	//}
 
-#ifdef TRAINHACKS
-	//set boarding status depending on position of agent. Those in the train must alight, those outside must board
-	if( _position.z >= 0 ){
-		loading_status = status::agent_alighting;
-		_color = Util::gDarkOrange;
-	}
-	else {
-		loading_status = status::agent_boarding;
-	}
-#endif
+//#ifdef TRAINHACKS
+//	//set boarding status depending on position of agent. Those in the train must alight, those outside must board
+//	if( _position.z >= 0 ){
+//		loading_status = status::agent_alighting;
+//		_color = Util::gDarkOrange;
+//	}
+//	else {
+//		loading_status = status::agent_boarding;
+//	}
+//#endif
 	//color dependent on loading_status
 	if (behaviours.find("PTI") != behaviours.end())
 	{
@@ -709,9 +709,6 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		//reverse of previous - ensure bag takes full responsibility to avoid owner when no attempting to re-join
 		else if (isBag() && std::stoi(currentGoal().targetName) == other->id()) {
 			reciprocal_fov = 1.f;
-		}
-		//behaviour is agent's bag, and other agent is the owner - ignore social distancing between bag and owner
-		else if (isBag() && std::stoi(currentGoal().targetName) == other->id()) {
 			combinedRadius = radius() + other->radius(); //other radius is the physical person radius
 			combinedRadiusSq = sqr(combinedRadius);
 		}
@@ -725,13 +722,6 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		if (!this->isBag() && other->isBag()) {
 			reciprocal_fov = 1.f;
 		}
-
-
-		////count SD invalidations
-		//if (abs(relativePosition) < SD && !counted_this_frame) {
-		//	counted_this_frame = true;
-		//	close_frames++;
-		//}
 
 
 		Line line;
