@@ -137,6 +137,12 @@ protected:
 
 	bool hasAgentBehaviour(std::string name) const;
 
+	// Add a goal to the front of the _goalQueue
+	void addGoalToFront(SteerLib::AgentGoalInfo goal);
+
+	// iterate through completed goals, see if they have memory conditions, and add them to front of the queue if yes.
+	void rememberGoals();
+
 	/**
 		 * \brief   Updates the three-dimensional position and three-dimensional velocity of this agent.
 		 */
@@ -181,6 +187,8 @@ protected:
 	//bool counted_this_frame = false;
 	//float _receprocity_factor;
 	//status loading_status;
+
+	std::list< SteerLib::AgentGoalInfo> completed_goals;
 
 
 };

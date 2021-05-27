@@ -77,18 +77,28 @@ A way to implement
 
 ```
 
-# `lowPriority`
+## `lowPriority`
 
 A goal behaviour parameter. Active if set the key to `lowPriority` (value unimportant). If another nearby agent has the same goal, but does not have the `lowPriority` this agent will stand still (minus the steering) until no other agents without `lowPriority` are navigating to the same goal. 
 
 Include these tags within a particular goal within the `goalSequence` tag.
 
-# `boarding`
+## `boarding`
 
 A goal behaviour parameter. Active if set the key to `lowPriority` (value unimportant). It will adjust the amount of avoidance between other nearby agents (regardless of the value of other agents). It does so by creating rules as if people are always facing the direction of the current goal. People will not avoid those they cannot see (e.g. behind them), while people behind others will take full responsibility since they know the people in front cannot see those behind.
 
 Include these tags within a particular goal within the `goalSequence` tag.
 
+
+## `condition-memory-z`
+
+Should exist with `condition-memory-ineq`. Parameter that determine if the goal will be re-applied to the front of the goal queue. When the conditions are valid, and this goal is not in the goal queue, it will be added to the front of the goals. `condition-memory-z` is the z value for which to check against, it should be a number/float.
+
+This is useful in relation to a PTI boarding example, where a goal is the doorway. It is possible to reach the door goal, but not pass through the door due to other agents pushing aside this agent. The application of this parameter ensures that the door goal will remain the primary goal as long as the agent has not passed into the train carriage. 
+
+## `condition-memory-ineq`
+
+Should exist with `condition-memory-z`. `condition-memory-ineq` is the inequality sign used to check. It should be either `gt` (standing for "greater than", or "<") (applicable when the agent z value is greater than this) or `lt`. Whenever agent.z >/< condition-memory.z then this whole goal will be reapplied to the front of the goal queue.
 
 # agent-> behaviour
 

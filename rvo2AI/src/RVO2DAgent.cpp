@@ -848,6 +848,63 @@ bool RVO2DAgent::hasAgentBehaviour(std::string name) const
 	return (behaviours.find(name) != behaviours.end());
 }
 
+void RVO2DAgent::addGoalToFront(SteerLib::AgentGoalInfo goal)
+{
+	std::queue < SteerLib::AgentGoalInfo> newQueue;
+	newQueue.push(goal);
+	while (!_goalQueue.empty())
+	{
+		newQueue.push(_goalQueue.front());
+		_goalQueue.pop();
+	}
+	_goalQueue = newQueue;
+}
+
+
+void RVO2DAgent::rememberGoals()
+{
+	float z_val = 0;
+	std::string ineq_val = "";
+
+	// For any goals already completed, see if there is a memory condition
+	for (auto it : completed_goals)
+	{
+		bool memory_cond = false;
+		auto paramvec = it.targetBehaviour.getParameters();
+		for (auto it : paramvec)
+		{
+			if (it.key == "condition-memory-z") {
+				memory_cond =  true;
+				z_val = stof(it.value);
+				break;
+			}
+		}
+
+		if (memory_cond)
+		{
+			for (auto it : paramvec)
+			{
+				if (it.key == "condition-memory-ineq") {
+					ineq_val = it.value;
+					break;
+				}
+			}
+
+			//check if the condition is satisfied
+			if (ineq_val == "lt")
+			{
+				if (position().z < z_val)
+					addGoalToFront(it);
+			}
+			else if (ineq_val == "gt")
+			{
+				if (position().z > z_val)
+					addGoalToFront(it);
+			}
+		}
+	}
+}
+
 void RVO2DAgent::insertAgentNeighbor(const SteerLib::AgentInterface *agent, float &rangeSq)
 {
 	if (this != agent) {
@@ -921,6 +978,9 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	{
 		return;
 	}
+
+	//see if a previous goal should be used
+	rememberGoals();
 
 	Util::AxisAlignedBox oldBounds(_position.x - _radius, _position.x + _radius, 0.0f, 0.0f, _position.z - _radius, _position.z + _radius);
 	SteerLib::AgentGoalInfo goalInfo = _goalQueue.front();
@@ -1137,6 +1197,10 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 				goalInfo.targetRegion.zmin, goalInfo.targetRegion.zmax, this->position(), this->radius()))) && 
 		!isBag())
 	{
+		//save goal in memory
+		if(hasGoalBehaviour("condition-memory-z"))
+			completed_goals.push_back(_goalQueue.front());
+		
 		_goalQueue.pop();
 		// std::cout << "Made it to a goal" << std::endl;
 		if (_goalQueue.size() >= 1) {
