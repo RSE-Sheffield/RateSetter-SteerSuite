@@ -97,14 +97,14 @@ void RVO2DAgent::addGoal(const SteerLib::AgentGoalInfo& newGoal)
 	if (!isBag() && owned_bag) {
 		_color = Util::Color(0, 0, 0);
 	}
-	_goalQueue.push(newGoal);
+	_goalQueue.push_back(newGoal);
 	if (_goalQueue.size() == 1) {
 		_currentGoal = newGoal;
 		//if (_currentGoal.targetIsRandom) {
 
 		//	SteerLib::AgentGoalInfo _goal;
 		//	_goal.targetLocation = getSimulationEngine()->getSpatialDatabase()->randomPositionWithoutCollisions(1.0f, true);
-		//	_goalQueue.push(_goal);
+		//	_goalQueue.push_back(_goal);
 		//	_currentGoal.targetLocation = _goal.targetLocation;
 		//}
 	}
@@ -232,7 +232,7 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 
 	while (!_goalQueue.empty())
 	{
-		_goalQueue.pop();
+		_goalQueue.pop_front();
 	}
 
 	// iterate over the sequence of goals specified by the initial conditions.
@@ -240,24 +240,24 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 		if (initialConditions.goals[i].goalType == SteerLib::GOAL_TYPE_SEEK_STATIC_TARGET||
 				initialConditions.goals[i].goalType == GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL)
 		{
-			_goalQueue.push(initialConditions.goals[i]);
+			_goalQueue.push_back(initialConditions.goals[i]);
 			if (initialConditions.goals[i].targetIsRandom)
 			{
 				// if the goal is random, we must randomly generate the goal.
 				std::cout << "assigning random goal" << std::endl;
 				SteerLib::AgentGoalInfo _goal;
 				_goal.targetLocation = getSimulationEngine()->getSpatialDatabase()->randomPositionWithoutCollisions(1.0f, true);
-				_goalQueue.push(_goal);
+				_goalQueue.push_back(_goal);
 			}
 		}
 		// For RVO Model, GOAL_TYPE_SEEK_DYNAMIC_TARGET refers to a bag following a person
 		else if (initialConditions.goals[i].goalType == SteerLib::GOAL_TYPE_SEEK_DYNAMIC_TARGET)
 		{
-			_goalQueue.push(initialConditions.goals[i]);
+			_goalQueue.push_back(initialConditions.goals[i]);
 		}
 		else if (initialConditions.goals[i].goalType == SteerLib::GOAL_TYPE_SEEK_STATIC_TARGET_SET)
 		{
-			_goalQueue.push(initialConditions.goals[i]);
+			_goalQueue.push_back(initialConditions.goals[i]);
 		}
 		else {
 			throw Util::GenericException("Unsupported goal type; RVO2DAgent only supports GOAL_TYPE_SEEK_STATIC_TARGET,\
@@ -848,18 +848,6 @@ bool RVO2DAgent::hasAgentBehaviour(std::string name) const
 	return (behaviours.find(name) != behaviours.end());
 }
 
-void RVO2DAgent::addGoalToFront(SteerLib::AgentGoalInfo goal)
-{
-	std::queue < SteerLib::AgentGoalInfo> newQueue;
-	newQueue.push(goal);
-	while (!_goalQueue.empty())
-	{
-		newQueue.push(_goalQueue.front());
-		_goalQueue.pop();
-	}
-	_goalQueue = newQueue;
-}
-
 
 void RVO2DAgent::rememberGoals()
 {
@@ -891,15 +879,10 @@ void RVO2DAgent::rememberGoals()
 			}
 
 			//check if the condition is satisfied
-			if (ineq_val == "lt")
+			if ((ineq_val == "lt" && position().z < z_val) || (ineq_val == "gt" && position().z > z_val))
 			{
-				if (position().z < z_val)
-					addGoalToFront(it);
-			}
-			else if (ineq_val == "gt")
-			{
-				if (position().z > z_val)
-					addGoalToFront(it);
+				_goalQueue.push_front(it);
+				break;
 			}
 		}
 	}
@@ -1167,15 +1150,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 			newGoal.targetName = std::to_string(owned_bag->id());
 
 			// Add the door goal at front of queue
-			auto tempQueue = _goalQueue;
-			_goalQueue = std::queue<SteerLib::AgentGoalInfo>();
-			addGoal(newGoal);
-			int size = tempQueue.size();
-			for (int i = 0; i < size; i++)
-			{
-				addGoal(tempQueue.front());
-				tempQueue.pop();
-			}
+			_goalQueue.push_front(newGoal);
 		}
 	}
 
@@ -1201,7 +1176,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		if(hasGoalBehaviour("condition-memory-z"))
 			completed_goals.push_back(_goalQueue.front());
 		
-		_goalQueue.pop();
+		_goalQueue.pop_front();
 		// std::cout << "Made it to a goal" << std::endl;
 		if (_goalQueue.size() >= 1) {
 			// in this case, there are still more goals, so start steering to the next goal.

@@ -62,7 +62,7 @@ namespace SteerLib {
 		bool hasGoalBehaviour(std::string key) const { return false; }
 
 		const SteerLib::AgentGoalInfo & currentGoal() const { return _currentGoal; }
-		const std::queue<SteerLib::AgentGoalInfo> & agentGoals() const { throw Util::GenericException("agentGoals() not implemented yet"); }
+		const std::deque<SteerLib::AgentGoalInfo> & agentGoals() const { throw Util::GenericException("agentGoals() not implemented yet"); }
 		void addGoal(const SteerLib::AgentGoalInfo & newGoal) { throw Util::GenericException("addGoals() not implemented yet for DummyAgent"); }
 		void clearGoals() { throw Util::GenericException("clearGoals() not implemented yet for DummyAgent"); }
 

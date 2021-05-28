@@ -90,7 +90,7 @@ namespace SteerLib {
 		virtual const SteerLib::AgentGoalInfo & currentGoal() const = 0;
 		// Get the list of all the goals
 		// I don't know how you can give someone a queue and not have them need to modify it?
-		virtual const std::queue<SteerLib::AgentGoalInfo> & agentGoals() const = 0;
+		virtual const std::deque<SteerLib::AgentGoalInfo> & agentGoals() const = 0;
 		// Returns whether the passed key (&value) is part of the current goal behaviour
 		virtual bool hasGoalBehaviour(std::string key, std::string value) const = 0;
 		virtual bool hasGoalBehaviour(std::string key) const = 0;
@@ -124,7 +124,7 @@ namespace SteerLib {
 
 		// So AgentInterface can get Simulation members
 		virtual SteerLib::EngineInterface * getSimulationEngine() = 0;
-		std::queue<SteerLib::AgentGoalInfo> _goalQueue;
+		std::deque<SteerLib::AgentGoalInfo> _goalQueue;
 		//int chosen_door;
 		//status loading_status;
 
