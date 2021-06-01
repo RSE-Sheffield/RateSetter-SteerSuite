@@ -274,7 +274,7 @@ void AgentInterface::draw()
 		Util::DrawLib::drawLine(ray.pos + adjust, ray.eval(1.0f));
 		// if (getSimulationEngine()->getSpatialDatabase()->trace(ray, t, objectFound, this, false))
 		{
-			Util::DrawLib::drawAgentDisc(_position, _forward, _radius, Util::gBlue);
+			Util::DrawLib::drawAgentDisc(_position, _radius, _radius + _sdradius, this->_color);
 		}
 		// else
 		{
