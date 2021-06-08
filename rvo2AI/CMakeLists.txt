@@ -15,7 +15,6 @@ set(RVO2AI_INCLUDE_DIRS
 add_library(rvo2dAI MODULE ${RVO2AI_SRC} ${RVO2AI_INCLUDE})
 target_include_directories(rvo2dAI PRIVATE ${RVO2AI_INCLUDE_DIRS})
 target_link_libraries(rvo2dAI steerlib util)
-
 install(
   TARGETS rvo2dAI
   RUNTIME DESTINATION bin

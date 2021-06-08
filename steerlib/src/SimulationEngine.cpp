@@ -897,7 +897,7 @@ SteerLib::ModuleMetaInformation * SimulationEngine::_loadModule(const std::strin
 		std::string extension = ".dll";
 		std::string libstr = "";
 #elif __APPLE__
-		std::string extension = ".dylib";
+		std::string extension = ".so";
 		std::string libstr = "lib";
 #else
 		std::string extension = ".so";
