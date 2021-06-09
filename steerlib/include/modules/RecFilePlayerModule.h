@@ -30,6 +30,7 @@ namespace SteerLib
 		Util::Vector forward() const { return _forward; }
 		Util::Vector velocity() const { return _velocity; }
 		size_t id() const { return 0;}
+		int groupId() const { return 0; }
 		float radius() const { return _radius; }
 		float sdradius() const { return _sdradius; }
 		bool isBag() const { return _isBag; }

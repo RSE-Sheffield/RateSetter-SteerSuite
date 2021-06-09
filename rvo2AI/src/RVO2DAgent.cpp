@@ -953,22 +953,12 @@ float interpolation(float y_max, float y_min, float x_max, float x_min, float x)
 	}
 }
 
-void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
+std::pair< Util::Vector, SteerLib::AgentGoalInfo> RVO2DAgent::updateAI_goal()
 {
-	// std::cout << "_RVO2DParams.rvo_max_speed " << _RVO2DParams._RVO2DParams.rvo_max_speed << std::endl;
-	Util::AutomaticFunctionProfiler profileThisFunction( &RVO2DGlobals::gPhaseProfilers->aiProfiler );
-	if (!enabled())
-	{
-		return;
-	}
-
-	//see if a previous goal should be used
-	rememberGoals();
-
-	Util::AxisAlignedBox oldBounds(_position.x - _radius, _position.x + _radius, 0.0f, 0.0f, _position.z - _radius, _position.z + _radius);
-	SteerLib::AgentGoalInfo goalInfo = _goalQueue.front();
 	Util::Vector goalDirection;
-	if ( ! _midTermPath.empty() ) // && (!this->hasLineOfSightTo(goalInfo.targetLocation)) )
+	SteerLib::AgentGoalInfo goalInfo = _goalQueue.front();
+
+	if (!_midTermPath.empty()) // && (!this->hasLineOfSightTo(goalInfo.targetLocation)) )
 	{
 		if (reachedCurrentWaypoint())
 		{
@@ -1012,7 +1002,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 				//if owner finished, so should the bag
 				if (!(*it)->enabled() && isBag())
 				{
- 					disable();
+					disable();
 				}
 
 				//auto goal_position = (*it)->position();
@@ -1048,6 +1038,11 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		goalDirection = normalize(goalInfo.targetLocation - position());
 	}
 
+	return std::make_pair(goalDirection, goalInfo);
+}
+
+void RVO2DAgent::updateAI_goalBehaviour(Util::Vector& goalDirection, const SteerLib::AgentGoalInfo&  goalInfo)
+{
 	//If the next goal is "low priority", let other agents move first
 	if (hasGoalBehaviour("low priority"))
 	{
@@ -1066,7 +1061,10 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 			}
 		}
 	}
+}
 
+void RVO2DAgent::updateAI_agentBehaviour()
+{
 	//Agent behaviours
 	if (hasAgentBehaviour("sdradius_z"))
 	{
@@ -1080,51 +1078,65 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		sd0 = stof(behaviours["sdradius_z"]["sd0"]);
 		sd1 = stof(behaviours["sdradius_z"]["sd1"]);
 
-		//for (auto it = behaviours.begin(); it != behaviours.end(); it++)
-		//{
-		//	if (it->getName() == "sdradius_z") {
-		//		auto params = it->getParameters();
-		//		for (auto pit = params.begin(); pit != params.end(); pit++)
-		//		{
-		//			if (pit->key == "z0") z0 = stof(pit->value);
-		//			else if (pit->key == "z1") z1 = stof(pit->value);
-		//			else if (pit->key == "sd0") sd0 = stof(pit->value);
-		//			else if (pit->key == "sd1") sd1 = stof(pit->value);
-		//		}
-		//	}
-		//}
-
 		_sdradius = clamp<float>(position().z, z0, z1, sd0, sd1);
 	}
 
-#ifdef SLOWREGION
-	//scale prefered velocity if agent is "on stairs"
-	Util::Color slow_color = Util::gCyan; // _color for ticket barrier. _gCyan for stairs
-	static Util::Color original_color = _color;
-	float slow_speed_factor = 0.4; //0.9 for ticket barrier. 0.7 for stairs
-	if (_position.x < slowRegion.xmax && _position.x > slowRegion.xmin && _position.z < slowRegion.zmax && _position.z > slowRegion.zmin) {
-		_prefVelocity *= slow_speed_factor;
-		_color = slow_color;
-	}
-	else {
-		_color = original_color;
-	}
-#endif
+}
 
-#ifdef _DEBUG_ENTROPY
-	std::cout << "Preferred velocity is: " << prefVelocity_ << std::endl;
-#endif
-	_prefVelocity = goalDirection;
+std::pair < Util::Vector, float> RVO2DAgent::updateAI_groups()
+{
+	// if no group then no additional direction
+	if (groupId() == Value::unset)
+		return std::make_pair(Util::Vector(0, 0, 0), 0);
+
+	//calculate group centre of mass (COM)
+	int inGroup = 1;
+	Util::Point com = position();
+	for (auto agent : getSimulationEngine()->getAgents())
+	{
+		if (agent->groupId() == groupId())
+		{
+			inGroup++;
+			com = com + agent->position();
+		}
+	}
+	com = com / inGroup;
+
+	//calculate the weight - proportional to distance away from COM
+	float groupWeight = (com - position()).length();
+
+	return std::make_pair(normalize(com - position()), groupWeight);
+}
+
+void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
+{
+	// std::cout << "_RVO2DParams.rvo_max_speed " << _RVO2DParams._RVO2DParams.rvo_max_speed << std::endl;
+	Util::AutomaticFunctionProfiler profileThisFunction( &RVO2DGlobals::gPhaseProfilers->aiProfiler );
+	if (!enabled())
+	{
+		return;
+	}
+
+	//see if a previous goal should be used
+	rememberGoals();
+
+	Util::AxisAlignedBox oldBounds(_position.x - _radius, _position.x + _radius, 0.0f, 0.0f, _position.z - _radius, _position.z + _radius);
+	auto [goalDirection, goalInfo] = updateAI_goal();
+
+	updateAI_goalBehaviour(goalDirection, goalInfo);
+
+	updateAI_agentBehaviour();
+
+	auto [groupDirection, groupWeight] = updateAI_groups();
+
+	_prefVelocity = normalize(goalDirection + groupWeight * groupDirection) * _goalQueue.front().desiredSpeed;
 	(this)->computeNeighbors();
 	(this)->computeNewVelocity(dt);
-	// (this)->computeNewVelocity(dt);
 	_prefVelocity.y = 0.0f;
 
 	// These are the internal RVO values calculated
 	_velocity = _newVelocity;
-#ifdef _DEBUG_ENTROPY
-	std::cout << "new velocity is " << velocity_ << std::endl;
-#endif
+
 	_position = position() + (velocity() * dt);
 	// A grid database update should always be done right after the new position of the agent is calculated
 	/*

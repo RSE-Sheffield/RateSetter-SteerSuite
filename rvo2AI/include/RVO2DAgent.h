@@ -30,6 +30,8 @@
  */
 
 #define USE_ACCLMESH 1
+enum Value {unset = -1};
+
 
 class RVO2DAgent : public SteerLib::AgentInterface
 {
@@ -37,6 +39,10 @@ public:
 	RVO2DAgent();
 	~RVO2DAgent();
 	void reset(const SteerLib::AgentInitialConditions & initialConditions, SteerLib::EngineInterface * engineInfo);
+	std::pair<Util::Vector, SteerLib::AgentGoalInfo> updateAI_goal();
+	void updateAI_goalBehaviour(Util::Vector& goalDirection, const SteerLib::AgentGoalInfo& goalInfo);
+	void updateAI_agentBehaviour();
+	std::pair<Util::Vector, float> updateAI_groups();
 	void updateAI(float timeStamp, float dt, unsigned int frameNumber);
 	void disable();
 	void draw();
@@ -50,6 +56,7 @@ public:
 	bool isBag() const { return _isBag;  }
 	const SteerLib::AgentGoalInfo & currentGoal() const { return _goalQueue.front(); }
 	size_t id() const { return _id;}
+	int groupId() const { return _groupId; }
 	const std::deque<SteerLib::AgentGoalInfo> & agentGoals() const { return _goalQueue; }
 	void addGoal(const SteerLib::AgentGoalInfo& newGoal);
 	void clearGoals() { throw Util::GenericException("clearGoals() not implemented yet for ORCAAgent"); }

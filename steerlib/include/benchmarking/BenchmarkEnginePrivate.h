@@ -57,6 +57,7 @@ namespace SteerLib {
 		Util::Vector forward() const { return _forward; }
 		Util::Vector velocity() const { throw Util::GenericException("velocity() not implemented yet"); }
 		size_t id() const { return 0;}
+		int groupId() const { return 0; }
 		float radius() const { return _radius; }
 		float sdradius() const { return _sdradius; }
 		bool isBag() const { return _isBag; }
