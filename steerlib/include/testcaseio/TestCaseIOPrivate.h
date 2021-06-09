@@ -66,6 +66,7 @@ namespace SteerLib {
 		float sdradius = 0;
 		float speed;
 		bool isBag = false;
+		int groupId = Value::unset;
 		std::vector<AgentGoalInfo> goals;
 		std::map<std::string, std::map<std::string, std::string>> behaviours;
 		#ifdef VARIABLE_SPAWN_TIME

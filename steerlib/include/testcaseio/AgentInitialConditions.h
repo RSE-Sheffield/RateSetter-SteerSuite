@@ -123,6 +123,8 @@ namespace SteerLib {
 		bool colorSet;
 		bool fromRandom;
 		Util::AxisAlignedBox randBox;
+		
+		int groupId;
 
 		AgentInitialConditions() : colorSet(false) {} // this is apparently the best method for initilization
 	};

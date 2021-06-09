@@ -30,7 +30,6 @@
  */
 
 #define USE_ACCLMESH 1
-enum Value {unset = -1};
 
 
 class RVO2DAgent : public SteerLib::AgentInterface

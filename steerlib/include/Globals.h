@@ -26,4 +26,6 @@
 ///  eventually make it a compile-time option for users.
 #define ENABLE_MULTITHREADING
 
+enum Value { unset = -1 };
+
 #endif

@@ -259,6 +259,10 @@ void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int fra
 	// Outcomes are stored with the agents
 	for (RVO2DAgent* agent : agents_) {
 
+		if (!agent->hasAgentBehaviour("sdradius_z"))
+			continue;
+
+
 		// If either the agent or its potential neighbour have finished (reached last goal) then don't keep counting them
 		// even though in reality they might end up standing next to someone - that stage of their journey is out of scope  
 		if (agent->finished() || agent->isBag())

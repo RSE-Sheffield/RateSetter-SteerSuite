@@ -196,6 +196,7 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	_sdradius = initialConditions.sdradius;
 	_isBag = initialConditions.isBag;
 	_velocity = initialConditions.speed * _forward;
+	_groupId = initialConditions.groupId;
 
 	neighborDist_ = _RVO2DParams.rvo_neighbor_distance;
 	maxNeighbors_ = _RVO2DParams.rvo_max_neighbors;
@@ -304,47 +305,6 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	assert(_goalQueue.size() != 0);
 	assert(_radius != 0.0f);
 
-	//_max_radius = _radius;
-	//_receprocity_factor = 1;//d(gen);
-	//SteerLib::AgentGoalInfo insidetrainGoal;
-	//insidetrainGoal.goalType = GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL;
-	//insidetrainGoal.targetIsRandom = false;
-	//insidetrainGoal.timeDuration = 1000;
-	//insidetrainGoal.desiredSpeed = 1.3f;
-	//insidetrainGoal.targetRegion = Util::AxisAlignedBox(-18.f, 38.f, -1.f, 1.f, 3.f, 5.f);
-	//addGoal(insidetrainGoal);
-
-
-	//// read params from file
-	//std::string param_name;
-	//float param_value;
-	//std::ifstream paramsFile("params.txt");
-	//if (paramsFile.is_open()) {
-	//	while (paramsFile >> param_name >> param_value)
-	//	{
-	//		if (param_name == "region_close") {
-	//			_near_dist = param_value;
-	//		}
-	//		else if (param_name == "region_far") {
-	//			_far_dist = param_value;
-	//		}
-	//		else if (param_name == "min_soc_dist") {
-	//			_min_radius = param_value;
-	//		}
-	//	}
-	//	paramsFile.close();
-	//}
-
-//#ifdef TRAINHACKS
-//	//set boarding status depending on position of agent. Those in the train must alight, those outside must board
-//	if( _position.z >= 0 ){
-//		loading_status = status::agent_alighting;
-//		_color = Util::gDarkOrange;
-//	}
-//	else {
-//		loading_status = status::agent_boarding;
-//	}
-//#endif
 	//color dependent on loading_status
 	if (behaviours.find("PTI") != behaviours.end())
 	{
