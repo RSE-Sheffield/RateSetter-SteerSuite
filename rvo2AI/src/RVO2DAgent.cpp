@@ -386,20 +386,6 @@ void RVO2DAgent::computeNeighbors()
 	}
 }
 
-/*
-bool RVO2DAgent::compareDist(std::pair<float, const SteerLib::AgentInterface *> a1,
-		std::pair<float, const SteerLib::AgentInterface *> a2 )
-{
-	return ( a1.first < a2.first );
-}
-
-
-bool RVO2DAgent::compareDist(SteerLib::AgentInterface * a1, SteerLib::AgentInterface * a2 )
-{
-	return ( (position() - a1->position()).length() < (position() - a2->position()).length() );
-}
-*/
-
 /* Search for the best new velocity. */
 void RVO2DAgent::computeNewVelocity(float dt)
 {
@@ -407,8 +393,6 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 	const float invTimeHorizonObst = 1.0f / _RVO2DParams.rvo_time_horizon_obstacles;
 	
-	//auto original_radius = _radius;
-	//_radius = MIN_RADIUS;
 	/* Create obstacle ORCA lines. */
 	for (size_t i = 0; i < obstacleNeighbors_.size(); ++i) {
 
@@ -417,9 +401,6 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 		const Util::Vector relativePosition1 = obstacle1->point_ - position();
 		const Util::Vector relativePosition2 = obstacle2->point_ - position();
-
-		//printf("obs1: (%f, %f)\t", obstacle1->point_.x, obstacle1->point_.z);
-		//printf("obs2: (%f, %f)\n", obstacle2->point_.x, obstacle2->point_.z);
 
 		/*
 		 * Check if velocity obstacle of obstacle is already taken care of by
@@ -638,9 +619,6 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 	const float invTimeHorizon = 1.0f / _RVO2DParams.rvo_time_horizon;
 
-	//set radius of agent-agent interactions to include social distancing
-	//_radius = original_radius;
-
 	/* Create agent ORCA lines. */
 	for (size_t i = 0; i < agentNeighbors_.size(); ++i)
 	{
@@ -681,6 +659,12 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		//if other agent is bag, and this is a person, take full responsibility for avoidance
 		if (!this->isBag() && other->isBag()) {
 			reciprocal_fov = 1.f;
+		}
+
+		// If both agents are part of the same group - ignore social distance
+		if (groupId() == other->groupId()) {
+			combinedRadius = radius() + other->radius(); //other radius is the physical person radius
+			combinedRadiusSq = sqr(combinedRadius);
 		}
 
 
