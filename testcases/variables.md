@@ -16,6 +16,15 @@ Should be set within the `initialConditions` tag.
 
 If not set then will default to `0` and behave as if there is no social distancing.
 
+# `groupId`
+
+Assign an agent to a group. A group is a social ruling for pedestrians that means they want to achieve the same sets of goals, and want to move around the world more closely than compared to other agents.
+
+Should be set within the `initialConditions` tag.
+
+If not set then will default to the enum `Value::unset` which is equal to `-1` and behaves as an independent agent.
+
+
 # `seekStaticTargetSet`
 
 An alternative goal type for use within the `goalSequence` tag. 
