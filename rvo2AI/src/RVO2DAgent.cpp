@@ -1029,6 +1029,9 @@ void RVO2DAgent::updateAI_agentBehaviour()
 
 std::pair < Util::Vector, float> RVO2DAgent::updateAI_groups()
 {
+	// When distance to COM is less than this, so not attempt to move towards the COM
+	const float affectRadius = 0.2;
+
 	// if no group then no additional direction
 	if (groupId() == Value::unset)
 		return std::make_pair(Util::Vector(0, 0, 0), 0);
@@ -1053,8 +1056,8 @@ std::pair < Util::Vector, float> RVO2DAgent::updateAI_groups()
 	//calculate the weight - proportional to distance away from COM
 	float groupWeight = std::pow((com - position()).length(), 2) * 0.1;
 
-	//Zero'd for 1 member groups
-	Util::Vector dir = (inGroup == 1) ? Util::Vector(0, 0, 0) : normalize(com - position());
+	//Zero'd for 1 member groups, or when very close to COM
+	Util::Vector dir = (inGroup == 1 || (com - position()).length() < affectRadius) ? Util::Vector(0, 0, 0) : normalize(com - position());
 
 	return std::make_pair(dir, groupWeight);
 }
