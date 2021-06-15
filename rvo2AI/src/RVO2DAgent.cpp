@@ -305,14 +305,14 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	assert(_goalQueue.size() != 0);
 	assert(_radius != 0.0f);
 
-	//color dependent on loading_status
-	if (behaviours.find("PTI") != behaviours.end())
-	{
-		if (behaviours["PTI"]["loading_status"] == "alighting")
-		{
-			_color = Util::gDarkOrange;
-		}
-	}
+	////color dependent on loading_status
+	//if (behaviours.find("PTI") != behaviours.end())
+	//{
+	//	if (behaviours["PTI"]["loading_status"] == "alighting")
+	//	{
+	//		_color = Util::gDarkOrange;
+	//	}
+	//}
 }
 
 /*
@@ -1038,6 +1038,10 @@ std::pair < Util::Vector, float> RVO2DAgent::updateAI_groups()
 	Util::Point com = position();
 	for (auto agent : getSimulationEngine()->getAgents())
 	{
+		// ignore self
+		if (agent == this)
+			continue;
+
 		if (agent->groupId() == groupId())
 		{
 			inGroup++;
@@ -1049,7 +1053,10 @@ std::pair < Util::Vector, float> RVO2DAgent::updateAI_groups()
 	//calculate the weight - proportional to distance away from COM
 	float groupWeight = (com - position()).length();
 
-	return std::make_pair(normalize(com - position()), groupWeight);
+	//Zero'd for 1 member groups
+	Util::Vector dir = (inGroup == 1) ? Util::Vector(0, 0, 0) : normalize(com - position());
+
+	return std::make_pair(dir, groupWeight);
 }
 
 void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
@@ -1073,7 +1080,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 
 	auto [groupDirection, groupWeight] = updateAI_groups();
 
-	_prefVelocity = normalize(goalDirection + groupWeight * groupDirection) * _goalQueue.front().desiredSpeed;
+	_prefVelocity = (((goalDirection+ groupDirection).length() < 1) ? goalDirection + groupWeight * groupDirection : normalize(goalDirection + groupWeight * groupDirection)) * _goalQueue.front().desiredSpeed;
 	(this)->computeNeighbors();
 	(this)->computeNewVelocity(dt);
 	_prefVelocity.y = 0.0f;
