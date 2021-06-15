@@ -1051,7 +1051,7 @@ std::pair < Util::Vector, float> RVO2DAgent::updateAI_groups()
 	com = com / inGroup;
 
 	//calculate the weight - proportional to distance away from COM
-	float groupWeight = (com - position()).length();
+	float groupWeight = std::pow((com - position()).length(), 2) * 0.1;
 
 	//Zero'd for 1 member groups
 	Util::Vector dir = (inGroup == 1) ? Util::Vector(0, 0, 0) : normalize(com - position());
