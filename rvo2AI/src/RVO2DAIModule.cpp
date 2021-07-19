@@ -284,10 +284,6 @@ void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int fra
 			if (agent->behaviours["PTI"]["loading_status"] == "boarding" && agent->position().z > 0)
 				continue;
 
-			// For alighting passengers once they are outside the train stop adding to their metrics
-			// But the CAN still violate the SD of people still trying to board (they are not excluded as 'other' in the loop below).
-			if (agent->behaviours["PTI"]["loading_status"] == "alighting" && agent->position().z < 0)
-				continue;
 			relativePosition = (other->position()) - agent->position();
 			distSq = absSq(relativePosition);
 
