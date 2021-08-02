@@ -18,9 +18,9 @@
 #undef min
 #undef max
 
-#define MAX_FORCE_MAGNITUDE 3.0f
+//#define MAX_FORCE_MAGNITUDE 3.0f
 // #define MAX_SPEED 1.33f
-#define AGENT_MASS 1.0f
+//#define AGENT_MASS 1.0f
 #define BAG_DISTANCE 2.0f // Beyond this distance an owner and bag will attempt to reunite as the primary goal
 
 using namespace Util;
@@ -636,7 +636,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 		//Alternative behaviour if other agent is the owner's bag - ignore bag as a constraint
 		if (other->isBag() && std::stoi(other->currentGoal().targetName) == id()) {
-			if (bag_id == -1 && !owned_bag) {
+			if (bag_id == Value::unset && !owned_bag) {
 				//if bag is unset as bag_id, set it here
 				bag_id = other->id();
 				owned_bag = other;
@@ -663,7 +663,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 		// If both agents are part of the same group - ignore social distance
 		std::cout << groupId() << "\n";
-		if (groupId() == other->groupId() && groupId() != -1) {
+		if (groupId() == other->groupId() && groupId() != Value::unset) {
 			combinedRadius = radius() + other->radius(); //other radius is the physical person radius
 			combinedRadiusSq = sqr(combinedRadius);
 		}
@@ -859,9 +859,9 @@ void RVO2DAgent::insertAgentNeighbor(const SteerLib::AgentInterface *agent, floa
 	}
 }
 
-void RVO2DAgent::insertObstacleNeighbor(const ObstacleInterface *obstacle, float rangeSq)
+void RVO2DAgent::insertObstacleNeighbor(const ObstacleInterface* obstacle, float rangeSq)
 {
-	const ObstacleInterface *const nextObstacle = obstacle->nextObstacle_;
+	const ObstacleInterface* const nextObstacle = obstacle->nextObstacle_;
 	//printf("insterting obstacle: pos(%f, %f)\n", obstacle->point_.x, obstacle->point_.z);
 	//printf("\t pos: (%f, %f)\n", obstacle->nextObstacle_->point_.x, obstacle->nextObstacle_->point_.z);
 
@@ -953,12 +953,13 @@ std::pair< Util::Vector, SteerLib::AgentGoalInfo> RVO2DAgent::updateAI_goal()
 				//auto goal_position = (*it)->position();
 				goalDirection = normalize((*it)->position() - position());
 				goalInfo.targetLocation = (*it)->position();
-				//_prefVelocity = goalDirection;
 
-				//print helpful vals
-				//std::cout << "goal dir: " << goalDirection << 
-				//	"\tvel: " << velocity() << 
-				//	"\t_prefVelocity"  << _prefVelocity << std::endl;
+				// if bag is too far from owner - stop moving
+				if (((*it)->position() - position()).length() > BAG_DISTANCE)
+				{
+					goalDirection = Util::Vector(0, 0, 0);
+				}
+
 				break;
 			}
 		}
