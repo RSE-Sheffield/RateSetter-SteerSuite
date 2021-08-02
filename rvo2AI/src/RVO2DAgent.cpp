@@ -196,6 +196,7 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	_sdradius = initialConditions.sdradius;
 	_isBag = initialConditions.isBag;
 	_velocity = initialConditions.speed * _forward;
+	_groupId = initialConditions.groupId;
 
 	neighborDist_ = _RVO2DParams.rvo_neighbor_distance;
 	maxNeighbors_ = _RVO2DParams.rvo_max_neighbors;
@@ -304,55 +305,14 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	assert(_goalQueue.size() != 0);
 	assert(_radius != 0.0f);
 
-	//_max_radius = _radius;
-	//_receprocity_factor = 1;//d(gen);
-	//SteerLib::AgentGoalInfo insidetrainGoal;
-	//insidetrainGoal.goalType = GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL;
-	//insidetrainGoal.targetIsRandom = false;
-	//insidetrainGoal.timeDuration = 1000;
-	//insidetrainGoal.desiredSpeed = 1.3f;
-	//insidetrainGoal.targetRegion = Util::AxisAlignedBox(-18.f, 38.f, -1.f, 1.f, 3.f, 5.f);
-	//addGoal(insidetrainGoal);
-
-
-	//// read params from file
-	//std::string param_name;
-	//float param_value;
-	//std::ifstream paramsFile("params.txt");
-	//if (paramsFile.is_open()) {
-	//	while (paramsFile >> param_name >> param_value)
+	////color dependent on loading_status
+	//if (behaviours.find("PTI") != behaviours.end())
+	//{
+	//	if (behaviours["PTI"]["loading_status"] == "alighting")
 	//	{
-	//		if (param_name == "region_close") {
-	//			_near_dist = param_value;
-	//		}
-	//		else if (param_name == "region_far") {
-	//			_far_dist = param_value;
-	//		}
-	//		else if (param_name == "min_soc_dist") {
-	//			_min_radius = param_value;
-	//		}
+	//		_color = Util::gDarkOrange;
 	//	}
-	//	paramsFile.close();
 	//}
-
-//#ifdef TRAINHACKS
-//	//set boarding status depending on position of agent. Those in the train must alight, those outside must board
-//	if( _position.z >= 0 ){
-//		loading_status = status::agent_alighting;
-//		_color = Util::gDarkOrange;
-//	}
-//	else {
-//		loading_status = status::agent_boarding;
-//	}
-//#endif
-	//color dependent on loading_status
-	if (behaviours.find("PTI") != behaviours.end())
-	{
-		if (behaviours["PTI"]["loading_status"] == "alighting")
-		{
-			_color = Util::gDarkOrange;
-		}
-	}
 }
 
 /*
@@ -426,20 +386,6 @@ void RVO2DAgent::computeNeighbors()
 	}
 }
 
-/*
-bool RVO2DAgent::compareDist(std::pair<float, const SteerLib::AgentInterface *> a1,
-		std::pair<float, const SteerLib::AgentInterface *> a2 )
-{
-	return ( a1.first < a2.first );
-}
-
-
-bool RVO2DAgent::compareDist(SteerLib::AgentInterface * a1, SteerLib::AgentInterface * a2 )
-{
-	return ( (position() - a1->position()).length() < (position() - a2->position()).length() );
-}
-*/
-
 /* Search for the best new velocity. */
 void RVO2DAgent::computeNewVelocity(float dt)
 {
@@ -447,8 +393,6 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 	const float invTimeHorizonObst = 1.0f / _RVO2DParams.rvo_time_horizon_obstacles;
 	
-	//auto original_radius = _radius;
-	//_radius = MIN_RADIUS;
 	/* Create obstacle ORCA lines. */
 	for (size_t i = 0; i < obstacleNeighbors_.size(); ++i) {
 
@@ -457,9 +401,6 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 		const Util::Vector relativePosition1 = obstacle1->point_ - position();
 		const Util::Vector relativePosition2 = obstacle2->point_ - position();
-
-		//printf("obs1: (%f, %f)\t", obstacle1->point_.x, obstacle1->point_.z);
-		//printf("obs2: (%f, %f)\n", obstacle2->point_.x, obstacle2->point_.z);
 
 		/*
 		 * Check if velocity obstacle of obstacle is already taken care of by
@@ -678,9 +619,6 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 	const float invTimeHorizon = 1.0f / _RVO2DParams.rvo_time_horizon;
 
-	//set radius of agent-agent interactions to include social distancing
-	//_radius = original_radius;
-
 	/* Create agent ORCA lines. */
 	for (size_t i = 0; i < agentNeighbors_.size(); ++i)
 	{
@@ -721,6 +659,13 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		//if other agent is bag, and this is a person, take full responsibility for avoidance
 		if (!this->isBag() && other->isBag()) {
 			reciprocal_fov = 1.f;
+		}
+
+		// If both agents are part of the same group - ignore social distance
+		std::cout << groupId() << "\n";
+		if (groupId() == other->groupId() && groupId() != -1) {
+			combinedRadius = radius() + other->radius(); //other radius is the physical person radius
+			combinedRadiusSq = sqr(combinedRadius);
 		}
 
 
@@ -953,22 +898,12 @@ float interpolation(float y_max, float y_min, float x_max, float x_min, float x)
 	}
 }
 
-void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
+std::pair< Util::Vector, SteerLib::AgentGoalInfo> RVO2DAgent::updateAI_goal()
 {
-	// std::cout << "_RVO2DParams.rvo_max_speed " << _RVO2DParams._RVO2DParams.rvo_max_speed << std::endl;
-	Util::AutomaticFunctionProfiler profileThisFunction( &RVO2DGlobals::gPhaseProfilers->aiProfiler );
-	if (!enabled())
-	{
-		return;
-	}
-
-	//see if a previous goal should be used
-	rememberGoals();
-
-	Util::AxisAlignedBox oldBounds(_position.x - _radius, _position.x + _radius, 0.0f, 0.0f, _position.z - _radius, _position.z + _radius);
-	SteerLib::AgentGoalInfo goalInfo = _goalQueue.front();
 	Util::Vector goalDirection;
-	if ( ! _midTermPath.empty() ) // && (!this->hasLineOfSightTo(goalInfo.targetLocation)) )
+	SteerLib::AgentGoalInfo goalInfo = _goalQueue.front();
+
+	if (!_midTermPath.empty()) // && (!this->hasLineOfSightTo(goalInfo.targetLocation)) )
 	{
 		if (reachedCurrentWaypoint())
 		{
@@ -1012,7 +947,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 				//if owner finished, so should the bag
 				if (!(*it)->enabled() && isBag())
 				{
- 					disable();
+					disable();
 				}
 
 				//auto goal_position = (*it)->position();
@@ -1048,6 +983,11 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		goalDirection = normalize(goalInfo.targetLocation - position());
 	}
 
+	return std::make_pair(goalDirection, goalInfo);
+}
+
+void RVO2DAgent::updateAI_goalBehaviour(Util::Vector& goalDirection, const SteerLib::AgentGoalInfo&  goalInfo)
+{
 	//If the next goal is "low priority", let other agents move first
 	if (hasGoalBehaviour("low priority"))
 	{
@@ -1066,7 +1006,10 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 			}
 		}
 	}
+}
 
+void RVO2DAgent::updateAI_agentBehaviour()
+{
 	//Agent behaviours
 	if (hasAgentBehaviour("sdradius_z"))
 	{
@@ -1080,51 +1023,75 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		sd0 = stof(behaviours["sdradius_z"]["sd0"]);
 		sd1 = stof(behaviours["sdradius_z"]["sd1"]);
 
-		//for (auto it = behaviours.begin(); it != behaviours.end(); it++)
-		//{
-		//	if (it->getName() == "sdradius_z") {
-		//		auto params = it->getParameters();
-		//		for (auto pit = params.begin(); pit != params.end(); pit++)
-		//		{
-		//			if (pit->key == "z0") z0 = stof(pit->value);
-		//			else if (pit->key == "z1") z1 = stof(pit->value);
-		//			else if (pit->key == "sd0") sd0 = stof(pit->value);
-		//			else if (pit->key == "sd1") sd1 = stof(pit->value);
-		//		}
-		//	}
-		//}
-
 		_sdradius = clamp<float>(position().z, z0, z1, sd0, sd1);
 	}
 
-#ifdef SLOWREGION
-	//scale prefered velocity if agent is "on stairs"
-	Util::Color slow_color = Util::gCyan; // _color for ticket barrier. _gCyan for stairs
-	static Util::Color original_color = _color;
-	float slow_speed_factor = 0.4; //0.9 for ticket barrier. 0.7 for stairs
-	if (_position.x < slowRegion.xmax && _position.x > slowRegion.xmin && _position.z < slowRegion.zmax && _position.z > slowRegion.zmin) {
-		_prefVelocity *= slow_speed_factor;
-		_color = slow_color;
-	}
-	else {
-		_color = original_color;
-	}
-#endif
+}
 
-#ifdef _DEBUG_ENTROPY
-	std::cout << "Preferred velocity is: " << prefVelocity_ << std::endl;
-#endif
-	_prefVelocity = goalDirection;
+std::pair < Util::Vector, float> RVO2DAgent::updateAI_groups()
+{
+	// When distance to COM is less than this, so not attempt to move towards the COM
+	const float affectRadius = 0.2;
+
+	// if no group then no additional direction
+	if (groupId() == Value::unset)
+		return std::make_pair(Util::Vector(0, 0, 0), 0);
+
+	//calculate group centre of mass (COM)
+	int inGroup = 1;
+	Util::Point com = position();
+	for (auto agent : getSimulationEngine()->getAgents())
+	{
+		// ignore self
+		if (agent == this)
+			continue;
+
+		if (agent->groupId() == groupId())
+		{
+			inGroup++;
+			com = com + agent->position();
+		}
+	}
+	com = com / inGroup;
+
+	//calculate the weight - proportional to distance away from COM
+	float groupWeight = std::pow((com - position()).length(), 2) * 0.1;
+
+	//Zero'd for 1 member groups, or when very close to COM
+	Util::Vector dir = (inGroup == 1 || (com - position()).length() < affectRadius) ? Util::Vector(0, 0, 0) : normalize(com - position());
+
+	return std::make_pair(dir, groupWeight);
+}
+
+void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
+{
+	// std::cout << "_RVO2DParams.rvo_max_speed " << _RVO2DParams._RVO2DParams.rvo_max_speed << std::endl;
+	Util::AutomaticFunctionProfiler profileThisFunction( &RVO2DGlobals::gPhaseProfilers->aiProfiler );
+	if (!enabled())
+	{
+		return;
+	}
+
+	//see if a previous goal should be used
+	rememberGoals();
+
+	Util::AxisAlignedBox oldBounds(_position.x - _radius, _position.x + _radius, 0.0f, 0.0f, _position.z - _radius, _position.z + _radius);
+	auto [goalDirection, goalInfo] = updateAI_goal();
+
+	updateAI_goalBehaviour(goalDirection, goalInfo);
+
+	updateAI_agentBehaviour();
+
+	auto [groupDirection, groupWeight] = updateAI_groups();
+
+	_prefVelocity = (((goalDirection+ groupDirection).length() < 1) ? goalDirection + groupWeight * groupDirection : normalize(goalDirection + groupWeight * groupDirection)) * _goalQueue.front().desiredSpeed;
 	(this)->computeNeighbors();
 	(this)->computeNewVelocity(dt);
-	// (this)->computeNewVelocity(dt);
 	_prefVelocity.y = 0.0f;
 
 	// These are the internal RVO values calculated
 	_velocity = _newVelocity;
-#ifdef _DEBUG_ENTROPY
-	std::cout << "new velocity is " << velocity_ << std::endl;
-#endif
+
 	_position = position() + (velocity() * dt);
 	// A grid database update should always be done right after the new position of the agent is calculated
 	/*

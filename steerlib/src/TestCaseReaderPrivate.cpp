@@ -982,6 +982,10 @@ void TestCaseReaderPrivate::_parseInitialConditions(const ticpp::Element * subRo
 			_getXYZOrRandomFromXMLElement(&(*child), newAgent.color, newAgent.isColorRandom);
 			newAgent.colorSet=true;
 		}
+		else if (childTagName == "groupId")
+		{
+			child->GetText(&newAgent.groupId);
+		}
 		#ifdef VARIABLE_SPAWN_TIME
 		else if(childTagName == "spawn_time"){
 			child->GetText(&newAgent.spawnTime);
@@ -1021,6 +1025,7 @@ void TestCaseReaderPrivate::_initAgentInitialConditions( AgentInitialConditions 
 	a.colorSet = agent.colorSet;
 	a.color = agent.color;
 	a.isBag = agent.isBag;
+	a.groupId = agent.groupId;
 
 	if (agent.isDirectionRandom) {
 		// choose a random number;

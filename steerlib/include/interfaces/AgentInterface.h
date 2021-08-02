@@ -86,6 +86,7 @@ namespace SteerLib {
 		virtual bool isBag() const = 0;
 		// Returns the id number associated with this agent
 		virtual size_t id() const = 0;
+		virtual int groupId() const = 0;
 		/// Returns information about the current goal.
 		virtual const SteerLib::AgentGoalInfo & currentGoal() const = 0;
 		// Get the list of all the goals
@@ -217,6 +218,7 @@ namespace SteerLib {
 		std::map<std::string, std::map<std::string, std::string>> behaviours; // named behaviours which key to {key, value} pairs
 
 		size_t _id;
+		int _groupId;
 				// Used to store Waypoints between goals
 		// A waypoint is choosen every FURTHEST_LOCAL_TARGET_DISTANCE
 		std::deque<Util::Point> _waypoints;
