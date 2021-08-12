@@ -662,7 +662,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		}
 
 		// If both agents are part of the same group - ignore social distance
-		std::cout << groupId() << "\n";
+		// std::cout << groupId() << "\n";
 		if (groupId() == other->groupId() && groupId() != Value::unset) {
 			combinedRadius = radius() + other->radius(); //other radius is the physical person radius
 			combinedRadiusSq = sqr(combinedRadius);
