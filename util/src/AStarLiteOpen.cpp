@@ -4,6 +4,8 @@
 //
 
 #include "astar/AStarLiteOpen.h"
+#include <cstddef>
+
 
 AStarLiteOpen::AStarLiteOpen()
 {
