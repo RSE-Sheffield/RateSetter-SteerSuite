@@ -168,15 +168,15 @@ void RVO2DAIModule::init(const SteerLib::OptionDictionary& options, SteerLib::En
 
 	if (logStats)
 	{
-		// LETS TRY TO WRITE THE LABELS OF EACH FIELD
-		std::stringstream labelStream;
-		unsigned int i;
-		for (i = 0; i < _rvoLogger->getNumberOfFields() - 1; i++)
-			labelStream << _rvoLogger->getFieldName(i) << " ";
-		labelStream << _rvoLogger->getFieldName(i);
-		// _data = labelStream.str() + "\n";
+// LETS TRY TO WRITE THE LABELS OF EACH FIELD
+std::stringstream labelStream;
+unsigned int i;
+for (i = 0; i < _rvoLogger->getNumberOfFields() - 1; i++)
+	labelStream << _rvoLogger->getFieldName(i) << " ";
+labelStream << _rvoLogger->getFieldName(i);
+// _data = labelStream.str() + "\n";
 
-		_rvoLogger->writeData(labelStream.str());
+_rvoLogger->writeData(labelStream.str());
 
 	}
 
@@ -250,6 +250,41 @@ void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int fra
 	float Agentmin;
 	float Agentmax;
 	float SDplanned;
+
+	// Check timing status for the PTI stages
+	// Boarding - starts when the first boarders make a move. Ends when no more boarders exist
+	static float boardStart = 0.0f;
+	for (auto& agent : agents_) {
+		if (boardStart == 0.0f && agent->behaviours["PTI"]["loading_status"] == "boarding" && agent->velocity().length() > 0) {
+			boardStart = timeStamp;
+			break;
+		}
+	}
+	static float boardEnd = 0.0f;
+ 	bool bboardEnded = true;
+	for (auto& agent : agents_) {
+		if (boardEnd == 0.0f && agent->enabled() && agent->behaviours["PTI"]["loading_status"] == "boarding") {
+			bboardEnded = false;
+			break;
+		}
+	}
+	if (bboardEnded && boardEnd == 0.0f) {
+		boardEnd = timeStamp;
+	}
+	// Alighting - start with the simulation, ends when people leave the bounds of the immediate platform
+	static float alightStart = 0.0f;
+	static float alightEnd = 0.0f;
+	bool bAlightEnded = true;
+	for (auto& agent : agents_) {
+		if (alightEnd == 0.0f && agent->enabled() && agent->behaviours["PTI"]["loading_status"] == "alighting"
+			&& Util::boxOverlapsCircle2D(-20, 45, -6, 5, agent->position(), agent->radius())) {
+			bAlightEnded = false;
+			break;
+		}
+	}
+	if (bAlightEnded && alightEnd == 0.0f) {
+		alightEnd = timeStamp;
+	}
 
 	// For testing - dump all agent positions whether with compromised distancing or not
 	//FILE *fptr4;
@@ -472,6 +507,10 @@ void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int fra
 		fclose(fptr1);
 		fclose(fptr2);
 		fclose(fptr3);
+
+		std::cout << "Boarding started at " << boardStart << " seconds. \t Boarding ended at " << boardEnd << " seconds." << std::endl;
+		std::cout << "Alighting started at " << alightStart << " seconds. \t Alighting ended at " << alightEnd << " seconds." << std::endl;
+		std::cout << "Total PTI time: " << std::max(boardEnd,alightEnd) << " seconds.\n";
 	}
 
 }
