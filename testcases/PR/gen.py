@@ -16,6 +16,15 @@ class TrainInfo(TypedDict):
 	doors: List[float] # array of centred door positions
 	door_size: float # in meters from one end to the other door
 
+def get_door_locations(ti: TrainInfo) -> List[List[float]]:
+	doors = []
+	for i in range(ti["carriages"]):
+		for d in ti["doors"]:
+			door_loc = [d + (i*ti["c_length"]),0]
+			doors.append(door_loc)
+	return doors
+
+
 class AgentGoal(TypedDict):
 	"""
 	Typing hint of agent goal dictionary
@@ -28,7 +37,7 @@ class AgentGoalBox(AgentGoal):
 	"""
 	# goal_type = "boxregion"
 	target_locations: List[float] # positions
-	goal_region: List[float] # (x1,y1, x2,y2) 2 opposite corners of the box goal
+	goal_region: List[float] # (x1,x2, y12,y2) 2 opposite corners of the box goal
 
 class AgentGoalTargetSet(AgentGoal):
 	"""
@@ -319,13 +328,66 @@ class GenTestcase():
 			box_occupancy.remove(boxId)
 
 		return leftover if leftover > 0 else 0
-		
+
+class plt4(GenTestcase):
+	"""
+	Special case of test case generation for Peckham Rye, Platform 4
+	"""
+	train: TrainInfo = {
+		"carriages": 8, # how many carriages per train
+		"c_length": 16, # length of the carriage
+		"c_width": 3, # width of the carriage
+		"doors": [5, 11], # location of door centers along cariage
+		"door_size": 1
+	}
+	doors = get_door_locations(train)
+
+	############
+	# Goal items
+	gb: AgentGoalBox = {
+		"goal_type": "boxregion",
+		"target_location": [0,0], # positions
+		"goal_region": [0,0,5,5], 
+	}
+	goal_doors: AgentGoalTargetSet = {
+		"goal_type": "targetSet",
+		"goal_locations": doors, # list of (x,y/z) goal locations
+		# "parameters": Set[str] # {"low priority", "boarding"}
+	}
+	# corridor along platform after leaving oor
+	goal_plt_corridor: AgentGoalTargetSet = {
+		"goal_type": "targetSet",
+		"goal_locations": [[d[0], d[1] + 1] for d in doors], # list of (x,y/z) goal locations
+		# "parameters": Set[str] # {"low priority", "boarding"}
+	}
+
+	# exit section
+	goal_stairs_region: AgentGoalBox = {
+		"goal_type": "boxregion",
+		"target_location": [0,0], # positions
+		"goal_region": [88,96,1,5], 
+	}
+	# actual stairs to exit from sim
+	goal_stairs_exit: AgentGoalBox = {
+		"goal_type": "boxregion",
+		"target_location": [0,0], # positions
+		"goal_region": [90,95,5,8], 
+	}
+
+	#############
+	# Agent items
+	agent_alight_spec: AgentInfo = {
+		"radius": 0.3, # physical radius of person
+		"sdradius": 0, # social distancing radius
+		"goals": [goal_doors, goal_plt_corridor, goal_stairs_region, goal_stairs_exit]
+	}
+
 	def create_plt_4(self):
 		"""
 		Creates the platform layout of Peckham Rye, Platform 4
 		"""
 		usual_obj_h = self.obstacle_heights
-		heights = self.obstacle_heights + 0.5
+		self.obstacle_heights = self.obstacle_heights + 0.5
 
 		# left side of plt
 		self.create_thin_wall(-5, [0,5])
@@ -348,47 +410,26 @@ class GenTestcase():
 
 		# cleanup
 		self.obstacle_heights = usual_obj_h
+	
+	def spawn_agents_plt4(self):
+		"""
+		Spawn agents in plt 4 layout
+		"""
+		# In train
+		for i in range(self.train["carriages"]):
+			offset = i * self.train["c_length"]
+			tc.spawn_agents_in_square(
+				[offset,-self.train["c_width"], offset+self.train["c_length"],0], 
+				5, **self.agent_alight_spec
+			)
 
-def get_door_locations(ti: TrainInfo) -> List[List[float]]:
-	doors = []
-	for i in range(ti["carriages"]):
-		for d in ti["doors"]:
-			door_loc = [d + (i*ti["c_length"]),0]
-			doors.append(door_loc)
-	return doors
-
-train: TrainInfo = {
-	"carriages": 8, # how many carriages per train
-	"c_length": 16, # length of the carriage
-	"c_width": 3, # width of the carriage
-	"doors": [5, 11], # location of door centers along cariage
-	"door_size": 1
-}
-doors = get_door_locations(train)
-
-gb: AgentGoalBox = {
-	"goal_type": "boxregion",
-	"target_location": [0,0], # positions
-	"goal_region": [0,0,5,5], # (x1,y1, x2,y2) 2 opposite corners of the box goal
-}
-goal_doors: AgentGoalTargetSet = {
-	"goal_type": "targetSet",
-	"goal_locations": doors, # list of (x,y/z) goal locations
-	# "parameters": Set[str] # {"low priority", "boarding"}
-}
-
-agent_spec: AgentInfo = {
-	"radius": 0.3, # physical radius of person
-	"sdradius": 0, # social distancing radius
-	"goals": [goal_doors, gb]
-}
+	def generate(self):
+		self.gen_train(**self.train)
+		self.create_plt_4()
+		tc.spawn_agents_plt4()
+		# print(tc.dump())
+		tc.write("testcases/PR/plt-4.xml")
 
 
-
-
-tc = GenTestcase()
-tc.gen_train(**train)
-tc.create_plt_4()
-tc.spawn_agents_in_square([0,0,5,5], 5, **agent_spec)
-print(tc.dump())
-tc.write("testcases/PR/plt-4.xml")
+tc = plt4()
+tc.generate()
