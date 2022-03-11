@@ -26,16 +26,16 @@ class AgentGoalBox(AgentGoal):
 	"""
 	Typing hint of BoxRegion agent goal
 	"""
-	# goal_type
-	target_location: list[float] # positions
+	# goal_type = "boxregion"
+	target_locations: List[float] # positions
 	goal_region: List[float] # (x1,y1, x2,y2) 2 opposite corners of the box goal
 
 class AgentGoalTargetSet(AgentGoal):
 	"""
 	Typing hint of TargetSet agent goal
 	"""
-	# goal_type
-	goal_location: list[list[float]] # list of (x,y/z) goal locations
+	# goal_type = "targetSet"
+	goal_location: List[List[float]] # list of (x,y/z) goal locations
 	parameters: Set[str] # {"low priority", "boarding"}
 
 class AgentInfo(TypedDict):
@@ -44,7 +44,7 @@ class AgentInfo(TypedDict):
 	"""
 	radius: float # physical radius of person
 	sdradius: float # social distancing radius
-	goals: list[AgentGoal]
+	goals: List[AgentGoal]
 
 
 class GenTestcase():
@@ -215,8 +215,8 @@ class GenTestcase():
 			for goal in goal_dict["goal_locations"]:
 				targetLocation = ET.SubElement(targetLocationsSet, 'targetLocation')
 				ET.SubElement(targetLocation, 'x').text = str(goal[0])		
-				ET.SubElement(targetLocation, 'y').text = str(goal[1])
-				ET.SubElement(targetLocation, 'z').text = str(goal[2])
+				ET.SubElement(targetLocation, 'y').text = "0"
+				ET.SubElement(targetLocation, 'z').text = str(goal[1])
 
 			ET.SubElement(seekTargetSet, 'timeDuration').text = "1000.0"
 			ET.SubElement(seekTargetSet, 'desiredSpeed').text = "1.3"
@@ -319,7 +319,43 @@ class GenTestcase():
 			box_occupancy.remove(boxId)
 
 		return leftover if leftover > 0 else 0
+		
+	def create_plt_4(self):
+		"""
+		Creates the platform layout of Peckham Rye, Platform 4
+		"""
+		usual_obj_h = self.obstacle_heights
+		heights = self.obstacle_heights + 0.5
 
+		# left side of plt
+		self.create_thin_wall(-5, [0,5])
+		self.create_thin_wall([-5,0],0)
+
+		# back of platform
+		self.create_thin_wall([-5,75], 5)
+		self.create_thin_wall(75, [5,2])
+		self.create_thin_wall([75,88], 2)
+		self.create_thin_wall(88, [2,8])
+		self.create_thin_wall([88,96], 8)
+		self.create_thin_wall(96, [8,2])
+		self.create_thin_wall([96,107], 2)
+		self.create_thin_wall(107, [2,5])
+		self.create_thin_wall([107,132], 5)
+
+		# right side
+		self.create_thin_wall(132, [0,5])
+		self.create_thin_wall([128,132], 0)
+
+		# cleanup
+		self.obstacle_heights = usual_obj_h
+
+def get_door_locations(ti: TrainInfo) -> List[List[float]]:
+	doors = []
+	for i in range(ti["carriages"]):
+		for d in ti["doors"]:
+			door_loc = [d + (i*ti["c_length"]),0]
+			doors.append(door_loc)
+	return doors
 
 train: TrainInfo = {
 	"carriages": 8, # how many carriages per train
@@ -328,21 +364,31 @@ train: TrainInfo = {
 	"doors": [5, 11], # location of door centers along cariage
 	"door_size": 1
 }
+doors = get_door_locations(train)
 
 gb: AgentGoalBox = {
 	"goal_type": "boxregion",
 	"target_location": [0,0], # positions
 	"goal_region": [0,0,5,5], # (x1,y1, x2,y2) 2 opposite corners of the box goal
 }
+goal_doors: AgentGoalTargetSet = {
+	"goal_type": "targetSet",
+	"goal_locations": doors, # list of (x,y/z) goal locations
+	# "parameters": Set[str] # {"low priority", "boarding"}
+}
 
 agent_spec: AgentInfo = {
 	"radius": 0.3, # physical radius of person
 	"sdradius": 0, # social distancing radius
-	"goals": [gb]
+	"goals": [goal_doors, gb]
 }
+
+
+
 
 tc = GenTestcase()
 tc.gen_train(**train)
+tc.create_plt_4()
 tc.spawn_agents_in_square([0,0,5,5], 5, **agent_spec)
 print(tc.dump())
-tc.write("testcases/PR/foo.xml")
+tc.write("testcases/PR/plt-4.xml")
