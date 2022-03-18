@@ -1064,6 +1064,18 @@ std::pair < Util::Vector, float> RVO2DAgent::updateAI_groups()
 	return std::make_pair(dir, groupWeight);
 }
 
+// Performs a naviation planning, taking agents target goal, and sets the prefered velocity to reach its navigation goal
+void RVO2DAgent::path_planning()
+{
+	// if not using annotations, then declare things local here.
+	std::vector<Util::Point> longTermPath;
+
+	// run the main a-star search here
+	getSimulationEngine()->getPathPlanner()->findPath(_position, _goalQueue.front().targetLocation, longTermPath, 50000);
+
+	_prefVelocity = normalize(longTermPath[1] - _position) * _goalQueue.front().desiredSpeed;
+}
+
 void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 {
 	// std::cout << "_RVO2DParams.rvo_max_speed " << _RVO2DParams._RVO2DParams.rvo_max_speed << std::endl;
@@ -1083,9 +1095,11 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 
 	updateAI_agentBehaviour();
 
+	path_planning();
+
 	auto [groupDirection, groupWeight] = updateAI_groups();
 
-	_prefVelocity = (((goalDirection+ groupDirection).length() < 1) ? goalDirection + groupWeight * groupDirection : normalize(goalDirection + groupWeight * groupDirection)) * _goalQueue.front().desiredSpeed;
+	//_prefVelocity = (((goalDirection+ groupDirection).length() < 1) ? goalDirection + groupWeight * groupDirection : normalize(goalDirection + groupWeight * groupDirection)) * _goalQueue.front().desiredSpeed;
 	(this)->computeNeighbors();
 	(this)->computeNewVelocity(dt);
 	_prefVelocity.y = 0.0f;

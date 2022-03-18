@@ -68,6 +68,8 @@ public:
 	bool overlaps(const Util::Point & p, float radius) { return Util::circleOverlapsCircle2D( _position, _radius, p, radius); }
 	float computePenetration(const Util::Point & p, float radius) { return Util::computeCircleCirclePenetration2D( _position, _radius, p, radius); }
 	//@}
+	// Navigation to find velocity
+	void path_planning();
 
 	//variables regarding social distance proximity metrics
 	int SDviolation = 0;                      // total number of SD violations
