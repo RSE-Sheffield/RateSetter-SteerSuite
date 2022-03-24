@@ -1067,14 +1067,21 @@ std::pair < Util::Vector, float> RVO2DAgent::updateAI_groups()
 // Performs a naviation planning, taking agents target goal, and sets the prefered velocity to reach its navigation goal
 void RVO2DAgent::path_planning(SteerLib::AgentGoalInfo goalInfo)
 {
-	// if not using annotations, then declare things local here.
 	std::vector<Util::Point> longTermPath;
+	Util::Point aim;
 
 	// run the main a-star search here
-	std::cout << "x:" << goalInfo.targetLocation.x << " y: " <<  goalInfo.targetLocation.y << " z: " << goalInfo.targetLocation.z << std::endl;
-	getSimulationEngine()->getPathPlanner()->findPath(_position, goalInfo.targetLocation, longTermPath, 5000000);
+	bool status = getSimulationEngine()->getPathPlanner()->findPath(_position, goalInfo.targetLocation, longTermPath, 5000000);
+	if (longTermPath.size() > 2 && status)
+	{
+		aim = longTermPath[1];
+	}
+	else
+	{
+		aim = goalInfo.targetLocation;
+	}
 
-	_prefVelocity = normalize(longTermPath[1] - _position) * _goalQueue.front().desiredSpeed;
+	_prefVelocity = normalize(aim - _position) * _goalQueue.front().desiredSpeed;
 }
 
 void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
@@ -1086,7 +1093,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		return;
 	}
 
-	//see if a previous goal should be used
+	//see if a previous goal should be used 
 	rememberGoals();
 
 	Util::AxisAlignedBox oldBounds(_position.x - _radius, _position.x + _radius, 0.0f, 0.0f, _position.z - _radius, _position.z + _radius);
@@ -1199,6 +1206,100 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 
 }
 
+void RVO2DAgent::drawPlannedPath()
+{
+// 	// longTermPath.empty();
+// 	// ltpath std::vector ltpath = std::vector(longTermPath);
+// 	// std::vector<unsigned int> ltpath(longTermPath);
+// 	// ltpath.push_back(longTermPath.top());
+// 	// longTermPath.pop();
+// 	// ltpath.size()
+
+// #ifdef ENABLE_GUI
+// #ifdef DRAW_ANNOTATIONS
+// if (dont_plan == false)
+// {
+
+// #ifdef _WIN32
+// 	// draw long-term path line
+// 	if (longTermPath.size() > 0) {
+// 		for (unsigned int i=0; i < longTermPath.size() - 1; i++) {
+// 			Vector xOffset,zOffset;
+// 			Util::Point center,nextCenter;
+// 			xOffset.x = 0.5f * getSimulationEngine()->getSpatialDatabase()->getCellSizeX();
+// 			zOffset.z = 0.5f * getSimulationEngine()->getSpatialDatabase()->getCellSizeZ();
+// 			getSimulationEngine()->getSpatialDatabase()->getLocationFromIndex(longTermPath._Get_container()[i], center); // DOes not work on LInux
+// 			getSimulationEngine()->getSpatialDatabase()->getLocationFromIndex(longTermPath._Get_container()[i+1], nextCenter);
+// 			center.y = 0.01f;
+// 			nextCenter.y = 0.01f;
+// 			DrawLib::glColor(gDarkBlue);
+// 			DrawLib::drawLine(center, nextCenter);
+// 		}
+// 	}
+// #else
+// 	if (longTermPath.size() > 0)
+// 	{
+// 		std::vector<Util::Point> ltpath;
+// 		for (size_t p=0; p < longTermPath.size(); p++ )
+// 		{
+// 			ltpath.push_back(longTermPath.at(p));
+// 		}
+
+
+
+// 		for (unsigned int i=0; i < ltpath.size() - 1; i++) {
+// 			Vector xOffset,zOffset;
+// 			Util::Point center,nextCenter;
+// 			xOffset.x = 0.5f * getSimulationEngine()->getSpatialDatabase()->getCellSizeX();
+// 			zOffset.z = 0.5f * getSimulationEngine()->getSpatialDatabase()->getCellSizeZ();
+// 			center = ltpath.at(i);
+// 			nextCenter = ltpath.at(i+1);
+// 			center.y = 0.01f;
+// 			nextCenter.y = 0.01f;
+// 			DrawLib::glColor(gDarkBlue);
+// 			DrawLib::drawLine(center, nextCenter);
+// 		}
+// 	}
+
+// #endif
+	
+	
+// 	// draw markers on each waypoint
+// 	for(unsigned int i=0; i<_waypoints.size(); i++) {
+// 		DrawLib::drawStar(_waypoints[i] + Vector(0.0f, 0.005f, 0.0f), Vector(1.0f, 0.0f, 0.0f), 0.15f, gGreen);
+// 		DrawLib::drawFlag(_waypoints[i] + Vector(0.0f, 0.005f, 0.0f), gBlue, 1.15f);
+// 	}
+
+// 	// draw mid-term path line
+// 	if (_midTermPathSize > 0) {
+// 		for (unsigned int i=0; i < _midTermPathSize - 1; i++) {
+// 			Vector xOffset,zOffset;
+// 			Util::Point center,nextCenter;
+// 			xOffset.x = 0.5f * getSimulationEngine()->getSpatialDatabase()->getCellSizeX();
+// 			zOffset.z = 0.5f * getSimulationEngine()->getSpatialDatabase()->getCellSizeZ();
+// 			center = _midTermPath[i];
+// 			nextCenter = _midTermPath[i+1];
+// 			center.y = 0.02f;
+// 			nextCenter.y = 0.02f;
+// 			DrawLib::glColor(gBlue);
+// 			DrawLib::drawLine( center, nextCenter);
+// 		}
+// 	}
+
+// 	// draw a marker on the closest node you are to the mid-term path (computed from short-term planning)
+// 	Util::Point closestNodeOnPath;
+// 	closestNodeOnPath = _midTermPath[__closestPathNode];
+// 	DrawLib::drawHighlight(closestNodeOnPath + Util::Vector(0, -0.25, 0), Vector(1.0f, 0.0f, 0.0f), 0.5f, gBlue);
+// 	//drawXZCircle(0.30f, closestNodeOnPath, gBlue, 10);
+// }
+
+// 	DrawLib::glColor(gWhite);
+// 	DrawLib::drawLine(_position, _localTargetLocation);
+// 	DrawLib::drawStar(_localTargetLocation, Vector(1.0f, 0.0f, 0.0f), 0.22f, gGray80);
+
+// #endif // ifdef USE_ANNOTATIONS
+// #endif // ifdef ENABLE_GUI
+}
 
 void RVO2DAgent::draw()
 {

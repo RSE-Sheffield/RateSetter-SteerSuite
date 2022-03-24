@@ -45,6 +45,8 @@ public:
 	void updateAI(float timeStamp, float dt, unsigned int frameNumber);
 	void disable();
 	void draw();
+	void drawPlannedPath();
+
 
 	bool enabled() const { return _enabled; }
 	Util::Point position() const { return _position; }
