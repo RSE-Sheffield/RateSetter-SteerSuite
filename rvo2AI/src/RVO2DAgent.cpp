@@ -1065,13 +1065,14 @@ std::pair < Util::Vector, float> RVO2DAgent::updateAI_groups()
 }
 
 // Performs a naviation planning, taking agents target goal, and sets the prefered velocity to reach its navigation goal
-void RVO2DAgent::path_planning()
+void RVO2DAgent::path_planning(SteerLib::AgentGoalInfo goalInfo)
 {
 	// if not using annotations, then declare things local here.
 	std::vector<Util::Point> longTermPath;
 
 	// run the main a-star search here
-	getSimulationEngine()->getPathPlanner()->findPath(_position, _goalQueue.front().targetLocation, longTermPath, 50000);
+	std::cout << "x:" << goalInfo.targetLocation.x << " y: " <<  goalInfo.targetLocation.y << " z: " << goalInfo.targetLocation.z << std::endl;
+	getSimulationEngine()->getPathPlanner()->findPath(_position, goalInfo.targetLocation, longTermPath, 5000000);
 
 	_prefVelocity = normalize(longTermPath[1] - _position) * _goalQueue.front().desiredSpeed;
 }
@@ -1081,7 +1082,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	// std::cout << "_RVO2DParams.rvo_max_speed " << _RVO2DParams._RVO2DParams.rvo_max_speed << std::endl;
 	Util::AutomaticFunctionProfiler profileThisFunction( &RVO2DGlobals::gPhaseProfilers->aiProfiler );
 	if (!enabled())
-	{
+	{ 
 		return;
 	}
 
@@ -1095,7 +1096,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 
 	updateAI_agentBehaviour();
 
-	path_planning();
+ 	path_planning(goalInfo);
 
 	auto [groupDirection, groupWeight] = updateAI_groups();
 
