@@ -28,7 +28,7 @@ using namespace RVO2DGlobals;
 using namespace SteerLib;
 
 
-
+//#define DRAW_NAVMESH // inneficiently draw the navmesh
 
 // #define _DEBUG_ENTROPY 1
 
@@ -1070,6 +1070,10 @@ void RVO2DAgent::path_planning(SteerLib::AgentGoalInfo goalInfo)
 	std::vector<Util::Point> longTermPath;
 	Util::Point aim;
 
+	#ifdef DRAW_NAVMESH
+		// draw the navmesh
+		getSimulationEngine()->getPathPlanner()->draw();
+	#endif
 	// run the main a-star search here
 	bool status = getSimulationEngine()->getPathPlanner()->findPath(_position, goalInfo.targetLocation, longTermPath, 5000000);
 	if (longTermPath.size() > 2 && status)

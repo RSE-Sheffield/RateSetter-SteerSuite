@@ -702,11 +702,11 @@ void NavMeshTesterTool::recalc()
 		m_pathIterNum = 0;
 		if (m_sposSet && m_eposSet && m_startRef && m_endRef)
 		{
-#ifdef DUMP_REQS
-			printf("pi  %f %f %f  %f %f %f  0x%x 0x%x\n",
-				   m_spos[0],m_spos[1],m_spos[2], m_epos[0],m_epos[1],m_epos[2],
-				   m_filter.getIncludeFlags(), m_filter.getExcludeFlags()); 
-#endif
+// #ifdef DUMP_REQS
+// 			printf("pi  %f %f %f  %f %f %f  0x%x 0x%x\n",
+// 				   m_spos[0],m_spos[1],m_spos[2], m_epos[0],m_epos[1],m_epos[2],
+// 				   m_filter.getIncludeFlags(), m_filter.getExcludeFlags()); 
+// #endif
 
 			dtStatus queryStatus = m_navQuery->findPath(m_startRef, m_endRef, m_spos, m_epos, &m_filter, m_polys, &m_npolys, MAX_POLYS);
 			this->checkQueryStatus(queryStatus);
