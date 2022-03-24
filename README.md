@@ -275,3 +275,9 @@ Credits
 -------
 
 Refer to the [SteerSuite web page](http://steersuite.eecs.yorku.ca/) for credits and acknowledgements.
+
+
+Running Steersuite with navigation
+-------
+
+Add `-module navmesh` to the launch commands to include navmesh module. 
