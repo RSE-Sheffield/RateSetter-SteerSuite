@@ -280,4 +280,4 @@ Refer to the [SteerSuite web page](http://steersuite.eecs.yorku.ca/) for credits
 Running Steersuite with navigation
 -------
 
-Add `-module navmesh` to the launch commands to include navmesh module. 
+Add `-module navmesh` to the launch commands to include navmesh module, and set the `planningDomain:planner` to `navmeshDomain` within the config file
