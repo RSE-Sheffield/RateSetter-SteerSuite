@@ -251,9 +251,9 @@ void Mesh::init( const std::vector<Util::Point>& positions, const std::vector<st
 	*/
 
 	init_adjacency( positions.size(), triangleVerts, m_heData, m_faceData, m_vertData );
-	std::cout << "Done initializing Mesh: " << std::endl;
-	std::cout << "Num faces : " << this->get_face_size() << std::endl;
-	std::cout << "Num half edges: " << this->m_heData.size() << std::endl;
+	//std::cout << "Done initializing Mesh: " << std::endl;
+	//std::cout << "Num faces : " << this->get_face_size() << std::endl;
+	//std::cout << "Num half edges: " << this->m_heData.size() << std::endl;
 
 }
 
