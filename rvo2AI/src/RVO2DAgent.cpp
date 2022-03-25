@@ -27,9 +27,6 @@ using namespace Util;
 using namespace RVO2DGlobals;
 using namespace SteerLib;
 
-
-//#define DRAW_NAVMESH // inneficiently draw the navmesh
-
 // #define _DEBUG_ENTROPY 1
 
 /// <summary>
@@ -723,7 +720,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		//float combined_reciprocity = _receprocity_factor / (_receprocity_factor + otherRVO->_receprocity_factor);
 
 
-		////If thes goal has the "boarding" hebariour tag - add computation as if it were boarding
+		////If thes goal has the "boarding" behaviour tag - add computation as if it were boarding (i.e. faces door and cannot see people behind)
 		if (hasGoalBehaviour("boarding") && other->hasGoalBehaviour("boarding"))
 		{
 			const Util::Vector forwardVec = _goalQueue.front().targetLocation - position();
@@ -767,6 +764,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 }
 
+// Check whether this agent has a behaviour key/value pair as part of its current goal
 bool RVO2DAgent::hasGoalBehaviour(std::string key, std::string value) const
 {
 	BehaviourParameter tofind(key, value);
@@ -774,6 +772,7 @@ bool RVO2DAgent::hasGoalBehaviour(std::string key, std::string value) const
 	return (std::find(paramvec.begin(), paramvec.end(), tofind) != paramvec.end());
 }
 
+// Check whether this agent has a behaviour key as part of its current goal
 bool RVO2DAgent::hasGoalBehaviour(std::string key) const
 {
 	bool found = false;
@@ -787,6 +786,7 @@ bool RVO2DAgent::hasGoalBehaviour(std::string key) const
 	return false;
 }
 
+// Check whether this agent has a behaviour name
 bool RVO2DAgent::hasAgentBehaviour(std::string name) const
 {
 	//auto it = behaviours.find(name);
@@ -987,7 +987,9 @@ std::pair< Util::Vector, SteerLib::AgentGoalInfo> RVO2DAgent::updateAI_goal()
 	return std::make_pair(goalDirection, goalInfo);
 }
 
-void RVO2DAgent::updateAI_goalBehaviour(Util::Vector& goalDirection, const SteerLib::AgentGoalInfo&  goalInfo)
+// returns changes to AI for different goal behaviours
+// returns: desired speed to travel at
+float RVO2DAgent::updateAI_goalBehaviour(Util::Vector goalDirection, SteerLib::AgentGoalInfo  goalInfo)
 {
 	//If the next goal is "low priority", let other agents move first
 	if (hasGoalBehaviour("low priority"))
@@ -1002,11 +1004,12 @@ void RVO2DAgent::updateAI_goalBehaviour(Util::Vector& goalDirection, const Steer
 				auto otherparamvec = other->_goalQueue.front().targetBehaviour.getParameters();
 				if (other->_goalQueue.front().targetLocation == goalInfo.targetLocation && !(other->hasGoalBehaviour("low priority")))
 				{
-					goalDirection = Util::Vector(0, 0, 0);
+					return 0;
 				}
 			}
 		}
 	}
+	return _goalQueue.front().desiredSpeed;
 }
 
 void RVO2DAgent::updateAI_agentBehaviour()
@@ -1065,15 +1068,11 @@ std::pair < Util::Vector, float> RVO2DAgent::updateAI_groups()
 }
 
 // Performs a naviation planning, taking agents target goal, and sets the prefered velocity to reach its navigation goal
-void RVO2DAgent::path_planning(SteerLib::AgentGoalInfo goalInfo)
+void RVO2DAgent::path_planning(SteerLib::AgentGoalInfo goalInfo, float speed)
 {
 	std::vector<Util::Point> longTermPath;
 	Util::Point aim;
 
-	#ifdef DRAW_NAVMESH
-		// draw the navmesh
-		getSimulationEngine()->getPathPlanner()->draw();
-	#endif
 	// run the main a-star search here
 	bool status = getSimulationEngine()->getPathPlanner()->findPath(_position, goalInfo.targetLocation, longTermPath, 5000000);
 	if (longTermPath.size() > 2 && status)
@@ -1085,7 +1084,7 @@ void RVO2DAgent::path_planning(SteerLib::AgentGoalInfo goalInfo)
 		aim = goalInfo.targetLocation;
 	}
 
-	_prefVelocity = normalize(aim - _position) * _goalQueue.front().desiredSpeed;
+	_prefVelocity = normalize(aim - _position) * speed;
 }
 
 void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
@@ -1103,11 +1102,11 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	Util::AxisAlignedBox oldBounds(_position.x - _radius, _position.x + _radius, 0.0f, 0.0f, _position.z - _radius, _position.z + _radius);
 	auto [goalDirection, goalInfo] = updateAI_goal();
 
-	updateAI_goalBehaviour(goalDirection, goalInfo);
+	float speed = updateAI_goalBehaviour(goalDirection, goalInfo);
 
 	updateAI_agentBehaviour();
 
- 	path_planning(goalInfo);
+ 	path_planning(goalInfo, speed);
 
 	auto [groupDirection, groupWeight] = updateAI_groups();
 
@@ -1180,13 +1179,12 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		else {
 			// in this case, there are no more goals, so disable the agent and remove it from the spatial database.
 			disable();
-			/*
+			
 			AxisAlignedBox b = AxisAlignedBox(_position.x - _radius, _position.x + _radius, 0.0f, 0.0f, _position.z - _radius, _position.z + _radius);
 			getSimulationEngine()->getSpatialDatabase()->removeObject(dynamic_cast<SpatialDatabaseItemPtr>(this), b);
 
 			//  2. set enabled = false
 			_enabled = false;
-				*/
 			return;
 		}
 	}
@@ -1273,33 +1271,6 @@ void RVO2DAgent::drawPlannedPath()
 // 		DrawLib::drawStar(_waypoints[i] + Vector(0.0f, 0.005f, 0.0f), Vector(1.0f, 0.0f, 0.0f), 0.15f, gGreen);
 // 		DrawLib::drawFlag(_waypoints[i] + Vector(0.0f, 0.005f, 0.0f), gBlue, 1.15f);
 // 	}
-
-// 	// draw mid-term path line
-// 	if (_midTermPathSize > 0) {
-// 		for (unsigned int i=0; i < _midTermPathSize - 1; i++) {
-// 			Vector xOffset,zOffset;
-// 			Util::Point center,nextCenter;
-// 			xOffset.x = 0.5f * getSimulationEngine()->getSpatialDatabase()->getCellSizeX();
-// 			zOffset.z = 0.5f * getSimulationEngine()->getSpatialDatabase()->getCellSizeZ();
-// 			center = _midTermPath[i];
-// 			nextCenter = _midTermPath[i+1];
-// 			center.y = 0.02f;
-// 			nextCenter.y = 0.02f;
-// 			DrawLib::glColor(gBlue);
-// 			DrawLib::drawLine( center, nextCenter);
-// 		}
-// 	}
-
-// 	// draw a marker on the closest node you are to the mid-term path (computed from short-term planning)
-// 	Util::Point closestNodeOnPath;
-// 	closestNodeOnPath = _midTermPath[__closestPathNode];
-// 	DrawLib::drawHighlight(closestNodeOnPath + Util::Vector(0, -0.25, 0), Vector(1.0f, 0.0f, 0.0f), 0.5f, gBlue);
-// 	//drawXZCircle(0.30f, closestNodeOnPath, gBlue, 10);
-// }
-
-// 	DrawLib::glColor(gWhite);
-// 	DrawLib::drawLine(_position, _localTargetLocation);
-// 	DrawLib::drawStar(_localTargetLocation, Vector(1.0f, 0.0f, 0.0f), 0.22f, gGray80);
 
 // #endif // ifdef USE_ANNOTATIONS
 // #endif // ifdef ENABLE_GUI

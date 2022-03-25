@@ -39,7 +39,7 @@ public:
 	~RVO2DAgent();
 	void reset(const SteerLib::AgentInitialConditions & initialConditions, SteerLib::EngineInterface * engineInfo);
 	std::pair<Util::Vector, SteerLib::AgentGoalInfo> updateAI_goal();
-	void updateAI_goalBehaviour(Util::Vector& goalDirection, const SteerLib::AgentGoalInfo& goalInfo);
+	float updateAI_goalBehaviour(Util::Vector goalDirection, SteerLib::AgentGoalInfo goalInfo);
 	void updateAI_agentBehaviour();
 	std::pair<Util::Vector, float> updateAI_groups();
 	void updateAI(float timeStamp, float dt, unsigned int frameNumber);
@@ -71,7 +71,7 @@ public:
 	float computePenetration(const Util::Point & p, float radius) { return Util::computeCircleCirclePenetration2D( _position, _radius, p, radius); }
 	//@}
 	// Navigation to find velocity
-	void path_planning(SteerLib::AgentGoalInfo goalInfo);
+	void path_planning(SteerLib::AgentGoalInfo goalInfo, float speed);
 
 	//variables regarding social distance proximity metrics
 	int SDviolation = 0;                      // total number of SD violations
