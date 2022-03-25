@@ -124,42 +124,42 @@ public:
 
 	void checkQueryStatus(dtStatus queryStatus)
 	{
-		if (dtStatusFailed(queryStatus) )
-		{
-			printf("NavMesh Query Error %d\n", queryStatus);
-		}
-		if (dtStatusDetail(queryStatus, DT_PARTIAL_RESULT))
-		{
-			printf("Query did not reach the end location, returning best guess %d\n", queryStatus);
-		}
-		if (dtStatusDetail(queryStatus, DT_WRONG_MAGIC))
-		{
-			printf("Input data is not recognized %d\n", queryStatus);
-		}
-		if (dtStatusDetail(queryStatus, DT_WRONG_VERSION))
-		{
-			printf("Input data is in wrong version %d\n", queryStatus);
-		}
-		if (dtStatusDetail(queryStatus, DT_OUT_OF_MEMORY))
-		{
-			printf("Operation ran out of memory %d\n", queryStatus);
-		}
-		if (dtStatusDetail(queryStatus, DT_INVALID_PARAM))
-		{
-			printf("An input parameter was invalid %d\n", queryStatus);
-		}
-		if (dtStatusDetail(queryStatus, DT_BUFFER_TOO_SMALL))
-		{
-			printf("Result buffer for the query was too small to store all results %d\n", queryStatus);
-		}
-		if (dtStatusDetail(queryStatus, DT_OUT_OF_NODES))
-		{
-			printf("Query ran out of nodes during search %d\n", queryStatus);
-		}
-		if ( dtStatusInProgress(queryStatus) )
-		{
-			printf("Query is still in progress?? %d\n", queryStatus);
-		}
+		// if (dtStatusFailed(queryStatus) )
+		// {
+		// 	printf("NavMesh Query Error %d\n", queryStatus);
+		// }
+		// if (dtStatusDetail(queryStatus, DT_PARTIAL_RESULT))
+		// {
+		// 	printf("Query did not reach the end location, returning best guess %d\n", queryStatus);
+		// }
+		// if (dtStatusDetail(queryStatus, DT_WRONG_MAGIC))
+		// {
+		// 	printf("Input data is not recognized %d\n", queryStatus);
+		// }
+		// if (dtStatusDetail(queryStatus, DT_WRONG_VERSION))
+		// {
+		// 	printf("Input data is in wrong version %d\n", queryStatus);
+		// }
+		// if (dtStatusDetail(queryStatus, DT_OUT_OF_MEMORY))
+		// {
+		// 	printf("Operation ran out of memory %d\n", queryStatus);
+		// }
+		// if (dtStatusDetail(queryStatus, DT_INVALID_PARAM))
+		// {
+		// 	printf("An input parameter was invalid %d\n", queryStatus);
+		// }
+		// if (dtStatusDetail(queryStatus, DT_BUFFER_TOO_SMALL))
+		// {
+		// 	printf("Result buffer for the query was too small to store all results %d\n", queryStatus);
+		// }
+		// if (dtStatusDetail(queryStatus, DT_OUT_OF_NODES))
+		// {
+		// 	printf("Query ran out of nodes during search %d\n", queryStatus);
+		// }
+		// if ( dtStatusInProgress(queryStatus) )
+		// {
+		// 	printf("Query is still in progress?? %d\n", queryStatus);
+		// }
 	}
 };
 
