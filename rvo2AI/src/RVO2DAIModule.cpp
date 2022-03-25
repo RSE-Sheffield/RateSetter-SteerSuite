@@ -351,7 +351,7 @@ void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int fra
 	}
 	//fclose(fptr4);
 
-//check if quiting this iteration
+	//check if quiting this iteration
 	bool quitting = true;
 	for (auto& agent : agents_) {
 		if (!agent->finished()) {
@@ -360,6 +360,24 @@ void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int fra
 		}
 	}
 
+	// Check if PTI process finished
+	static bool already_complete = false;
+	if (!already_complete)
+	{
+		bool pti_complete = true;
+		for (auto& agent : agents_) {
+			if( ! agent->_completed_pti)
+			{
+				pti_complete = false;
+				break;
+			}
+		}
+		if (pti_complete)
+		{
+			already_complete = true;
+			std::cout << "Completed PTI in " << frameNumber << " frames" << std::endl;
+		}
+	}
 	//Record people being too far from their bags
 	for (auto& agent : agents_) {
 		//this person has a bag

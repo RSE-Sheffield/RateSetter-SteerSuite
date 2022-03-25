@@ -177,6 +177,7 @@ protected:
 	const AgentInterface * owned_bag = NULL; // Reference to the bag(s) owned by this actor
 	bool far_bag_count_flag = false; 
 	std::vector<int> far_bag_count; //vector of frames duration for each time owner and bag are separated
+	bool _completed_pti = false; // whether completed PTI process
 
 	SteerLib::EngineInterface * _gEngine;
 
