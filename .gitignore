@@ -405,6 +405,9 @@ build/vs2012/DebugUtils.vcxproj
 build*/
 !*.xml
 
+# Generated testcases
+testcases/generated/*
+
 # The vscode directory, which is generally not portable
 .vscode/*
 !.vscode/extensions.json
