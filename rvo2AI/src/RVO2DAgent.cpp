@@ -1088,6 +1088,7 @@ void RVO2DAgent::path_planning(SteerLib::AgentGoalInfo goalInfo, float speed)
 	}
 	else
 	{
+		// Failed to find a path
 		aim = goalInfo.targetLocation;
 	}
 

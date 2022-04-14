@@ -125,10 +125,10 @@ const float* Sample::getBoundsMax()
 
 void Sample::resetCommonSettings()
 {
-	m_cellSize = 0.3f;
+	m_cellSize = 0.1f;
 	m_cellHeight = 0.2f;
 	m_agentHeight = 1.0f;
-	m_agentRadius = 0.5f;
+	m_agentRadius = 0.3f;
 	m_agentMaxClimb = 0.1f;
 	m_agentMaxSlope = 1.0f; // degrees
 	m_regionMinSize = 8;

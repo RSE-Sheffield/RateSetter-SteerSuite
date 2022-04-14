@@ -280,5 +280,6 @@ Refer to the [SteerSuite web page](http://steersuite.eecs.yorku.ca/) for credits
 Running Steersuite with navigation
 -------
 
-Add `-module navmesh` to the launch commands to include navmesh module, and set the `planningDomain:planner` to `navmeshDomain` within the config file. 
-The testcase should be both within -100 < x,z < 100, and within the world bounds; for navmesh to function property.
+ - Add `-module navmesh` to the launch commands to include navmesh module, and set the `planningDomain:planner` to `navmeshDomain` within the config file. 
+ - The testcase should be both within -100 < x,z < 100, and within the world bounds for navmesh to function property. 
+ - Adjust the values `m_agentRadius` and `m_cellSize` within `Sample.cpp` to adjust the clearance between obstacles within the navmesh. Smaller values permit agents getting close to the obstacles. Experiment to find which values dont result in errors.
