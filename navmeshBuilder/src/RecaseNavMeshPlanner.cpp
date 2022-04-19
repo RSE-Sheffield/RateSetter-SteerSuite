@@ -154,15 +154,15 @@ std::pair<std::vector<Util::Point> , std::vector<size_t>> RecastNavMeshPlanner::
 void RecastNavMeshPlanner::draw()
 {
 #ifdef ENABLE_GUI
-
+#ifdef ENABLE_GUI_NAVMESH
 	
-	// Mesh * mesh = new Mesh();
-	// std::pair<std::vector<Util::Point>,std::vector<size_t> > navmesh_stuff = this->getNavMeshGeometry();
+	Mesh * mesh = new Mesh();
+	std::pair<std::vector<Util::Point>,std::vector<size_t> > navmesh_stuff = this->getNavMeshGeometry();
 
-	// mesh->init(navmesh_stuff.first,navmesh_stuff.second);
+	mesh->init(navmesh_stuff.first,navmesh_stuff.second);
 	
-	// mesh->drawMesh();
-
+	mesh->drawMesh();
+#endif
 #endif
 }
 

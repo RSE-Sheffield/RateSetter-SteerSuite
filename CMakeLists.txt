@@ -49,6 +49,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Enable the GUI.
 option(ENABLE_GUI "Enable the GUI" ON)
+option(ENABLE_GUI_NAVMESH "Enable the GUI Navmesh" OFF)
 
 # If using a GUI, enable the GLFW version of the gui
 cmake_dependent_option(ENABLE_GLFW "Enable GLFW" ON "ENABLE_GUI" OFF)

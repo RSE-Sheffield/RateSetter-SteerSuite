@@ -239,7 +239,7 @@ void Mesh::init( const std::vector<Util::Point>& positions, const std::vector<st
 		m_vertices.push_back(positions.at(v));
 		// this->add
 	}
-	std::cout << "Done adding " << m_vertices.size() << " verts to mesh" << std::endl;
+	// std::cout << "Done adding " << m_vertices.size() << " verts to mesh" << std::endl;
 
 	/*
 	for (size_t f=0; f<triangleVerts.size(); f+=3)
