@@ -1001,7 +1001,7 @@ float RVO2DAgent::updateAI_goalBehaviour(Util::Vector goalDirection, SteerLib::A
 			//if other agent has a goal
 			if (other->_goalQueue.size() != 0)
 			{
-				if ((goalInfo.targetLocation - other->_goalQueue.front().targetLocation).length() < 4 && !(other->hasGoalBehaviour("low priority")))
+				if ((goalInfo.targetLocation - other->_goalQueue.front().targetLocation).length() < 3 && !(other->hasGoalBehaviour("low priority")))
 				{
 					return 0;
 				}
