@@ -1029,11 +1029,16 @@ void RVO2DAgent::updateAI_agentBehaviour()
 		_sdradius = clamp<float>(position().z, z0, z1, sd0, sd1);
 	}
 
-	static auto first_goal = _goalQueue.front();
-	// distance in meters after completing first goal that will count as finished boarding/alighting
-	const float PTI_dist = 1.5;
-	if (!_completed_pti && _goalQueue.front().targetLocationsSet != first_goal.targetLocationsSet && (_position - first_goal.targetLocation).length() > PTI_dist)
+	// Compute agent completing PTI
+	if(_first_goal.targetLocationsSet.empty())
 	{
+		_first_goal = _goalQueue.front();
+	}
+	// distance in meters after completing first goal that will count as finished boarding/alighting
+	const float PTI_dist = 3;
+	if (!_completed_pti && _goalQueue.front().targetLocationsSet != _first_goal.targetLocationsSet && (_position - _first_goal.targetLocation).length() > PTI_dist)
+	{
+		_color = Util::Color(1, 1, 1);
 		_completed_pti = true;
 	}
 }
