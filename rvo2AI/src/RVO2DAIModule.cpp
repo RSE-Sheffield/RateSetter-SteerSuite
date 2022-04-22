@@ -403,6 +403,11 @@ void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int fra
 
 		int j; 
 
+		if (!already_complete)
+		{
+			std::cout << "Completed PTI in " << frameNumber << " frames" << std::endl;
+		}
+
 		////count average how many frames people were less than SD
 		//float close_agents_frames = 0.0f;
 		//int max_individual = 0;

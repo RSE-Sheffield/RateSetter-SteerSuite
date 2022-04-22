@@ -128,6 +128,9 @@ void RVO2DAgent::disable()
 	//  2. set enabled = false
 	_enabled = false;
 
+	// Complete PTI
+	_completed_pti = true;
+
 
 }
 
