@@ -757,7 +757,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		if (!hasGoalBehaviour("boarding") && other->hasGoalBehaviour("boarding") && other->velocity().length() > 0.01)
 		// if (!hasGoalBehaviour("boarding") && other->hasGoalBehaviour("boarding"))
 		{
-			reciprocal_fov = 1.f;
+			reciprocal_fov = 0.5f;
 		}
 		// Reverse: if this agent is boarding, dont move for other non-boarding agents that arnt alighting at this door
 		if ( hasGoalBehaviour("boarding") && ! other->hasGoalBehaviour("boarding") && velocity().length() > 0.1)
@@ -1052,7 +1052,7 @@ void RVO2DAgent::updateAI_agentBehaviour()
 		_first_goal = _goalQueue.front();
 	}
 	// distance in meters after completing first goal that will count as finished boarding/alighting
-	const float PTI_dist = 3;
+	const float PTI_dist = 2;
 	if (!_completed_pti && _goalQueue.front().targetLocationsSet != _first_goal.targetLocationsSet && (_position - _first_goal.targetLocation).length() > PTI_dist)
 	{
 		_color = Util::Color(1, 1, 1);
