@@ -749,9 +749,22 @@ void RVO2DAgent::computeNewVelocity(float dt)
 			}
 			//case 4: this can see other. Other can see this
 			else if (abs(angle_to_other) < visible_angle && abs(angle_of_other) < visible_angle) {
-				reciprocal_fov = 0.5f;
+				reciprocal_fov = 0.5f; 
 			}
 		}
+
+		// If this agent is alighting, but other agent is boarding, give priority to the boarder (as long as its moving)
+		if (!hasGoalBehaviour("boarding") && other->hasGoalBehaviour("boarding") && other->velocity().length() > 0.1)
+		{
+			reciprocal_fov = 1.f;
+		}
+		// Reverse: if this agent is boarding, dont move for other non-boarding agents
+		if ( hasGoalBehaviour("boarding") && ! other->hasGoalBehaviour("boarding"))
+		{
+			reciprocal_fov = 0.f;
+			continue;
+		}
+
 
 		line.point = velocity() + reciprocal_fov * u;
 		orcaLines_.push_back(line);
