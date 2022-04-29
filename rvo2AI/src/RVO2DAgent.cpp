@@ -753,13 +753,14 @@ void RVO2DAgent::computeNewVelocity(float dt)
 			}
 		}
 
-		// If this agent is alighting, but other agent is boarding, give priority to the boarder (as long as its moving)
-		if (!hasGoalBehaviour("boarding") && other->hasGoalBehaviour("boarding") && other->velocity().length() > 0.1)
+		// If this agent is alighting, but other agent is boarding, give priority to the boarder (as long as its moving). Stop boarding agents being pushed down platforms due to alighters from other doors
+		if (!hasGoalBehaviour("boarding") && other->hasGoalBehaviour("boarding") && other->velocity().length() > 0.01)
+		// if (!hasGoalBehaviour("boarding") && other->hasGoalBehaviour("boarding"))
 		{
 			reciprocal_fov = 1.f;
 		}
-		// Reverse: if this agent is boarding, dont move for other non-boarding agents
-		if ( hasGoalBehaviour("boarding") && ! other->hasGoalBehaviour("boarding"))
+		// Reverse: if this agent is boarding, dont move for other non-boarding agents that arnt alighting at this door
+		if ( hasGoalBehaviour("boarding") && ! other->hasGoalBehaviour("boarding") && velocity().length() > 0.1)
 		{
 			reciprocal_fov = 0.f;
 			continue;
