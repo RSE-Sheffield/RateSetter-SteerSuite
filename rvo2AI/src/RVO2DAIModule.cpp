@@ -421,80 +421,80 @@ void RVO2DAIModule::postprocessFrame(float timeStamp, float dt, unsigned int fra
 		//std::cout << "Max individual time: " << max_individual << " max frames \n";
 
 
-		//For summing accumulated time between agents
-		float* SDAccumulateAgent = new float[agents_.size()]();
-		int* SDAccumulateFrames = new int[agents_.size()]();
+		// //For summing accumulated time between agents
+		// float* SDAccumulateAgent = new float[agents_.size()]();
+		// int* SDAccumulateFrames = new int[agents_.size()]();
 
-		//Config file option for file names needed. 
-		//Use the python calling routine to move these files to more meaningful names per simulation.
-		FILE* fptr1;
-		FILE* fptr2;
-		FILE* fptr3;
-		fptr1 = fopen("data-full.txt", "w");
-		fptr2 = fopen("data-summary.txt", "w");
-		fptr3 = fopen("data-temp.txt", "w");
+		// //Config file option for file names needed. 
+		// //Use the python calling routine to move these files to more meaningful names per simulation.
+		// FILE* fptr1;
+		// FILE* fptr2;
+		// FILE* fptr3;
+		// fptr1 = fopen("data-full.txt", "w");
+		// fptr2 = fopen("data-summary.txt", "w");
+		// fptr3 = fopen("data-temp.txt", "w");
 
-		fprintf(fptr1, "Frame, AgentID, Board/Alight, PositionX, PositionZ, Conflicting AgentID, Board/Alight status of neighbour, PositionX, PositionZ, Distance\n");
-		fprintf(fptr2, "Agent, Board/Alight, SD Violating neighbour, Board/Alight status of neighbour, Accumulated metric (s/m), Accumulated frames\n");
-		fprintf(fptr3, "\nAgent, Board/Alight, Total accumulated metric (s/m), Total accumulated frames, Neighbour interactions, Agent mean metric (s/m), Agent max metric (s/m), Agent min metric (s/m)\n");
-		for (RVO2DAgent* agent : agents_) {
-			if (agent->isBag()) {
-				continue;
-			}
+		// fprintf(fptr1, "Frame, AgentID, Board/Alight, PositionX, PositionZ, Conflicting AgentID, Board/Alight status of neighbour, PositionX, PositionZ, Distance\n");
+		// fprintf(fptr2, "Agent, Board/Alight, SD Violating neighbour, Board/Alight status of neighbour, Accumulated metric (s/m), Accumulated frames\n");
+		// fprintf(fptr3, "\nAgent, Board/Alight, Total accumulated metric (s/m), Total accumulated frames, Neighbour interactions, Agent mean metric (s/m), Agent max metric (s/m), Agent min metric (s/m)\n");
+		// for (RVO2DAgent* agent : agents_) {
+		// 	if (agent->isBag()) {
+		// 		continue;
+		// 	}
 
-			AgentMetric = 0;
-			for (j = 0; j < agent->SDviolation; j++) {
-				status loading_status = (agent->behaviours["PTI"]["loading_status"] == "boarding") ? status::agent_boarding : status::agent_alighting;
-				fprintf(fptr1, "%i, %zu, %d, %f, %f, %i, %d, %f, %f, %f\n", agent->SDframes[j], agent->id(), loading_status, agent->SDPositionX[j],
-					agent->SDPositionZ[j], agent->SDNeighbour[j], agent->SDStatus[j], agent->SDPosXNeighbour[j], agent->SDPosZNeighbour[j], agent->SDDistance[j]);
-				//Time-distance metric for this interaction
-				deltaMetric = dt / agent->SDDistance[j];
-				//Assignment to this particular neighbour
-				SDAccumulateAgent[agent->SDNeighbour[j]] += deltaMetric;
-				SDAccumulateFrames[agent->SDNeighbour[j]]++;
+		// 	AgentMetric = 0;
+		// 	for (j = 0; j < agent->SDviolation; j++) {
+		// 		status loading_status = (agent->behaviours["PTI"]["loading_status"] == "boarding") ? status::agent_boarding : status::agent_alighting;
+		// 		fprintf(fptr1, "%i, %zu, %d, %f, %f, %i, %d, %f, %f, %f\n", agent->SDframes[j], agent->id(), loading_status, agent->SDPositionX[j],
+		// 			agent->SDPositionZ[j], agent->SDNeighbour[j], agent->SDStatus[j], agent->SDPosXNeighbour[j], agent->SDPosZNeighbour[j], agent->SDDistance[j]);
+		// 		//Time-distance metric for this interaction
+		// 		deltaMetric = dt / agent->SDDistance[j];
+		// 		//Assignment to this particular neighbour
+		// 		SDAccumulateAgent[agent->SDNeighbour[j]] += deltaMetric;
+		// 		SDAccumulateFrames[agent->SDNeighbour[j]]++;
 
-				// Metric for this agent summed across all their interactions
-				AgentMetric += deltaMetric;
-				// Metric for all agents in the simulation (normalise by number of agents?)
-				TotalMetric += deltaMetric;
+		// 		// Metric for this agent summed across all their interactions
+		// 		AgentMetric += deltaMetric;
+		// 		// Metric for all agents in the simulation (normalise by number of agents?)
+		// 		TotalMetric += deltaMetric;
 
-			}
-			TotalFrames += agent->SDviolation;
+		// 	}
+		// 	TotalFrames += agent->SDviolation;
 
-			Agentmin = 1e99;
-			Agentmax = -1e99;
-			NeighbourCount = 0;
-			for (j = 0; j < (int)agents_.size(); j++) {
-				if (SDAccumulateFrames[j] > 0) {
-					NeighbourCount++;
-					status loading_status = (agent->behaviours["PTI"]["loading_status"] == "boarding") ? status::agent_boarding : status::agent_alighting;
-					fprintf(fptr2, "%zu, %d, %i, %d, %f, %i\n", agent->id(), loading_status, j, agent->SDStatus[j], SDAccumulateAgent[j], SDAccumulateFrames[j]);
-					if (SDAccumulateAgent[j] < Agentmin)
-						Agentmin = SDAccumulateAgent[j];
-					if (SDAccumulateAgent[j] > Agentmax)
-						Agentmax = SDAccumulateAgent[j];
-					//Zero out the accumulation arrays ready for next use
-					SDAccumulateAgent[j] = 0;
-					SDAccumulateFrames[j] = 0;
+		// 	Agentmin = 1e99;
+		// 	Agentmax = -1e99;
+		// 	NeighbourCount = 0;
+		// 	for (j = 0; j < (int)agents_.size(); j++) {
+		// 		if (SDAccumulateFrames[j] > 0) {
+		// 			NeighbourCount++;
+		// 			status loading_status = (agent->behaviours["PTI"]["loading_status"] == "boarding") ? status::agent_boarding : status::agent_alighting;
+		// 			fprintf(fptr2, "%zu, %d, %i, %d, %f, %i\n", agent->id(), loading_status, j, agent->SDStatus[j], SDAccumulateAgent[j], SDAccumulateFrames[j]);
+		// 			if (SDAccumulateAgent[j] < Agentmin)
+		// 				Agentmin = SDAccumulateAgent[j];
+		// 			if (SDAccumulateAgent[j] > Agentmax)
+		// 				Agentmax = SDAccumulateAgent[j];
+		// 			//Zero out the accumulation arrays ready for next use
+		// 			SDAccumulateAgent[j] = 0;
+		// 			SDAccumulateFrames[j] = 0;
 
-				}
+		// 		}
 
-			}
-			//Mean, max and min time-distance metric spent with each agent they interact with
-			if (agent->SDviolation > 0) {
-				Agentmean = AgentMetric / NeighbourCount;
-				status loading_status = (agent->behaviours["PTI"]["loading_status"] == "boarding") ? status::agent_boarding : status::agent_alighting;
-				fprintf(fptr3, "%zu, %d, %f, %i, %i, %f, %f, %f\n", agent->id(), loading_status, AgentMetric, agent->SDviolation, NeighbourCount, Agentmean, Agentmax, Agentmin);
+		// 	}
+		// 	//Mean, max and min time-distance metric spent with each agent they interact with
+		// 	if (agent->SDviolation > 0) {
+		// 		Agentmean = AgentMetric / NeighbourCount;
+		// 		status loading_status = (agent->behaviours["PTI"]["loading_status"] == "boarding") ? status::agent_boarding : status::agent_alighting;
+		// 		fprintf(fptr3, "%zu, %d, %f, %i, %i, %f, %f, %f\n", agent->id(), loading_status, AgentMetric, agent->SDviolation, NeighbourCount, Agentmean, Agentmax, Agentmin);
 
-			}
+		// 	}
 
-		}
-		// Totals for the simulation
-		fprintf(fptr3, "\nTotal Metric (s/m), %f, Total frames, %i, Normalised Metric (s/m/agent), %f\n", TotalMetric, TotalFrames, TotalMetric / agents_.size());
+		// }
+		// // Totals for the simulation
+		// fprintf(fptr3, "\nTotal Metric (s/m), %f, Total frames, %i, Normalised Metric (s/m/agent), %f\n", TotalMetric, TotalFrames, TotalMetric / agents_.size());
 
-		fclose(fptr1);
-		fclose(fptr2);
-		fclose(fptr3);
+		// fclose(fptr1);
+		// fclose(fptr2);
+		// fclose(fptr3);
 	}
 
 }
