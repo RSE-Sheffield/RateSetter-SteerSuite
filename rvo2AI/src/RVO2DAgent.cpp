@@ -18,19 +18,12 @@
 #undef min
 #undef max
 
-//#define MAX_FORCE_MAGNITUDE 3.0f
-// #define MAX_SPEED 1.33f
-//#define AGENT_MASS 1.0f
 #define BAG_DISTANCE 2.0f // Beyond this distance an owner and bag will attempt to reunite as the primary goal
 
 using namespace Util;
 using namespace RVO2DGlobals;
 using namespace SteerLib;
 
-
-
-
-// #define _DEBUG_ENTROPY 1
 
 /// <summary>
 /// Get the linear value between 2 points, clamped if above or below it
@@ -337,7 +330,6 @@ void RVO2DAgent::computeNeighbors()
 {
 	obstacleNeighbors_.clear();
 	float rangeSq = sqr(_RVO2DParams.rvo_time_horizon_obstacles * _RVO2DParams.rvo_max_speed + _radius);
-	// dynamic_cast<RVO2DAIModule *>(rvoModule)->kdTree_->computeObstacleNeighbors(this, rangeSq);
 	getSimulationEngine()->getSpatialDatabase()->computeObstacleNeighbors(this, rangeSq);
 
 	// std::cout << "Number of obstacle neighbours " << obstacleNeighbors_.size() << std::endl;
@@ -346,43 +338,8 @@ void RVO2DAgent::computeNeighbors()
 
 	if (_RVO2DParams.rvo_max_neighbors > 0)
 	{
-	
-		/*
-		 * Old ORCA method
-		 */
-		rangeSq = sqr(_RVO2DParams.rvo_neighbor_distance);
-		// dynamic_cast<RVO2DAIModule *>(rvoModule)->kdTree_->computeAgentNeighbors(this, rangeSq);
-		// std::cout << "RVO spatial database: " << getSimulationEngine()->getSpatialDatabase() << std::endl;
+			rangeSq = sqr(_RVO2DParams.rvo_neighbor_distance);
 		getSimulationEngine()->getSpatialDatabase()->computeAgentNeighbors(this, rangeSq);
-		/*
-		 * This was updated to use the SteerLib griddatabase instead
-		 * It is a bad idea to keep two serperate structures to facilitate
-		 * neighbor query operations.
-		 */
-		/*
-		std::set<SpatialDatabaseItemPtr>  neighborList;
-		rangeSq = _RVO2DParams.rvo_neighbor_distance;
-		getSimulationEngine()->getSpatialDatabase()->getItemsInRange(neighborList, position().x-rangeSq, position().x+rangeSq, position().z-rangeSq, position().z+rangeSq, dynamic_cast<SpatialDatabaseItemPtr>(this));
-		// WIll need to sort these.
-
-		for (std::set<SteerLib::SpatialDatabaseItemPtr>::iterator neighbor = neighborList.begin();  neighbor != neighborList.end();  neighbor++)
-		{
-			if ( (*neighbor)->isAgent())
-			{
-				SteerLib::AgentInterface * tmpA = dynamic_cast<SteerLib::AgentInterface *>(*neighbor);
-				// if ( ((dynamic_cast<SteerLib::AgentInterface *>(*neighbor))->position()-position).length()  )
-				{
-					agentNeighbors_.push_back(std::make_pair((tmpA->position()-position()).length(), tmpA));
-					//Util::DrawLib::drawStar(this->position() + ((dynamic_cast<AgentInterface*>(*neighbor)->position() - this->position())/2), Util::Vector(1,0,0), 1.14f, gRed);
-					//std::cerr << "COLLISION FOUND AT TIME " << gTempCurrentTime << "\n";
-				}
-			}
-		}
-		// Will need to sort these.
-		std::sort (agentNeighbors_.begin(), agentNeighbors_.end(), compareDist); // 12 32 45 71(26 33 53 80)
-		agentNeighbors_.resize(_RVO2DParams.rvo_max_neighbors);
-		// dynamic_cast<RVO2DAIModule *>(rvoModule)->kdTree_->computeAgentNeighbors(this, rangeSq);
-		*/
 	}
 }
 
@@ -793,46 +750,6 @@ bool RVO2DAgent::hasAgentBehaviour(std::string name) const
 	return (behaviours.find(name) != behaviours.end());
 }
 
-
-void RVO2DAgent::rememberGoals()
-{
-	float z_val = 0;
-	std::string ineq_val = "";
-
-	// For any goals already completed, see if there is a memory condition
-	for (auto it : completed_goals)
-	{
-		bool memory_cond = false;
-		auto paramvec = it.targetBehaviour.getParameters();
-		for (auto it : paramvec)
-		{
-			if (it.key == "condition-memory-z") {
-				memory_cond =  true;
-				z_val = stof(it.value);
-				break;
-			}
-		}
-
-		if (memory_cond)
-		{
-			for (auto it : paramvec)
-			{
-				if (it.key == "condition-memory-ineq") {
-					ineq_val = it.value;
-					break;
-				}
-			}
-
-			//check if the condition is satisfied
-			if ((ineq_val == "lt" && position().z < z_val) || (ineq_val == "gt" && position().z > z_val))
-			{
-				_goalQueue.push_front(it);
-				break;
-			}
-		}
-	}
-}
-
 void RVO2DAgent::insertAgentNeighbor(const SteerLib::AgentInterface *agent, float &rangeSq)
 {
 	if (this != agent) {
@@ -905,14 +822,14 @@ std::pair< Util::Vector, SteerLib::AgentGoalInfo> RVO2DAgent::updateAI_goal()
 
 	if (!_midTermPath.empty()) // && (!this->hasLineOfSightTo(goalInfo.targetLocation)) )
 	{
-		if (reachedCurrentWaypoint())
-		{
-			this->updateMidTermPath();
-		}
+		// if (reachedCurrentWaypoint())
+		// {
+		// 	this->updateMidTermPath();
+		// }
 
-		this->updateLocalTarget();
+		// this->updateLocalTarget();
 
-		goalDirection = normalize(_currentLocalTarget - position());
+		// goalDirection = normalize(_currentLocalTarget - position());
 
 	}
 	// Update target location to be closest point of the goal box
@@ -987,28 +904,6 @@ std::pair< Util::Vector, SteerLib::AgentGoalInfo> RVO2DAgent::updateAI_goal()
 	return std::make_pair(goalDirection, goalInfo);
 }
 
-void RVO2DAgent::updateAI_goalBehaviour(Util::Vector& goalDirection, const SteerLib::AgentGoalInfo&  goalInfo)
-{
-	//If the next goal is "low priority", let other agents move first
-	if (hasGoalBehaviour("low priority"))
-	{
-		//see if other nearby agents want to get to this goal - if so dont make any progress
-		for (std::vector<std::pair<float, const SteerLib::AgentInterface*> >::const_iterator it = agentNeighbors_.begin(); it != agentNeighbors_.end(); it++)
-		{
-			const SteerLib::AgentInterface* other = it->second;
-			//if other agent has a goal
-			if (other->_goalQueue.size() != 0)
-			{
-				auto otherparamvec = other->_goalQueue.front().targetBehaviour.getParameters();
-				if (other->_goalQueue.front().targetLocation == goalInfo.targetLocation && !(other->hasGoalBehaviour("low priority")))
-				{
-					goalDirection = Util::Vector(0, 0, 0);
-				}
-			}
-		}
-	}
-}
-
 void RVO2DAgent::updateAI_agentBehaviour()
 {
 	//Agent behaviours
@@ -1073,13 +968,8 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		return;
 	}
 
-	//see if a previous goal should be used
-	rememberGoals();
-
 	Util::AxisAlignedBox oldBounds(_position.x - _radius, _position.x + _radius, 0.0f, 0.0f, _position.z - _radius, _position.z + _radius);
 	auto [goalDirection, goalInfo] = updateAI_goal();
-
-	updateAI_goalBehaviour(goalDirection, goalInfo);
 
 	updateAI_agentBehaviour();
 
@@ -1166,7 +1056,7 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 	}
 
 
-	// Hear the 2D solution from RVO is converted into the 3D used by SteerSuite
+	// Hear the 2D solution from RVO is converted into the 3D used by StecerSuite
 	// _velocity = Vector(velocity().x, 0.0f, velocity().z);
 	if ( velocity().length() > 0.0 )
 	{

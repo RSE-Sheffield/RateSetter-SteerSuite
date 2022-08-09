@@ -11,7 +11,7 @@ Options specified by the command line will override options in this configuratio
         <!-- can be either "fixed-fast" (fixed simulation frame rate, running as fast as possible), "fixed-real-time" (fixed simulation frame rate, running in real-time), or "variable-real-time" (variable simulation frame rate in real-time). -->
         <clockMode>fixed-real-time</clockMode>
         <!-- The fixed frames-per-second for the simulation clock.  This value is used when simulationClockMode is "fixed-fast" or "fixed-real-time". -->
-        <fixedFPS>10</fixedFPS>
+        <fixedFPS>60</fixedFPS>
         <!-- The maximum time-step allowed when the clock is in "variable-real-time" mode.  If the proposed time-step is larger, this value will be used instead, at the expense of breaking synchronization between simulation time and real-time. -->
         <maxVariableDt>0.2</maxVariableDt>
         <!-- The minimum time-step allowed when the clock is in "variable-real-time" mode.  If the proposed time-step is smaller, this value will be used instead, effectively limiting the max frame rate. -->
@@ -29,7 +29,7 @@ Options specified by the command line will override options in this configuratio
         The list of modules to use on startup.  Modules specified by the command line will be merged with this list.
         -->
             <module>testCasePlayer</module>
-            <module>navmesh</module>
+            <!-- <module>navmesh</module> -->
         </startupModules>
     </engine>
     <engineDrivers>
@@ -138,7 +138,7 @@ Options specified by the command line will override options in this configuratio
     Options related to the planning domain
     -->
         <!-- Options selects which planning tool to use during simulation, gridDomain, navmeshDomain, or acclmeshDomain -->
-        <planner>navmeshDomain</planner>
+        <planner>gridDomain</planner>
         <domainSettings>
         <!--
         Options related to the grid database
