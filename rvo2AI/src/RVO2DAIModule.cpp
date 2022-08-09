@@ -168,22 +168,16 @@ void RVO2DAIModule::init(const SteerLib::OptionDictionary& options, SteerLib::En
 
 	if (logStats)
 	{
-// LETS TRY TO WRITE THE LABELS OF EACH FIELD
-std::stringstream labelStream;
-unsigned int i;
-for (i = 0; i < _rvoLogger->getNumberOfFields() - 1; i++)
-	labelStream << _rvoLogger->getFieldName(i) << " ";
-labelStream << _rvoLogger->getFieldName(i);
-// _data = labelStream.str() + "\n";
+		// LETS TRY TO WRITE THE LABELS OF EACH FIELD
+		std::stringstream labelStream;
+		unsigned int i;
+		for (i = 0; i < _rvoLogger->getNumberOfFields() - 1; i++)
+			labelStream << _rvoLogger->getFieldName(i) << " ";
+		labelStream << _rvoLogger->getFieldName(i);
+		// _data = labelStream.str() + "\n";
 
-_rvoLogger->writeData(labelStream.str());
+		_rvoLogger->writeData(labelStream.str());
 
-	}
-
-	tds.clear();
-	for (auto& goal : traindoors) {
-		train_door td = train_door(goal);
-		tds.push_back(td);
 	}
 }
 
@@ -307,49 +301,7 @@ SteerLib::AgentInterface* RVO2DAIModule::createAgent()
 
 void RVO2DAIModule::destroyAgent(SteerLib::AgentInterface* agent)
 {
-	/*
-	 * This is going to cause issues soon.
-	 */
-	 // agents_.erase(agents_.begin()+(agent)->id());
-	 // int i;
-
-	 // Not as fast but seems to work properly
-	 // std::cout << "number of ORCA agents " << agents_.size() << std::endl;
-	 // RVO2DAgent * rvoagent = dynamic_cast<RVO2DAgent *>(agent);
-	 /*
-	 std::cout << "ORCA agent id " << (agent)->id() << std::endl;
-	 std::vector<SteerLib::AgentInterface * > tmpAgents;
-	 for (i = 0; i< agents_.size(); i++)
-	 {
-		 std::cout << " agent " << i << " " << agents_.at(i) << std::endl;
-		 if ( (agents_.at(i) != NULL) && (agents_.at(i)->id() != (agent)->id()) )
-		 {
-			 tmpAgents.push_back(agents_.at(i));
-		 }
-	 }
-	 agents_.clear();
-	 for (i = 0; i< tmpAgents.size(); i++)
-	 {
-		 agents_.push_back(tmpAgents.at(i));
-	 }*/
-
-
-	 // TODO this is going to be a memory leak for now.
 	delete agent;
-	/*
-	if (agent && &agents_ && (agents_.size() > 1))
-	{
-		// std::cout << "agents.size(): " << agents_.size() << std::endl;
-		agents_.erase(agents_.begin()+dynamic_cast<RVO2DAgent *>(agent)->id());
-		delete agent;
-	}
-	else if ( agent && &agents_ && (agents_.size() == 1))
-	{
-		// agents_.clear();
-		delete agent;
-	}*/
-
-
 }
 
 void RVO2DAIModule::cleanupSimulation()
@@ -387,29 +339,4 @@ void RVO2DAIModule::cleanupSimulation()
 	gPhaseProfilers->reactivePhaseProfiler.reset();
 	gPhaseProfilers->steeringPhaseProfiler.reset();
 	// kdTree_->deleteObstacleTree(kdTree_->obstacleTree_);
-}
-
-
-RVO2DAIModule::train_door::train_door(Util::Point location)
-{
-	this->location = location;
-	this->vestibule = Util::AxisAlignedBox(location.x - 2.5, location.x + 2.5, 0, location.y, 0, 5);
-	this->status = boarding_status::alighting;
-}
-
-boarding_status RVO2DAIModule::train_door::check_boarding_status(RVO2DAIModule* RVOModule)
-{
-	//doors that are boarding will always allow boarding
-	if (status == boarding_status::boarding) {
-		return boarding_status::boarding;
-	}
-
-	for (auto& agent : RVOModule->agents_) {
-		if (agent->position().x >= vestibule.xmin && agent->position().x <= vestibule.xmax &&
-			agent->position().y >= vestibule.ymin && agent->position().y <= vestibule.ymax &&
-			agent->position().z >= vestibule.zmin && agent->position().z <= vestibule.zmax) {
-			return boarding_status::alighting;
-		}
-	}
-	return boarding_status::boarding;
 }

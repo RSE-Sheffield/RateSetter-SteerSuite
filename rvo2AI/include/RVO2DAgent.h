@@ -69,19 +69,6 @@ public:
 	float computePenetration(const Util::Point & p, float radius) { return Util::computeCircleCirclePenetration2D( _position, _radius, p, radius); }
 	//@}
 
-	//variables regarding social distance proximity metrics
-	int SDviolation = 0;                      // total number of SD violations
-	int arraymax = 2000;                      // initial array size - dynamically expanded later as needed
-	int* SDframes = new int[arraymax];        // allocated to hold info on frames with SD violation
-	float* SDDistance = new float[arraymax];  // allocated to hold distances of SD violation
-	int* SDNeighbour = new int[arraymax];     // which agent is the SD violation with
-	float* SDPositionX = new float[arraymax]; // allocated to hold position of SD violation
-	float* SDPositionZ = new float[arraymax]; // allocated to hold position of SD violation
-	float* SDPosXNeighbour = new float[arraymax]; // allocated to hold neighbour's position during SD violation
-	float* SDPosZNeighbour = new float[arraymax]; // allocated to hold neighbour's position during SD violation
-	status * SDStatus = new status[arraymax]; // allocated to hold boarding or alighting status of each conflicting agent
-
-
 	// virtual void updateLocalTarget();
 	// bool collidesAtTimeWith(const Util::Point & p1, const Util::Vector & rightSide, float otherAgentRadius, float timeStamp, float footX, float footZ);
 	void insertAgentNeighbor(const SteerLib::AgentInterface * agent, float &rangeSq);
@@ -104,7 +91,6 @@ public:
 		this->_currentLocalTarget = _waypoints.front();
 	}
 #endif
-	//int chosen_door;
 
 	bool tooFarFromBag();
 
@@ -156,16 +142,12 @@ protected:
 
 	// Stuff specific to RVO
 	// should be normalized
-	// Util::Vector prefVelocity_; // This is the velocity the agent wants to be at
-	// Util::Vector newVelocity_;
 	size_t maxNeighbors_;
 	float maxSpeed_;
 	float neighborDist_;
 	float timeHorizon_;
 	float timeHorizonObst_;
 	int next_waypoint_distance_;
-	// std::vector<std::pair<float, const SteerLib::AgentInterface *> > agentNeighbors_;
-	// std::vector<std::pair<float, const Obstacle *> > obstacleNeighbors_;
 	std::vector<Util::Plane> orcaPlanes_;
 	std::vector<Line> orcaLines_;
 	SteerLib::ModuleInterface * rvoModule;
@@ -176,23 +158,8 @@ protected:
 
 	SteerLib::EngineInterface * _gEngine;
 
-	//hack PTI behaviour
-	bool bHitFirstGoal = false;
-
-
 	friend class KdTree;
 	friend class RVO2DAIModule;
-
-	////Agent PTI radius
-	//float _max_radius;
-	//float _min_radius;
-	//float _near_dist;
-	//float _far_dist;
-	// how many frames spent less than SD.
-	//int close_frames = 0;
-	//bool counted_this_frame = false;
-	//float _receprocity_factor;
-	//status loading_status;
 
 	std::list< SteerLib::AgentGoalInfo> completed_goals;
 

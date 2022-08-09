@@ -125,7 +125,7 @@ Options specified by the command line will override options in this configuratio
     -->
         <testCasePlayer>
             <ai>rvo2dAI</ai>
-            <testcase>../testcases/3-way-confusion-1.xml</testcase>
+            <testcase>../testcases/bags/3-way-confusion-1.xml</testcase>
         </testCasePlayer>
     </modules>
     <mouse>

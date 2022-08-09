@@ -58,16 +58,7 @@ RVO2DAgent::RVO2DAgent()
 }
 
 RVO2DAgent::~RVO2DAgent()
-{
-	// std::cout << this << " is being deleted" << std::endl;
-	/*
-	if (this->enabled())
-	{
-		Util::AxisAlignedBox bounds(_position.x-_radius, _position.x+_radius, 0.0f, 0.0f, _position.z-_radius, _position.z+_radius);
-		// getSimulationEngine()->getSpatialDatabase()->removeObject( this, bounds);
-	}*/
-	// std::cout << "Someone is removing an agent " << std::endl;
-}
+{}
 
 bool RVO2DAgent::tooFarFromBag()
 {
@@ -93,13 +84,6 @@ void RVO2DAgent::addGoal(const SteerLib::AgentGoalInfo& newGoal)
 	_goalQueue.push_back(newGoal);
 	if (_goalQueue.size() == 1) {
 		_currentGoal = newGoal;
-		//if (_currentGoal.targetIsRandom) {
-
-		//	SteerLib::AgentGoalInfo _goal;
-		//	_goal.targetLocation = getSimulationEngine()->getSpatialDatabase()->randomPositionWithoutCollisions(1.0f, true);
-		//	_goalQueue.push_back(_goal);
-		//	_currentGoal.targetLocation = _goal.targetLocation;
-		//}
 	}
 
 }
@@ -113,7 +97,6 @@ void RVO2DAgent::disable()
 {
 	// DO nothing for now
 	// if we tried to disable a second time, most likely we accidentally ignored that it was disabled, and should catch that error.
-	// std::cout << "this agent is being disabled " << this << std::endl;
 	assert(_enabled==true);
 
 
@@ -127,25 +110,8 @@ void RVO2DAgent::disable()
 
 }
 
-/*
-bool RVO2DAgent::collidesAtTimeWith(const Util::Point & p1, const Util::Vector & directiontToRightOfAgent, float otherAgentRadius, float timeStamp, float otherAgentFootX, float otherAgentFootZ)
-{
-	// std::cout << "not supported by this agent" << ", pos " << p1 << std::endl;
-	if ( (computePenetration( p1, otherAgentRadius) > 0.0001) |
-			(computePenetration( Util::Point(otherAgentFootX, 0.0, otherAgentFootZ), otherAgentRadius) > 0.0001) |
-			(computePenetration( p1+directiontToRightOfAgent, otherAgentRadius) > 0.0001) |
-			(computePenetration( p1-directiontToRightOfAgent, otherAgentRadius) > 0.0001)
-			)
-	{
-		return true;
-	}
-	return false;
-}*/
-
 void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialConditions, SteerLib::EngineInterface * engineInfo)
 {
-	//counted_this_frame = false;
-	//close_frames = 0;
 	//random amount of variation in initial conditions
 	std::normal_distribution<> d{ 10, 5 };
 	std::random_device rd;
@@ -153,7 +119,6 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 
 	// compute the "old" bounding box of the agent before it is reset.  its OK that it will be invalid if the agent was previously disabled
 	// because the value is not used in that case.
-	// std::cout << "resetting agent " << this << std::endl;
 
 	if ( initialConditions.colorSet == true )
 	{
@@ -174,17 +139,9 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 
 
 	// initialize the agent based on the initial conditions
-	/*
-	position_ = Vector2(initialConditions.position.x, initialConditions.position.z);
-	radius_ = initialConditions.radius;
-	velocity_ = normalize(Vector2(initialConditions.direction.x, initialConditions.direction.z));
-	velocity_ = velocity_ * initialConditions.speed;
-*/
 	// initialize the agent based on the initial conditions
-	// std::cout << initialConditions << std::endl; 
 	_position = initialConditions.position;
 	_forward = normalize(initialConditions.direction);
-	//_radius = initialConditions.radius + d(gen);
 	_radius = initialConditions.radius;
 	_sdradius = initialConditions.sdradius;
 	_isBag = initialConditions.isBag;
@@ -205,16 +162,11 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 
 	if (!_enabled) {
 		// if the agent was not enabled, then it does not already exist in the database, so add it.
-		// std::cout
 		getSimulationEngine()->getSpatialDatabase()->addObject( dynamic_cast<SpatialDatabaseItemPtr>(this), newBounds);
 	}
 	else {
 		// if the agent was enabled, then the agent already existed in the database, so update it instead of adding it.
-		// std::cout << "new position is " << _position << std::endl;
-		// std::cout << "new bounds are " << newBounds << std::endl;
-		// std::cout << "reset update " << this << std::endl;
 		getSimulationEngine()->getSpatialDatabase()->updateObject( dynamic_cast<SpatialDatabaseItemPtr>(this), oldBounds, newBounds);
-		// engineInfo->getSpatialDatabase()->updateObject( this, oldBounds, newBounds);
 	}
 
 	_enabled = true;
@@ -261,23 +213,15 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 
 	// runLongTermPlanning2();
 
-	// std::cout << "first waypoint: " << _waypoints.front() << " agents position: " << position() << std::endl;
 	/*
 	 * Must make sure that _waypoints.front() != position(). If they are equal the agent will crash.
 	 * And that _waypoints is not empty
 	 */
 	Util::Vector goalDirection;
-	// Hacky stuff for acclmesh
-	// NavMeshDataBase * nav = dynamic_cast<NavMeshDataBase * >(getSimulationEngine()->getSpatialDatabase());
-	// Util::Point vert = nav->closestVert(this->position());
-	// this->_position = vert;
-	// std::cout << "Number of goals " << _goalQueue.size() << std::endl;
-	// std::cout << "location of goals.front " << _goalQueue.front().targetLocation << std::endl;
 	runLongTermPlanning(_goalQueue.front().targetLocation, dont_plan);
 	 
 	if ( !_waypoints.empty() )
 	{
-		// this->updateLocalTarget2();
 		goalDirection = normalize( _waypoints.front() - position());
 	}
 	else
@@ -292,20 +236,9 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 #endif
 
 
-	// _gEngine->addAgent(this, rvoModule);
 	// Disabled assertion due to initialConditions.direction being unused, leading to this firing.
-	// assert(_forward.length() != 0.0f && !isnan(_forward.length()));
 	assert(_goalQueue.size() != 0);
 	assert(_radius != 0.0f);
-
-	////color dependent on loading_status
-	//if (behaviours.find("PTI") != behaviours.end())
-	//{
-	//	if (behaviours["PTI"]["loading_status"] == "alighting")
-	//	{
-	//		_color = Util::gDarkOrange;
-	//	}
-	//}
 }
 
 /*
@@ -331,8 +264,6 @@ void RVO2DAgent::computeNeighbors()
 	obstacleNeighbors_.clear();
 	float rangeSq = sqr(_RVO2DParams.rvo_time_horizon_obstacles * _RVO2DParams.rvo_max_speed + _radius);
 	getSimulationEngine()->getSpatialDatabase()->computeObstacleNeighbors(this, rangeSq);
-
-	// std::cout << "Number of obstacle neighbours " << obstacleNeighbors_.size() << std::endl;
 
 	agentNeighbors_.clear();
 
@@ -619,7 +550,6 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		}
 
 		// If both agents are part of the same group - ignore social distance
-		// std::cout << groupId() << "\n";
 		if (groupId() == other->groupId() && groupId() != Value::unset) {
 			combinedRadius = radius() + other->radius(); //other radius is the physical person radius
 			combinedRadiusSq = sqr(combinedRadius);
@@ -677,44 +607,10 @@ void RVO2DAgent::computeNewVelocity(float dt)
 			u = (combinedRadius * invTimeStep - wLength) * unitW;
 		}
 		const RVO2DAgent* otherRVO = dynamic_cast<const RVO2DAgent*>(other);
-		//float combined_reciprocity = _receprocity_factor / (_receprocity_factor + otherRVO->_receprocity_factor);
-
-
-		////If thes goal has the "boarding" hebariour tag - add computation as if it were boarding
-		if (hasGoalBehaviour("boarding") && other->hasGoalBehaviour("boarding"))
-		{
-			const Util::Vector forwardVec = _goalQueue.front().targetLocation - position();
-			const Util::Vector otherForwardVev = other->_goalQueue.front().targetLocation - other->position();
-			//const Util::Vector upVec = Util::Vector(1, 0, 0);
-			//const Util::Vector rightVec = Util::Vector(0, 0, 1);
-			const float angle_to_other = abs(atan2(det(forwardVec, relativePosition), dot(forwardVec, relativePosition)));
-			//angle_to_other = abs(atan2(det(upVec, rightVec), dot(upVec, rightVec)));
-			const float angle_of_other = abs(atan2(det(otherForwardVev, -relativePosition), dot(otherForwardVev, -relativePosition)));
-			const float visible_angle = M_PI / 5;
-			//case 1: this cannot see the other. Other sees this
-			if (abs(angle_to_other) > visible_angle && abs(angle_of_other) < visible_angle) {
-				reciprocal_fov = 0.f;
-				continue;
-			}
-			//case 2: this can see other. other cannot see this
-			else if (abs(angle_to_other) < visible_angle && abs(angle_of_other) > visible_angle) {
-				reciprocal_fov = 1.f;
-			}
-			//case 3: This cannot see other. Other cannot see this
-			else if (abs(angle_to_other) > visible_angle && abs(angle_of_other) > visible_angle) {
-				reciprocal_fov = 0.5f;
-			}
-			//case 4: this can see other. Other can see this
-			else if (abs(angle_to_other) < visible_angle && abs(angle_of_other) < visible_angle) {
-				reciprocal_fov = 0.5f;
-			}
-		}
 
 		line.point = velocity() + reciprocal_fov * u;
 		orcaLines_.push_back(line);
 	}
-
-	//counted_this_frame = false;
 
 	size_t lineFail = linearProgram2(orcaLines_, _RVO2DParams.rvo_max_speed, _prefVelocity, false, _newVelocity);
 
@@ -746,7 +642,6 @@ bool RVO2DAgent::hasGoalBehaviour(std::string key) const
 
 bool RVO2DAgent::hasAgentBehaviour(std::string name) const
 {
-	//auto it = behaviours.find(name);
 	return (behaviours.find(name) != behaviours.end());
 }
 
@@ -779,9 +674,6 @@ void RVO2DAgent::insertAgentNeighbor(const SteerLib::AgentInterface *agent, floa
 void RVO2DAgent::insertObstacleNeighbor(const ObstacleInterface* obstacle, float rangeSq)
 {
 	const ObstacleInterface* const nextObstacle = obstacle->nextObstacle_;
-	//printf("insterting obstacle: pos(%f, %f)\n", obstacle->point_.x, obstacle->point_.z);
-	//printf("\t pos: (%f, %f)\n", obstacle->nextObstacle_->point_.x, obstacle->nextObstacle_->point_.z);
-
 	const float distSq = distSqPointLineSegment(obstacle->point_, nextObstacle->point_, position());
 
 	if (distSq < rangeSq) {
@@ -820,18 +712,9 @@ std::pair< Util::Vector, SteerLib::AgentGoalInfo> RVO2DAgent::updateAI_goal()
 	Util::Vector goalDirection;
 	SteerLib::AgentGoalInfo goalInfo = _goalQueue.front();
 
-	if (!_midTermPath.empty()) // && (!this->hasLineOfSightTo(goalInfo.targetLocation)) )
-	{
-		// if (reachedCurrentWaypoint())
-		// {
-		// 	this->updateMidTermPath();
-		// }
+	if (!_midTermPath.empty())
+	{	}
 
-		// this->updateLocalTarget();
-
-		// goalDirection = normalize(_currentLocalTarget - position());
-
-	}
 	// Update target location to be closest point of the goal box
 	else if (goalInfo.goalType == GOAL_TYPE_AXIS_ALIGNED_BOX_GOAL)
 	{
@@ -889,7 +772,6 @@ std::pair< Util::Vector, SteerLib::AgentGoalInfo> RVO2DAgent::updateAI_goal()
 		for (auto it = goalInfo.targetLocationsSet.begin(); it != goalInfo.targetLocationsSet.end(); it++) {
 			if ((*it - position()).length() < shortestDist) {
 				shortestDist = (*it - position()).length();
-				//chosen_door = it - goalInfo.targetLocationsSet.begin();
 				goalInfo.targetLocation = *it;
 				_goalQueue.front().targetLocation = *it;
 			}
@@ -961,7 +843,6 @@ std::pair < Util::Vector, float> RVO2DAgent::updateAI_groups()
 
 void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 {
-	// std::cout << "_RVO2DParams.rvo_max_speed " << _RVO2DParams._RVO2DParams.rvo_max_speed << std::endl;
 	Util::AutomaticFunctionProfiler profileThisFunction( &RVO2DGlobals::gPhaseProfilers->aiProfiler );
 	if (!enabled())
 	{
@@ -1015,7 +896,6 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 
 	if ( ( !_waypoints.empty() ) && (_waypoints.front() - position()).length() < radius() * REACHED_WAYPOINT_MULTIPLIER)
 	{
-		// std::cout << "removing a waypoint" << std::endl;
 		_waypoints.erase(_waypoints.begin());
 	}
 	/*
@@ -1035,7 +915,6 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 			completed_goals.push_back(_goalQueue.front());
 		
 		_goalQueue.pop_front();
-		// std::cout << "Made it to a goal" << std::endl;
 		if (_goalQueue.size() >= 1) {
 			// in this case, there are still more goals, so start steering to the next goal.
 			goalDirection = _goalQueue.front().targetLocation - _position;
@@ -1044,27 +923,18 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 		else {
 			// in this case, there are no more goals, so disable the agent and remove it from the spatial database.
 			disable();
-			/*
-			AxisAlignedBox b = AxisAlignedBox(_position.x - _radius, _position.x + _radius, 0.0f, 0.0f, _position.z - _radius, _position.z + _radius);
-			getSimulationEngine()->getSpatialDatabase()->removeObject(dynamic_cast<SpatialDatabaseItemPtr>(this), b);
-
-			//  2. set enabled = false
-			_enabled = false;
-				*/
 			return;
 		}
 	}
 
 
 	// Hear the 2D solution from RVO is converted into the 3D used by StecerSuite
-	// _velocity = Vector(velocity().x, 0.0f, velocity().z);
 	if ( velocity().length() > 0.0 )
 	{
 		// Only assign forward direction if agent is moving
 		// Otherwise keep last forward
 		_forward = normalize(_velocity);
 	}
-	// _position = _position + (_velocity * dt);
 
 	/*
 	 * Stuff for mesh database
