@@ -2,9 +2,11 @@ set(RVO2AI_INCLUDE
     "${CMAKE_CURRENT_SOURCE_DIR}/include/API.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/RVO2DAgent.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/RVO2DAIModule.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/RVO2D_Parameters.h")
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/RVO2D_Parameters.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/RVO2DHelper.h")
 set(RVO2AI_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/RVO2DAgent.cpp"
-               "${CMAKE_CURRENT_SOURCE_DIR}/src/RVO2DAIModule.cpp")
+               "${CMAKE_CURRENT_SOURCE_DIR}/src/RVO2DAIModule.cpp"
+               "${CMAKE_CURRENT_SOURCE_DIR}/src/RVO2DHelper.cpp")
 set(RVO2AI_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/../external"
