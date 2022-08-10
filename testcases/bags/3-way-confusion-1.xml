@@ -56,10 +56,11 @@
       <position> <x>9</x> <y>0</y> <z>1.5</z> </position>
       <direction> <x>-1</x> <y>0</y> <z>0</z> </direction>
       <speed>0</speed>
+      <isBag>true</isBag>
     </initialConditions>
     <goalSequence>
       <seekStaticTarget>
-        <targetLocation> <x>-10</x> <y>0</y> <z>1</z> </targetLocation>
+        <targetLocation> <x>-99</x> <y>0</y> <z>99</z> </targetLocation>
         <desiredSpeed>1.3</desiredSpeed>
         <timeDuration>1000.0</timeDuration>
       </seekStaticTarget>
