@@ -4,6 +4,12 @@
 
 #define USE_ACCLMESH 1
 
+// Get a unique color depending on the input val
+Color get_color(int val);
+
+// Convert from HSV color space to RGB. HSV values in [0..1]. returns Color.
+Color HSVtoRGB( float h, float s, float v );
+
 
 /// <summary>
 /// Get the linear value between 2 points, clamped if above or below it

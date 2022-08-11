@@ -150,6 +150,9 @@ protected:
 	int next_waypoint_distance_;
 	std::vector<Util::Plane> orcaPlanes_;
 	std::vector<Line> orcaLines_;
+	std::vector<int> orcaLinesID_; //keep track of which agent causes which orca line
+	size_t numObstLines;
+	
 	SteerLib::ModuleInterface * rvoModule;
 	size_t bag_id = -1;
 	const AgentInterface * owned_bag = NULL; // Reference to the bag(s) owned by this actor

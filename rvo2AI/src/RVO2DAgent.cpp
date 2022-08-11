@@ -115,6 +115,7 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	obstacleNeighbors_.clear();
 	orcaPlanes_.clear();
 	orcaLines_.clear();
+	orcaLinesID_.clear();
 
 	Util::AxisAlignedBox oldBounds(_position.x-_radius, _position.x+_radius, 0.0f, 0.5f, _position.z-_radius, _position.z+_radius);
 
@@ -229,7 +230,7 @@ void RVO2DAgent::computeNeighbors()
 
 	if (_RVO2DParams.rvo_max_neighbors > 0)
 	{
-			rangeSq = sqr(_RVO2DParams.rvo_neighbor_distance);
+		rangeSq = sqr(_RVO2DParams.rvo_neighbor_distance);
 		getSimulationEngine()->getSpatialDatabase()->computeAgentNeighbors(this, rangeSq);
 	}
 }
@@ -238,6 +239,7 @@ void RVO2DAgent::computeNeighbors()
 void RVO2DAgent::computeNewVelocity(float dt)
 {
 	orcaLines_.clear();
+	orcaLinesID_.clear();
 
 	const float invTimeHorizonObst = 1.0f / _RVO2DParams.rvo_time_horizon_obstacles;
 	
@@ -463,7 +465,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 		}
 	}
 
-	const size_t numObstLines = orcaLines_.size();
+	numObstLines = orcaLines_.size();
 
 	const float invTimeHorizon = 1.0f / _RVO2DParams.rvo_time_horizon;
 
@@ -570,6 +572,7 @@ void RVO2DAgent::computeNewVelocity(float dt)
 
 		line.point = velocity() + reciprocal_fov * u;
 		orcaLines_.push_back(line);
+		orcaLinesID_.push_back(other->id());
 	}
 
 	size_t lineFail = linearProgram2(orcaLines_, _RVO2DParams.rvo_max_speed, _prefVelocity, false, _newVelocity);
@@ -949,14 +952,25 @@ void RVO2DAgent::draw()
 
 	if (_gEngine->isAgentSelected(this))
 	{
-		// Draw ORCA lines
+		// const std::vector<Color> distinct_colors{gGreen, gBlue, gYellow, gCyan, gMagenta, gOrange, gDarkRed, gDarkGreen, gDarkBlue, gDarkYellow};
+
+		// Draw ORCA lines - obstacles
 		for (int l=0; l < orcaLines_.size(); l++)
 		{
+			Color c;
+			if( l < numObstLines)
+				c = gDarkRed;
+			else
+			{
+				int id = orcaLinesID_[l-numObstLines];
+				c = get_color(id);
+			}
+
 			Util::Point p = _position  + orcaLines_.at(l).point;
 			DrawLib::drawLine(
 					p - (orcaLines_.at(l).direction*_RVO2DParams.rvo_time_horizon),
 					p + (orcaLines_.at(l).direction*_RVO2DParams.rvo_time_horizon),
-					gOrange);
+					c);
 			
 			//show which side is not permitted - draw repeated lines getting brighter in the prohibited region
 			Util::Vector offset_vec = rotateInXZPlane(orcaLines_.at(l).direction, M_PI/2);
@@ -967,9 +981,28 @@ void RVO2DAgent::draw()
 				DrawLib::drawLineAlpha(
 						p + (offset_vec * r * od) - (orcaLines_.at(l).direction*_RVO2DParams.rvo_time_horizon),
 						p + (offset_vec * r * od) + (orcaLines_.at(l).direction*_RVO2DParams.rvo_time_horizon),
-						gOrange, float(rmax-r)/float(rmax));
+						c, float(rmax-r)/float(rmax));
 			}
+			if( l < numObstLines)
+				continue;
+
+			// Color other agent
+			for (size_t i = 0; i < agentNeighbors_.size(); ++i)
+			{
+				const SteerLib::AgentInterface * other = agentNeighbors_[i].second;
+				
+				if(other->id() == orcaLinesID_[l-numObstLines]){
+					// Draw an ever so slightly larger agent where the agent is in a different color matching the line color
+					DrawLib::drawAgentDisc(other->position(), other->radius() +0.01, c, 3.01);					
+					break;
+				}
+			}
+
 		}
+
+
+
+
 
 		//Draw desired velocity
 		DrawLib::drawFlag(_position + _prefVelocity, gGreen);

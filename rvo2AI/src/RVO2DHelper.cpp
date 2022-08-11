@@ -4,6 +4,62 @@
 #include "Definitions.h"
 #include "RVO2D_Parameters.h"
 
+#define GOLDEN_RATIO_CONJUGATE 0.618033988749895
+
+
+Color get_color(int val)
+{
+	float h = 0.1; //any value
+	h += val* GOLDEN_RATIO_CONJUGATE;
+	h = fmod(h, 1.f);
+	return HSVtoRGB(h, 0.9, 0.95);
+}
+
+Color HSVtoRGB( float H, float S, float V )
+{
+	float R, G, B;
+	H = H * 360;
+	float fC = V * S; // Chroma
+	float fHPrime = fmod(H / 60.0, 6);
+	float fX = fC * (1 - fabs(fmod(fHPrime, 2) - 1));
+	float fM = V - fC;
+
+	if(0 <= fHPrime && fHPrime < 1) {
+	R = fC;
+	G = fX;
+	B = 0;
+	} else if(1 <= fHPrime && fHPrime < 2) {
+	R = fX;
+	G = fC;
+	B = 0;
+	} else if(2 <= fHPrime && fHPrime < 3) {
+	R = 0;
+	G = fC;
+	B = fX;
+	} else if(3 <= fHPrime && fHPrime < 4) {
+	R = 0;
+	G = fX;
+	B = fC;
+	} else if(4 <= fHPrime && fHPrime < 5) {
+	R = fX;
+	G = 0;
+	B = fC;
+	} else if(5 <= fHPrime && fHPrime < 6) {
+	R = fC;
+	G = 0;
+	B = fX;
+	} else {
+	R = 0;
+	G = 0;
+	B = 0;
+	}
+
+	R += fM;
+	G += fM;
+	B += fM;
+  	return Color(R,G,B);
+}
+
 template<typename T>
 T clamp(T x, T x1, T x2, T y1, T y2) {
 	T y;

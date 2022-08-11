@@ -308,6 +308,7 @@ void DrawLib::drawAgentDisc(const Point& pos, const Vector& dir, const Vector& u
 	}
 	glPopMatrix();
 }
+
 //
 // drawAgentDisc() - use only after the agent display lists are built.
 //
@@ -329,6 +330,26 @@ void DrawLib::drawAgentDisc(const Point& pos, float radius, const Color& color)
 	}
 	glPopMatrix();
 }
+
+void DrawLib::drawAgentDisc(const Point& pos, float radius, const Color& color, float height)
+{
+	glPushMatrix();
+	{
+		glColor(color);
+		glTranslate(pos);
+		// glScalef(radius, radius*4.0f, radius);
+
+		// _drawDisplayList(_agentDotDisplayList);
+
+		// Draws the agent 
+		glPushMatrix();
+		glScalef(radius, height, radius);
+		_drawDisplayList(_agentDisplayList);
+		glPopMatrix();
+	}
+	glPopMatrix();
+}
+
 
 void DrawLib::drawAgentDisc(const Point& pos, float radius_inner, float radius_outer, const Color& color)
 {
