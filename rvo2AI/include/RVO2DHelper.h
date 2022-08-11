@@ -5,6 +5,30 @@
 #define USE_ACCLMESH 1
 
 
+/// <summary>
+/// Get the linear value between 2 points, clamped if above or below it
+/// </summary>
+/// <typeparam name="T"></typeparam>
+/// <param name="x">Value to find the corresponding output value.</param>
+/// <param name="lowerlimit">smaller (left) of the two points</param>
+/// <param name="upperlimit">larger (right) of the two points</param>
+/// <returns>corresponding map that x becomes between lowerlimit and upperlimit</returns>
+template<typename T>
+T clamp(T x, T x1, T x2, T y1, T y2);
+
+/**
+ * \relates 	Agent
+ * \brief		Compare the distance between two points
+ */
+bool compareDist(std::pair<float, const SteerLib::AgentInterface *> a1,
+			std::pair<float, const SteerLib::AgentInterface *> a2 );
+
+/**
+ * \relates		Agent
+ * \brief		Interpolates between two x points and maps between y points
+ */
+float interpolation(float y_max, float y_min, float x_max, float x_min, float x);
+
 
 /**
  * \relates    Agent

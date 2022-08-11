@@ -5,7 +5,6 @@ import os
 import random
 
 import xml.etree.ElementTree as ET
-import numpy as np
 
 #the xml namespaces used (https://stackoverflow.com/questions/14853243/parsing-xml-with-namespace-in-python-via-elementtree)
 namespaces = {'ns0': 'http://www.magix.ucla.edu/steerbench'}
@@ -70,9 +69,6 @@ def add_bags(root, add_bag_proba):
 
 		if(random.uniform(0, 1) < add_bag_proba):
 
-			#add bag tag to all agents
-			#ET.SubElement(elem, 'bag').text = 'false'
-
 			#bag agent
 			bag_root = ET.Element('agent')
 
@@ -135,7 +131,7 @@ def create_dynamic_goal(target_id, target_speed):
 	ET.SubElement(dynamic_elem, 'timeDuration').text = '1000.0'
 	return goal_root
 
-def change_agents(root, radius, sdradius):
+def change_agents(root, radius):
 	"""
 	Alter values of already existing agents
 	"""
@@ -144,55 +140,10 @@ def change_agents(root, radius, sdradius):
 		# print(initialConditions_elem)
 
 		#change radius
-		# print(initialConditions_elem.find('ns0:radius', namespaces).text)
-		initialConditions_elem.find('ns0:radius', namespaces).text = str(radius)
-		# print(initialConditions_elem.find('ns0:radius', namespaces).text)
-		# print(elem.find('ns0:initialConditions/ns0:radius', namespaces).text)
-
-		#change sdradius
-		if(	initialConditions_elem.find('ns0:sdradius', namespaces)):	
-			initialConditions_elem.find('ns0:sdradius', namespaces).text = str(sdradius)	
-		else:
-			ET.SubElement(initialConditions_elem, 'sdradius').text = str(sdradius)
+		if radius:
+			# print(initialConditions_elem.find('ns0:radius', namespaces).text)
+			initialConditions_elem.find('ns0:radius', namespaces).text = str(radius)
+			# print(initialConditions_elem.find('ns0:radius', namespaces).text)
+			# print(elem.find('ns0:initialConditions/ns0:radius', namespaces).text)
 
 	return root
-
-
-if __name__ == "__main__":
-	parser = argparse.ArgumentParser(description='Generate new Steersuite xml testcases from originals with bags')
-	parser.add_argument('-i','--inputFile', default="../crossing-1.xml",
-						help='Test case file to add bags to')
-	parser.add_argument('-o','--outputFile', default="",
-						help='Name of the output testcase file. Defaults to name $(inputFile)-bag.xml')
-	parser.add_argument('-p','--bagProb', type = float, default=1,
-						help='Probability of adding a bag to an agent. Between 0 and 1')
-	parser.add_argument('-br','--bagRadius', type = float, default=0.2,
-						help='radius of the added bag')
-	parser.add_argument('-ar','--agentRadius', type = float, default=0.2,
-						help='change the radius of the already existing agent')
-	parser.add_argument('-asr','--agentSocialRadius', type = float, default=0.3,
-						help='change (or add) the social distance radius of the already existing agent')
-	args = parser.parse_args()
-
-	#If no specific output file name is specified - apped -bag to name and write to current dir
-	if args.outputFile == "":
-		# args.outputFile = "crossing-1-bag.xml"
-		# print(os.path.basename(args.inputFile))
-		basename = os.path.basename(args.inputFile)
-		(root, ext) = os.path.splitext(basename)
-		outname = root + "-bag" + ext
-		# print(outname)
-		args.outputFile = outname
-
-	root = read_in_testcase(args.inputFile)
-
-	root = change_agents(root, args.agentRadius, args.agentSocialRadius)
-
-	root = add_bags(root, args.bagProb)
-	# remove_namespace(root)
-
-	indent(root)
-	# ET.dump(root)
-	with open(args.outputFile, 'wb') as f:
-		print("Writing to", args.outputFile)
-		ET.ElementTree(root).write(f)

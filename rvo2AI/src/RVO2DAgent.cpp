@@ -19,33 +19,13 @@
 #undef min
 #undef max
 
-#define BAG_DISTANCE 2.0f // Beyond this distance an owner and bag will attempt to reunite as the primary goal
+#define BAG_DISTANCE 2.0f // Beyond this distance between the edges of the agents, an owner and bag will attempt to reunite as the primary goal
 
 using namespace Util;
 using namespace RVO2DGlobals;
 using namespace SteerLib;
 
 
-/// <summary>
-/// Get the linear value between 2 points, clamped if above or below it
-/// </summary>
-/// <typeparam name="T"></typeparam>
-/// <param name="x">Value to find the corresponding output value.</param>
-/// <param name="lowerlimit">smaller (left) of the two points</param>
-/// <param name="upperlimit">larger (right) of the two points</param>
-/// <returns>corresponding map that x becomes between lowerlimit and upperlimit</returns>
-template<typename T>
-T clamp(T x, T x1, T x2, T y1, T y2) {
-	T y;
-	if (x < x1)
-		y = y1;
-	else if (x > x2)
-		y = y2;
-	else {
-		y = (x - x1) / (x2 - x1) * (y2 - y1) + y1;
-	}
-	return y;
-}
 
 RVO2DAgent::RVO2DAgent()
 {
@@ -140,7 +120,6 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 
 
 	// initialize the agent based on the initial conditions
-	// initialize the agent based on the initial conditions
 	_position = initialConditions.position;
 	_forward = normalize(initialConditions.direction);
 	_radius = initialConditions.radius;
@@ -212,8 +191,6 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 		}
 	}
 
-	// runLongTermPlanning2();
-
 	/*
 	 * Must make sure that _waypoints.front() != position(). If they are equal the agent will crash.
 	 * And that _waypoints is not empty
@@ -241,18 +218,6 @@ void RVO2DAgent::reset(const SteerLib::AgentInitialConditions & initialCondition
 	assert(_goalQueue.size() != 0);
 	assert(_radius != 0.0f);
 }
-
-/*
-void RVO2DAgent::computeNeighbors()
-{
-	agentNeighbors_.clear();
-
-	if (_RVO2DParams.rvo_max_neighbors > 0) {
-		// std::cout << "About to segfault" << std::endl;
-		dynamic_cast<RVO2DAIModule *>(rvoModule)->kdTree_->computeAgentNeighbors(this, _RVO2DParams.rvo_neighbor_distance * _RVO2DParams.rvo_neighbor_distance);
-		// std::cout << "Made it past segfault" << std::endl;
-	}
-}*/
 
 void RVO2DAgent::computeNeighbors()
 {
@@ -533,9 +498,9 @@ void RVO2DAgent::computeNewVelocity(float dt)
 			combinedRadius = radius() + other->radius(); //other radius is the physical person radius
 			combinedRadiusSq = sqr(combinedRadius);
 		}
-		//if bag - ignore other agents
+		//if bag - try to ignore other agents
 		else if (isBag() && !other->isBag()) {
-			continue;
+			reciprocal_fov = 0.1f;
 		}
 		
 		
@@ -544,11 +509,11 @@ void RVO2DAgent::computeNewVelocity(float dt)
 			reciprocal_fov = 1.f;
 		}
 
-		// If both agents are part of the same group - ignore social distance
-		if (groupId() == other->groupId() && groupId() != Value::unset) {
-			combinedRadius = radius() + other->radius(); //other radius is the physical person radius
-			combinedRadiusSq = sqr(combinedRadius);
-		}
+		// // If both agents are part of the same group
+		// if (groupId() == other->groupId() && groupId() != Value::unset) {
+		// 	combinedRadius = radius() + other->radius(); //other radius is the physical person radius
+		// 	combinedRadiusSq = sqr(combinedRadius);
+		// }
 
 
 		Line line;
@@ -685,7 +650,6 @@ void RVO2DAgent::insertObstacleNeighbor(const ObstacleInterface* obstacle, float
 	}
 }
 
-
 std::pair< Util::Vector, SteerLib::AgentGoalInfo> RVO2DAgent::updateAI_goal()
 {
 	Util::Vector goalDirection;
@@ -766,21 +730,6 @@ std::pair< Util::Vector, SteerLib::AgentGoalInfo> RVO2DAgent::updateAI_goal()
 
 void RVO2DAgent::updateAI_agentBehaviour()
 {
-	//Agent behaviours
-	if (hasAgentBehaviour("sdradius_z"))
-	{
-		float z0 = 0;
-		float z1 = 0;
-		float sd0 = 0;
-		float sd1 = 0;
-
-		z0 = stof(behaviours["sdradius_z"]["z0"]);
-		z1 = stof(behaviours["sdradius_z"]["z1"]);
-		sd0 = stof(behaviours["sdradius_z"]["sd0"]);
-		sd1 = stof(behaviours["sdradius_z"]["sd1"]);
-
-		_sdradius = clamp<float>(position().z, z0, z1, sd0, sd1);
-	}
 
 }
 
@@ -926,12 +875,6 @@ void RVO2DAgent::updateAI(float timeStamp, float dt, unsigned int frameNumber)
 void RVO2DAgent::draw()
 {
 #ifdef ENABLE_GUI
-#ifdef DRAW_VESTIBULE
-	//draw vestibules
-	for (auto& it = PossibleGoals.begin(); it != PossibleGoals.end(); it++) {
-		Util::DrawLib::drawBox(it->x - 2.5, it->x + 2.5, 0, 0.1, -1.5, 5, Util::gDarkGreen);
-	}
-#endif
 
 	AgentInterface::draw();
 	_position.y = getSimulationEngine()->getSpatialDatabase()->getLocation(this).y;
@@ -985,38 +928,57 @@ void RVO2DAgent::draw()
 
 #ifdef DRAW_ANNOTATIONS
 
-	for (int i=0; ( _waypoints.size() > 1 ) && (i < (_waypoints.size() - 1)); i++)
-	{
-		if ( _gEngine->isAgentSelected(this) )
-		{
-			DrawLib::drawLine(_waypoints.at(i), _waypoints.at(i+1), gYellow);
-		}
-		else
-		{
-			DrawLib::drawLine(_waypoints.at(i), _waypoints.at(i+1), gYellow);
-		}
-	}
+	// for (int i=0; ( _waypoints.size() > 1 ) && (i < (_waypoints.size() - 1)); i++)
+	// {
+	// 	if ( _gEngine->isAgentSelected(this) )
+	// 	{
+	// 		DrawLib::drawLine(_waypoints.at(i), _waypoints.at(i+1), gYellow);
+	// 	}
+	// 	else
+	// 	{
+	// 		DrawLib::drawLine(_waypoints.at(i), _waypoints.at(i+1), gYellow);
+	// 	}
+	// }
 
 
-	for (int i=0; i < (_waypoints.size()); i++)
-	{
-		DrawLib::drawFlag(_waypoints.at(i), gBlue, 1.0);
-	}
+	// for (int i=0; i < (_waypoints.size()); i++)
+	// {
+	// 	DrawLib::drawFlag(_waypoints.at(i), gBlue, 1.0);
+	// }
 
-/*
+
 	if (_gEngine->isAgentSelected(this))
 	{
+		// Draw ORCA lines
 		for (int l=0; l < orcaLines_.size(); l++)
 		{
 			// Util::Point p = position() + Util::Point(orcaLines_.at(l).point.x, orcaLines_.at(l).point.y,
 				//	orcaLines_.at(l).point.z);
 			Util::Point p = position();//  + orcaLines_.at(l).point;
-			DrawLib::drawLine(Util::Point(0,0,0) + orcaLines_.at(l).point ,
-					(Util::Point(0,0,0) + orcaLines_.at(l).point + (orcaLines_.at(l).direction*_RVO2DParams.rvo_time_horizon)),
+			DrawLib::drawLine(
+					Util::Point(0,0,0) + orcaLines_.at(l).point - (orcaLines_.at(l).direction*_RVO2DParams.rvo_time_horizon),
+					Util::Point(0,0,0) + orcaLines_.at(l).point + (orcaLines_.at(l).direction*_RVO2DParams.rvo_time_horizon),
 					gOrange);
+			//show which side is not permitted - draw repeated lines getting brighter in the prohibited region
+			Util::Vector offset_vec = rotateInXZPlane(orcaLines_.at(l).direction, M_PI/2);
+			float od = 0.03; // control how spaced out the repeated lines are. Larger value = more spacing
+			int rmax = 10; //number of extra lines to draw
+			for (int r=1; r<rmax; r++)
+			{
+				DrawLib::drawLineAlpha(
+						Util::Point(0,0,0) + (offset_vec * r * od) + orcaLines_.at(l).point - (orcaLines_.at(l).direction*_RVO2DParams.rvo_time_horizon),
+						Util::Point(0,0,0) + (offset_vec * r * od) + orcaLines_.at(l).point + (orcaLines_.at(l).direction*_RVO2DParams.rvo_time_horizon),
+						gOrange, float(rmax-r)/float(rmax));
+			}
 		}
+		//Draw desired velocity
+		DrawLib::drawFlag(_position + _prefVelocity, gGreen);
+
+		//Draw resulting velocity
+		DrawLib::drawFlag(_position + _velocity, gRed, 2);
+
 	}
-*/
+
 #endif
 
 #endif

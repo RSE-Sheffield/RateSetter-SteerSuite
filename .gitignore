@@ -408,3 +408,4 @@ build*/
 # The vscode directory, which is generally not portable
 .vscode/*
 !.vscode/extensions.json
+.directory

@@ -4,6 +4,19 @@
 #include "Definitions.h"
 #include "RVO2D_Parameters.h"
 
+template<typename T>
+T clamp(T x, T x1, T x2, T y1, T y2) {
+	T y;
+	if (x < x1)
+		y = y1;
+	else if (x > x2)
+		y = y2;
+	else {
+		y = (x - x1) / (x2 - x1) * (y2 - y1) + y1;
+	}
+	return y;
+}
+
 
 bool compareDist(std::pair<float, const SteerLib::AgentInterface *> a1,
 			std::pair<float, const SteerLib::AgentInterface *> a2 )
