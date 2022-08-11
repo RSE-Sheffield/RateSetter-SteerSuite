@@ -952,13 +952,12 @@ void RVO2DAgent::draw()
 		// Draw ORCA lines
 		for (int l=0; l < orcaLines_.size(); l++)
 		{
-			// Util::Point p = position() + Util::Point(orcaLines_.at(l).point.x, orcaLines_.at(l).point.y,
-				//	orcaLines_.at(l).point.z);
-			Util::Point p = position();//  + orcaLines_.at(l).point;
+			Util::Point p = _position  + orcaLines_.at(l).point;
 			DrawLib::drawLine(
-					Util::Point(0,0,0) + orcaLines_.at(l).point - (orcaLines_.at(l).direction*_RVO2DParams.rvo_time_horizon),
-					Util::Point(0,0,0) + orcaLines_.at(l).point + (orcaLines_.at(l).direction*_RVO2DParams.rvo_time_horizon),
+					p - (orcaLines_.at(l).direction*_RVO2DParams.rvo_time_horizon),
+					p + (orcaLines_.at(l).direction*_RVO2DParams.rvo_time_horizon),
 					gOrange);
+			
 			//show which side is not permitted - draw repeated lines getting brighter in the prohibited region
 			Util::Vector offset_vec = rotateInXZPlane(orcaLines_.at(l).direction, M_PI/2);
 			float od = 0.03; // control how spaced out the repeated lines are. Larger value = more spacing
@@ -966,11 +965,12 @@ void RVO2DAgent::draw()
 			for (int r=1; r<rmax; r++)
 			{
 				DrawLib::drawLineAlpha(
-						Util::Point(0,0,0) + (offset_vec * r * od) + orcaLines_.at(l).point - (orcaLines_.at(l).direction*_RVO2DParams.rvo_time_horizon),
-						Util::Point(0,0,0) + (offset_vec * r * od) + orcaLines_.at(l).point + (orcaLines_.at(l).direction*_RVO2DParams.rvo_time_horizon),
+						p + (offset_vec * r * od) - (orcaLines_.at(l).direction*_RVO2DParams.rvo_time_horizon),
+						p + (offset_vec * r * od) + (orcaLines_.at(l).direction*_RVO2DParams.rvo_time_horizon),
 						gOrange, float(rmax-r)/float(rmax));
 			}
 		}
+
 		//Draw desired velocity
 		DrawLib::drawFlag(_position + _prefVelocity, gGreen);
 
